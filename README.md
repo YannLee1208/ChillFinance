@@ -41,5 +41,17 @@ npm run dev
 ## 测试
 
 ```powershell
+python -m ruff check backend tests
 pytest -q
+cd frontend
+npm run build
 ```
+
+## 后续数据源优先级
+
+1. 国债利率：扩展中国、德国、日本收益率曲线。
+2. 国家宏观：GDP、财政赤字、政府债务、CPI、PPI、PMI。
+3. 有色：LME/SHFE 库存、价格、加工费、产能。
+4. 原油：Brent/WTI、EIA 库存、炼厂开工、成品油裂解、油运费率。
+5. 煤炭：港口价格、库存、日耗、进口。
+6. 电力：发电量、用电量、火电水电风光分项、煤耗。
