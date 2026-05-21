@@ -1,0 +1,45 @@
+# Local Macro Monitor
+
+本项目用于在本地采集、存储和展示个人宏观数据，覆盖国债利率、主要经济体宏观指标、有色、原油、煤炭、电力以及后续扩展主题。
+
+## 第一阶段范围
+
+- 国债利率：接入 FRED 的美国国债期限利率 CSV。
+- 国家宏观：中国、美国、日本、欧洲的 GDP、财政赤字、债务规模先建立指标定义和种子数据。
+- 大宗与能源：金银铜铝、原油、成品油、油运、煤炭、电力先建立指标定义和种子数据。
+- 前端：本地仪表盘，左侧主题导航，右侧图表卡片和概览分析。
+
+## 环境变量
+
+| 变量名 | 用途 | 默认值 |
+| --- | --- | --- |
+| `MACRO_DB_PATH` | 本地 DuckDB 数据库路径 | `data/macro.duckdb` |
+| `FRED_API_KEY` | FRED API Key，后续 JSON API 可用 | 空 |
+| `MACRO_HTTP_TIMEOUT_SECONDS` | HTTP 请求超时时间 | `30` |
+| `MACRO_USER_AGENT` | 公共数据下载 User-Agent | `local-macro-monitor/0.1` |
+| `VITE_API_BASE_URL` | 前端访问的后端地址 | `http://127.0.0.1:8000` |
+
+## 本地开发
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+python -m backend.cli init-db
+python -m backend.cli ingest --provider seed
+uvicorn backend.app:create_app --factory --reload
+```
+
+前端开发：
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+## 测试
+
+```powershell
+pytest -q
+```

@@ -23,3 +23,22 @@
 - 选择执行方式：Subagent-Driven 或 Inline Execution。
 - 执行计划中的项目初始化、后端、数据采集、API 和前端任务。
 - 后续优先接入中国宏观、全球国债曲线、EIA 能源、LME/SHFE 库存、煤炭和电力真实数据源。
+
+### 进展
+
+- 完成 Task 1 项目初始化：新增项目级 Agent 规则、README、环境变量示例、Python 项目配置、后端配置入口和 pytest 公共 fixture。
+- 通过 `backend.constant` 统一默认数据库路径、HTTP 超时、User-Agent、日期格式和 FRED 国债期限序列常量。
+- 通过 `backend.config.Settings` 读取本地运行配置，并保留 `.env` 文件加载能力。
+
+### 教训
+
+- `pytest -q` 在当前只有 `tests/conftest.py`、没有实际测试用例时会返回退出码 1，并提示 `no tests ran`；后续任务应增加具体 `test_*.py` 用例后再以 pytest 作为通过门禁。
+- `python -m pip install -e ".[dev]"` 会生成 `local_macro_monitor.egg-info` 和 `.pytest_cache`，提交前需要确认这些构建/缓存产物不进入版本控制。
+
+### 提交记录
+
+- 待提交：`feat: bootstrap macro monitor project`。
+
+### TODO
+
+- Task 2 开始前补充首个可执行测试用例，避免 pytest 空跑。
