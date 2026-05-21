@@ -1,5 +1,22 @@
 # PREGRESS
 
+## 2026-05-21 Task 6
+
+### 进展
+
+- 完成 Vite React TypeScript 前端仪表盘，包含顶部运行信息、左侧主题导航、主题概览和指标卡片网格。
+- 前端通过 `VITE_API_BASE_URL` 读取后端 API，默认连接 `http://127.0.0.1:8000`，并使用 TanStack Query 拉取目录与指标快照。
+- 指标卡片展示最新值、单位、前值变化、ECharts 折线图，以及来源和频率说明。
+
+### 教训
+
+- `import.meta.env` 需要在 TypeScript 配置中显式包含 `vite/client` 类型，否则 `tsc -b` 会失败。
+- ECharts 会让生产包体积超过 Vite 默认提示阈值，后续指标和页面增多时可考虑按需加载图表组件。
+
+### 提交记录
+
+- 待提交：`feat: add macro dashboard frontend`。
+
 ## 2026-05-21 Task 5 Review Fixes
 
 ### 进展
