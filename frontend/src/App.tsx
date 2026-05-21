@@ -6,11 +6,13 @@ import { DashboardHeader } from "./components/DashboardHeader";
 import { DomainSidebar } from "./components/DomainSidebar";
 import { IndicatorGrid } from "./components/IndicatorGrid";
 import { OverviewPanel } from "./components/OverviewPanel";
+import { SelectorBar } from "./components/SelectorBar";
 
 const DEFAULT_DOMAIN = "rates";
 
 export default function App() {
   const [activeDomain, setActiveDomain] = useState(DEFAULT_DOMAIN);
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
   const {
     data: catalog = [],
@@ -27,6 +29,19 @@ export default function App() {
     () => catalog.filter((indicator) => indicator.domain === activeDomain),
     [activeDomain, catalog],
   );
+  const filteredIndicators = useMemo(
+    () =>
+      selectedIndicators.filter((indicator) =>
+        Object.entries(selectedFilters).every(
+          ([key, value]) => indicator.selectors[key] === value,
+        ),
+      ),
+    [selectedFilters, selectedIndicators],
+  );
+  const selectDomain = (domain: string) => {
+    setActiveDomain(domain);
+    setSelectedFilters({});
+  };
   const refreshDashboard = () => {
     void Promise.all([
       queryClient.invalidateQueries({ queryKey: ["catalog"] }),
@@ -46,7 +61,7 @@ export default function App() {
     <div className="app-shell">
       <DashboardHeader
         activeDomain={activeDomain}
-        indicatorCount={selectedIndicators.length}
+        indicatorCount={filteredIndicators.length}
         isRefreshing={isRefreshing}
         onRefresh={refreshDashboard}
       />
@@ -54,11 +69,16 @@ export default function App() {
         <DomainSidebar
           activeDomain={activeDomain}
           catalog={catalog}
-          onSelectDomain={setActiveDomain}
+          onSelectDomain={selectDomain}
         />
         <main className="content">
-          <OverviewPanel activeDomain={activeDomain} indicators={selectedIndicators} />
-          <IndicatorGrid indicators={selectedIndicators} />
+          <OverviewPanel activeDomain={activeDomain} indicators={filteredIndicators} />
+          <SelectorBar
+            indicators={selectedIndicators}
+            onChange={setSelectedFilters}
+            selected={selectedFilters}
+          />
+          <IndicatorGrid indicators={filteredIndicators} />
         </main>
       </div>
     </div>

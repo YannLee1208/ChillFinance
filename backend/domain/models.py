@@ -22,6 +22,7 @@ class IndicatorDefinition(BaseModel):
     source: str
     description: str
     display_order: int = 0
+    selectors: dict[str, str] = Field(default_factory=dict)
 
 
 class Observation(BaseModel):
@@ -42,4 +43,3 @@ class IndicatorSnapshot(BaseModel):
     latest: Observation | None
     previous: Observation | None
     points: list[Observation] = Field(default_factory=list)
-

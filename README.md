@@ -15,7 +15,7 @@
 | --- | --- | --- |
 | `MACRO_DB_PATH` | 本地 DuckDB 数据库路径 | `data/macro.duckdb` |
 | `FRED_API_KEY` | FRED API Key，后续 JSON API 可用 | 空 |
-| `MACRO_HTTP_TIMEOUT_SECONDS` | HTTP 请求超时时间 | `30` |
+| `MACRO_HTTP_TIMEOUT_SECONDS` | HTTP 请求超时时间 | `60` |
 | `MACRO_USER_AGENT` | 公共数据下载 User-Agent | `local-macro-monitor/0.1` |
 | `VITE_API_BASE_URL` | 前端访问的后端地址 | `http://127.0.0.1:8000` |
 
@@ -26,7 +26,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 python -m backend.cli init-db
-python -m backend.cli ingest --provider seed
+python -m backend.cli ingest
 uvicorn backend.app:create_app --factory --reload
 ```
 
@@ -55,3 +55,9 @@ npm run build
 4. 原油：Brent/WTI、EIA 库存、炼厂开工、成品油裂解、油运费率。
 5. 煤炭：港口价格、库存、日耗、进口。
 6. 电力：发电量、用电量、火电水电风光分项、煤耗。
+
+## 当前真实数据覆盖
+
+- FRED：美国国债利率、日德欧长端利率、美国 GDP/债务/财政、原油、汽油、天然气、有色价格、煤炭价格、美国电力生产指数。
+- World Bank：中日欧 GDP、债务占 GDP、财政余额占 GDP。
+- seed provider 仅作为开发备用，不再出现在默认指标目录。

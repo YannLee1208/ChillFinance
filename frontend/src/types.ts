@@ -11,6 +11,7 @@ export type IndicatorDefinition = {
   source: string;
   description: string;
   display_order: number;
+  selectors: Record<string, string>;
 };
 
 export type Observation = {

@@ -54,26 +54,26 @@ def test_indicator_snapshot_returns_latest_and_previous(
     store.upsert_observations(
         [
             Observation(
-                indicator_code="CN_GDP_YOY",
+                indicator_code="CN_GDP",
                 period=date(2025, 9, 30),
                 value=Decimal("4.8"),
-                provider="seed",
-                source=get_indicator("CN_GDP_YOY").source,
+                provider="world_bank",
+                source=get_indicator("CN_GDP").source,
                 ingested_at=datetime(2026, 5, 21, tzinfo=UTC),
             ),
             Observation(
-                indicator_code="CN_GDP_YOY",
+                indicator_code="CN_GDP",
                 period=date(2025, 12, 31),
                 value=Decimal("5.0"),
-                provider="seed",
-                source=get_indicator("CN_GDP_YOY").source,
+                provider="world_bank",
+                source=get_indicator("CN_GDP").source,
                 ingested_at=datetime(2026, 5, 21, tzinfo=UTC),
             ),
         ]
     )
     client = TestClient(create_app())
 
-    response = client.get("/api/indicators/CN_GDP_YOY")
+    response = client.get("/api/indicators/CN_GDP")
 
     assert response.status_code == 200
     payload = response.json()

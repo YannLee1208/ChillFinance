@@ -2,7 +2,7 @@
 
 from typer.testing import CliRunner
 
-from backend.cli import app
+from backend.cli import _parse_codes, app
 
 
 def test_ingest_rejects_unknown_provider() -> None:
@@ -11,4 +11,9 @@ def test_ingest_rejects_unknown_provider() -> None:
     result = runner.invoke(app, ["ingest", "--provider", "invalid"])
 
     assert result.exit_code != 0
-    assert "Provider name must be one of: seed, fred" in result.output
+    assert "Provider name must be one of: fred, seed, world_bank" in result.output
+
+
+def test_parse_codes_splits_comma_separated_values() -> None:
+    assert _parse_codes("US_DGS10, CN_GDP,") == {"US_DGS10", "CN_GDP"}
+    assert _parse_codes(None) is None

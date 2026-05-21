@@ -1,5 +1,6 @@
 """DuckDB 宏观数据存储。"""
 
+import json
 from collections.abc import Iterable
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -34,10 +35,18 @@ class DuckDBMacroStore:
                     provider varchar not null,
                     source varchar not null,
                     description varchar not null,
-                    display_order integer not null
+                    display_order integer not null,
+                    selectors json not null
                 )
                 """
             )
+            columns = {
+                row[1]
+                for row in connection.execute("pragma table_info('indicators')").fetchall()
+            }
+            if "selectors" not in columns:
+                connection.execute("alter table indicators add column selectors json")
+                connection.execute("update indicators set selectors = '{}' where selectors is null")
             connection.execute(
                 """
                 create table if not exists observations (
@@ -67,6 +76,7 @@ class DuckDBMacroStore:
                 definition.source,
                 definition.description,
                 definition.display_order,
+                json.dumps(definition.selectors, ensure_ascii=False),
             )
             for definition in definitions
         ]
@@ -87,9 +97,10 @@ class DuckDBMacroStore:
                     provider,
                     source,
                     description,
-                    display_order
+                    display_order,
+                    selectors
                 )
-                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 rows,
             )

@@ -1,13 +1,18 @@
 """FRED 数据解析与美国国债收益率适配器。"""
 
-from datetime import UTC, datetime
+import asyncio
+import shutil
+import subprocess
+from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from io import StringIO
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
-import httpx
 import pandas as pd
 
-from backend.constant import FRED_TREASURY_SERIES
+from backend.constant import FRED_SERIES
 from backend.domain.models import IndicatorDefinition, Observation
 
 
@@ -53,8 +58,8 @@ def parse_fred_csv(
     return observations
 
 
-class FredTreasuryProvider:
-    """从 FRED 拉取美国国债收益率序列。"""
+class FredSeriesProvider:
+    """从 FRED 拉取通用时间序列。"""
 
     name = "fred"
 
@@ -63,31 +68,81 @@ class FredTreasuryProvider:
         self.user_agent = user_agent
 
     def supports(self, indicator: IndicatorDefinition) -> bool:
-        """判断指标是否属于 FRED 国债收益率序列。"""
+        """判断指标是否属于已配置的 FRED 序列。"""
 
-        return indicator.code in FRED_TREASURY_SERIES
+        return indicator.code in FRED_SERIES
 
     async def fetch(self, indicator: IndicatorDefinition) -> list[Observation]:
         """从 FRED 下载 CSV 并解析为观测值列表。"""
 
-        fred_code = FRED_TREASURY_SERIES[indicator.code]
+        fred_code = FRED_SERIES[indicator.code]
         url = "https://fred.stlouisfed.org/graph/fredgraph.csv"
         headers = {"User-Agent": self.user_agent}
-        params = {"id": fred_code}
+        params = {"id": fred_code, "observation_start": _default_start_date().isoformat()}
 
-        async with httpx.AsyncClient(timeout=self.timeout_seconds, headers=headers) as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
+        response_text = await asyncio.to_thread(
+            _fetch_fred_csv,
+            url,
+            params,
+            headers,
+            self.timeout_seconds,
+        )
 
         return parse_fred_csv(
-            csv_text=response.text,
+            csv_text=response_text,
             indicator_code=indicator.code,
             provider=self.name,
             source=indicator.source,
         )
 
 
+FredTreasuryProvider = FredSeriesProvider
+
+
 def _is_missing_value(value: object) -> bool:
     if pd.isna(value):
         return True
     return str(value).strip() in {"", "."}
+
+
+def _default_start_date() -> date:
+    """限制默认拉取窗口，避免本地启动时下载过长历史。"""
+
+    today = datetime.now(UTC).date()
+    return date(today.year - 10, 1, 1)
+
+
+def _fetch_fred_csv(
+    url: str,
+    params: dict[str, str],
+    headers: dict[str, str],
+    timeout_seconds: int,
+) -> str:
+    request_url = f"{url}?{urlencode(params)}"
+    if shutil.which("curl.exe") is not None:
+        return _fetch_fred_csv_with_curl(request_url, timeout_seconds)
+
+    request = Request(request_url, headers=headers)
+    try:
+        with urlopen(request, timeout=timeout_seconds) as response:  # noqa: S310
+            return response.read().decode("utf-8")
+    except (TimeoutError, URLError):
+        return _fetch_fred_csv_with_curl(request_url, timeout_seconds)
+
+
+def _fetch_fred_csv_with_curl(request_url: str, timeout_seconds: int) -> str:
+    completed = subprocess.run(
+        [
+            "curl.exe",
+            "-L",
+            "--silent",
+            "--show-error",
+            "--max-time",
+            str(timeout_seconds),
+            request_url,
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout

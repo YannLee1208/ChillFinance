@@ -77,7 +77,7 @@ export function IndicatorCard({ snapshot }: IndicatorCardProps) {
       <div className="card-topline">
         <div>
           <h3>{definition.name}</h3>
-          <span>{definition.region}</span>
+          <span>{Object.values(definition.selectors).join(" / ") || definition.region}</span>
         </div>
         <time dateTime={latest?.period}>{latest?.period ?? "暂无日期"}</time>
       </div>

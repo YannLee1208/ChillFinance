@@ -28,6 +28,33 @@ def test_us_treasury_indicator_has_frequency_and_unit() -> None:
     assert indicator.provider == "fred"
     assert indicator.source == "FRED:DGS10"
     assert indicator.display_order == 4
+    assert indicator.selectors == {
+        "country": "United States",
+        "tenor": "10Y",
+        "metric": "Yield",
+    }
+
+
+def test_catalog_replaces_seed_with_public_providers() -> None:
+    catalog = get_catalog()
+    providers = {indicator.provider for indicator in catalog}
+
+    assert "seed" not in providers
+    assert {"fred", "world_bank"}.issubset(providers)
+
+
+def test_catalog_has_filterable_dimensions() -> None:
+    catalog = get_catalog()
+
+    assert all(indicator.selectors for indicator in catalog)
+    assert any(
+        indicator.domain == "nonferrous" and indicator.selectors.get("commodity") == "Copper"
+        for indicator in catalog
+    )
+    assert any(
+        indicator.domain == "country_macro" and indicator.selectors.get("country") == "China"
+        for indicator in catalog
+    )
 
 
 def test_catalog_codes_are_unique() -> None:
