@@ -1,7 +1,7 @@
 """DuckDB 宏观数据存储。"""
 
 from collections.abc import Iterable
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -55,7 +55,7 @@ class DuckDBMacroStore:
     def upsert_indicators(self, definitions: Iterable[IndicatorDefinition]) -> None:
         """新增或替换指标定义，空输入不执行写入。"""
 
-        rows = [
+        rows: list[tuple[Any, ...]] = [
             (
                 definition.code,
                 definition.name,
@@ -74,7 +74,8 @@ class DuckDBMacroStore:
             return
 
         with self._connect() as connection:
-            connection.executemany(
+            self._executemany_in_transaction(
+                connection,
                 """
                 insert or replace into indicators (
                     code,
@@ -96,14 +97,14 @@ class DuckDBMacroStore:
     def upsert_observations(self, observations: Iterable[Observation]) -> None:
         """新增或替换观测值，空输入不执行写入。"""
 
-        rows = [
+        rows: list[tuple[Any, ...]] = [
             (
                 observation.indicator_code,
                 observation.period,
                 observation.value,
                 observation.provider,
                 observation.source,
-                observation.ingested_at.replace(tzinfo=None),
+                self._to_naive_utc(observation.ingested_at),
             )
             for observation in observations
         ]
@@ -111,7 +112,8 @@ class DuckDBMacroStore:
             return
 
         with self._connect() as connection:
-            connection.executemany(
+            self._executemany_in_transaction(
+                connection,
                 """
                 insert or replace into observations (
                     indicator_code,
@@ -166,6 +168,25 @@ class DuckDBMacroStore:
 
     def _connect(self) -> duckdb.DuckDBPyConnection:
         return duckdb.connect(str(self.db_path))
+
+    def _executemany_in_transaction(
+        self,
+        connection: duckdb.DuckDBPyConnection,
+        query: str,
+        rows: list[tuple[Any, ...]],
+    ) -> None:
+        connection.execute("begin transaction")
+        try:
+            connection.executemany(query, rows)
+            connection.execute("commit")
+        except Exception:
+            connection.execute("rollback")
+            raise
+
+    def _to_naive_utc(self, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            return value
+        return value.astimezone(UTC).replace(tzinfo=None)
 
     def _row_to_observation(self, row: tuple[Any, ...]) -> Observation:
         indicator_code, period, value, provider, source, ingested_at = row

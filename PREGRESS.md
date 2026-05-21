@@ -87,3 +87,18 @@
 ### 提交记录
 
 - 待提交：`feat: add duckdb macro storage`。
+
+### 进展
+
+- 根据 Task 3 code review 修复 DuckDB 批量写入：`upsert_indicators` 与 `upsert_observations` 现在使用显式事务，任一行失败会回滚整个批次。
+- 增加入库时间转换策略：带时区 `datetime` 先转换为 UTC 再去掉 `tzinfo`，无时区 `datetime` 保持原样。
+- 补充观测值批量写入原子性和 +08:00 时间规范化回归测试。
+
+### 教训
+
+- `executemany` 不等于业务批次原子性；涉及多行 upsert 时需要显式事务包住整个批次。
+- DuckDB decimal 溢出会抛出 `ConversionException`，测试应断言具体异常类型，避免 Ruff 的裸异常捕获告警。
+
+### 提交记录
+
+- 待提交：`fix: make duckdb batch writes atomic`。
