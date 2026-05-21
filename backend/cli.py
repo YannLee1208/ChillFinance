@@ -12,6 +12,7 @@ from backend.ingest.service import IngestionService
 from backend.storage.duckdb_store import DuckDBMacroStore
 
 app = typer.Typer(help="Local macro monitor commands.")
+_VALID_PROVIDERS = {"seed", "fred"}
 
 
 @app.command("init-db")
@@ -34,6 +35,7 @@ def ingest(
 ) -> None:
     """从数据源采集观测值并写入本地数据库。"""
 
+    provider_name = _validate_provider_name(provider)
     settings = get_settings()
     store = DuckDBMacroStore(settings.macro_db_path)
     store.initialize()
@@ -48,8 +50,15 @@ def ingest(
         ],
     )
 
-    total = asyncio.run(service.ingest(get_catalog(), provider_name=provider))
+    total = asyncio.run(service.ingest(get_catalog(), provider_name=provider_name))
     typer.echo(f"Ingested observations: {total}")
+
+
+def _validate_provider_name(provider: str | None) -> str | None:
+    if provider is None or provider in _VALID_PROVIDERS:
+        return provider
+
+    raise typer.BadParameter("Provider name must be one of: seed, fred")
 
 
 if __name__ == "__main__":

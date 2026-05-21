@@ -14,6 +14,22 @@ _ALLOWED_ORIGINS = [
 ]
 
 
+def create_macro_store() -> DuckDBMacroStore:
+    """创建并初始化当前配置指向的宏观数据存储。"""
+
+    settings = get_settings()
+    store = DuckDBMacroStore(settings.macro_db_path)
+    store.initialize()
+    return store
+
+
+def _get_indicator_or_404(indicator_code: str) -> IndicatorDefinition:
+    try:
+        return get_indicator(indicator_code)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 def create_app() -> FastAPI:
     """创建本地宏观监控 API 应用。"""
 
@@ -41,14 +57,8 @@ def create_app() -> FastAPI:
     def indicator_snapshot(indicator_code: str) -> IndicatorSnapshot:
         """返回单个指标的定义、最新值、前值和完整序列。"""
 
-        try:
-            definition = get_indicator(indicator_code)
-        except KeyError as exc:
-            raise HTTPException(status_code=404, detail=str(exc)) from exc
-
-        settings = get_settings()
-        store = DuckDBMacroStore(settings.macro_db_path)
-        store.initialize()
+        definition = _get_indicator_or_404(indicator_code)
+        store = create_macro_store()
         points = store.get_series(indicator_code)
         latest = points[-1] if points else None
         previous = points[-2] if len(points) >= 2 else None
@@ -64,9 +74,8 @@ def create_app() -> FastAPI:
     def observations(indicator_code: str) -> list[Observation]:
         """返回单个指标的观测序列。"""
 
-        settings = get_settings()
-        store = DuckDBMacroStore(settings.macro_db_path)
-        store.initialize()
+        _get_indicator_or_404(indicator_code)
+        store = create_macro_store()
         return store.get_series(indicator_code)
 
     return api

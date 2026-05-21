@@ -1,5 +1,23 @@
 # PREGRESS
 
+## 2026-05-21 Task 5 Review Fixes
+
+### 进展
+
+- 为 `/api/observations/{indicator_code}` 补齐指标目录校验，未知指标现在与快照接口一样返回 404。
+- 抽出 `backend.app.create_macro_store()` 统一根据 `MACRO_DB_PATH` 创建并初始化 DuckDB 存储，API 测试通过临时数据库隔离读侧行为。
+- 为 CLI `ingest --provider` 增加 provider 名称校验，只接受空值、`seed` 或 `fred`，非法值通过 Typer 错误退出。
+- 补充 API/CLI 回归测试：未知 observations 404、快照 latest/previous、非法 provider 拒绝。
+
+### 教训
+
+- 读侧接口即使只返回空列表，也需要先校验指标目录，避免未知指标和“已知但暂无数据”的语义混在一起。
+- CLI 入参校验应早于配置和数据库初始化，非法命令能更快失败，也不会产生额外副作用。
+
+### 提交记录
+
+- 待提交：`fix: validate api indicators and cli providers`。
+
 ## 2026-05-21 Task 5
 
 ### 进展
