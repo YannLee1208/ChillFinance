@@ -102,3 +102,17 @@
 ### 提交记录
 
 - 待提交：`fix: make duckdb batch writes atomic`。
+
+### 进展
+
+- 完成 Task 4 FRED Treasury Parser And Seed Provider：新增 `backend.ingest` 包、FRED CSV 解析、FRED 美国国债收益率适配器、离线种子数据适配器和采集服务。
+- 新增 `tests/test_fred_parser.py`，覆盖 FRED 缺失值 `.` 跳过逻辑和 Decimal 值解析。
+
+### 教训
+
+- 本机 `rg` 仍然执行受限，文件发现继续使用 PowerShell 原生命令。
+- pandas 读取 FRED CSV 后需要统一处理 `NaN`、空字符串和 `.`，再进入 Decimal 转换，避免缺失值混入观测序列。
+
+### 提交记录
+
+- 待提交：`feat: add macro ingestion providers`。
