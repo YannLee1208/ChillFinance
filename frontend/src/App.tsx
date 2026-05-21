@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
 import { fetchCatalog } from "./api";
@@ -11,21 +11,28 @@ const DEFAULT_DOMAIN = "rates";
 
 export default function App() {
   const [activeDomain, setActiveDomain] = useState(DEFAULT_DOMAIN);
+  const queryClient = useQueryClient();
   const {
     data: catalog = [],
     isError,
     isLoading,
-    refetch,
-    isFetching,
   } = useQuery({
     queryKey: ["catalog"],
     queryFn: fetchCatalog,
   });
+  const isRefreshing =
+    useIsFetching({ queryKey: ["catalog"] }) + useIsFetching({ queryKey: ["indicator"] }) > 0;
 
   const selectedIndicators = useMemo(
     () => catalog.filter((indicator) => indicator.domain === activeDomain),
     [activeDomain, catalog],
   );
+  const refreshDashboard = () => {
+    void Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["catalog"] }),
+      queryClient.invalidateQueries({ queryKey: ["indicator"] }),
+    ]);
+  };
 
   if (isLoading) {
     return <main className="state-panel">正在加载宏观指标目录</main>;
@@ -40,8 +47,8 @@ export default function App() {
       <DashboardHeader
         activeDomain={activeDomain}
         indicatorCount={selectedIndicators.length}
-        isRefreshing={isFetching}
-        onRefresh={() => void refetch()}
+        isRefreshing={isRefreshing}
+        onRefresh={refreshDashboard}
       />
       <div className="dashboard-body">
         <DomainSidebar

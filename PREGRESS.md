@@ -1,5 +1,19 @@
 # PREGRESS
 
+## 2026-05-21 Task 6 Review Fixes
+
+### 进展
+
+- 修复前端刷新按钮只刷新目录的问题，现在通过 React Query `queryClient.invalidateQueries` 同时刷新 `["catalog"]` 和 `["indicator", code]` 指标快照查询。
+
+### 教训
+
+- 仪表盘刷新动作要覆盖所有展示数据来源，不能只刷新入口目录；多个 Query key 分层时要确认实际组件使用的 key 前缀。
+
+### 提交记录
+
+- 待提交：`fix: refresh dashboard indicator data`。
+
 ## 2026-05-21 Task 6
 
 ### 进展
