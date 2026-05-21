@@ -55,3 +55,21 @@
 ### 提交记录
 
 - 待提交：`fix: make backend settings tolerate frontend env`。
+
+### 进展
+
+- 完成 Task 2 领域模型与指标目录：新增 `IndicatorDefinition`、`Observation`、`IndicatorSnapshot` 和 `MacroDataProvider` 协议。
+- 通过 `backend.domain.catalog` 汇总 FRED 美国国债收益率指标和宏观/商品/能源种子指标，并支持按代码查询。
+- 新增 `tests/test_catalog.py`，覆盖领域集合、美国 10 年期国债收益率字段和指标代码唯一性。
+
+### 教训
+
+- 指标目录先用稳定的 `display_order` 排序，后续前端展示和数据拉取可以共享同一份定义，避免多处维护。
+
+### 提交记录
+
+- 待提交：`feat: add macro indicator catalog`。
+
+### TODO
+
+- 后续数据源任务实现时，让适配器遵循 `backend.domain.providers.MacroDataProvider`。
