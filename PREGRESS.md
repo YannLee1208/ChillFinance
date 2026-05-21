@@ -1,5 +1,22 @@
 # PREGRESS
 
+## 2026-05-21 Task 5
+
+### 进展
+
+- 完成 FastAPI 与 CLI：新增 `backend.app.create_app()`，提供 `/health`、`/api/catalog`、`/api/indicators/{indicator_code}` 和 `/api/observations/{indicator_code}`。
+- 新增 `backend.cli` Typer 入口，支持 `init-db` 初始化指标目录，以及 `ingest --provider seed|fred` 采集观测值。
+- 新增 `.gitignore`，忽略 `data/`、Python 缓存、pytest/ruff 缓存和后续前端构建产物，避免 CLI smoke 生成的 DuckDB 文件入库。
+
+### 教训
+
+- DuckDB 文件不适合并发跑两个 CLI smoke；`init-db` 和 `ingest` 需要顺序执行，避免同一个 `data/macro.duckdb` 被进程锁住。
+- 当前环境里 `rg` 仍然因权限问题无法使用，继续用 PowerShell 原生命令完成文件发现和检查。
+
+### 提交记录
+
+- 待提交：`feat: expose macro api and cli`。
+
 ## 2026-05-21
 
 ### 进展
