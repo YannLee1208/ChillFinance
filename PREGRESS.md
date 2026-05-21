@@ -73,3 +73,17 @@
 ### TODO
 
 - 后续数据源任务实现时，让适配器遵循 `backend.domain.providers.MacroDataProvider`。
+
+### 进展
+
+- 完成 Task 3 DuckDB 存储：新增 `DuckDBMacroStore`，支持初始化指标与观测值表、批量 upsert、按指标读取序列和最新观测值。
+- 新增 `tests/test_duckdb_store.py`，覆盖观测值写入读取、最新值查询，以及同一指标同一期数据替换。
+
+### 教训
+
+- DuckDB 返回 `decimal(20, 6)` 后会保留六位小数，测试中应显式断言 `Decimal("1.230000")` 这类存储精度。
+- 项目 Ruff 规则会要求 Python 3.11 使用 `datetime.UTC` 替代 `timezone.utc`。
+
+### 提交记录
+
+- 待提交：`feat: add duckdb macro storage`。
