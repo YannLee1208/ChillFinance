@@ -42,3 +42,16 @@
 ### TODO
 
 - Task 2 开始前补充首个可执行测试用例，避免 pytest 空跑。
+
+### 进展
+
+- 根据 Task 1 code review 调整 `backend.config.Settings`：忽略 `.env` 中前端专用变量等额外键，并允许使用字段名初始化配置对象。
+
+### 教训
+
+- `pydantic-settings` 读取 dotenv 时会把未声明键纳入校验；如果项目共享 `.env` 给前后端，后端 Settings 需要显式 `extra="ignore"`。
+- 使用 PowerShell 写临时 `.env` 时要注意 UTF-8 BOM 对首个键名的影响；验证 dotenv 读取时改用无 BOM 写入更可靠。
+
+### 提交记录
+
+- 待提交：`fix: make backend settings tolerate frontend env`。

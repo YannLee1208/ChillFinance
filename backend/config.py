@@ -15,7 +15,12 @@ from backend.constant import (
 class Settings(BaseSettings):
     """本地宏观监控配置。"""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
     macro_db_path: Path = Field(default=DEFAULT_DB_PATH, alias="MACRO_DB_PATH")
     fred_api_key: str | None = Field(default=None, alias="FRED_API_KEY")
