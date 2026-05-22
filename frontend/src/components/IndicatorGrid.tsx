@@ -3,12 +3,14 @@ import { useQueries } from "@tanstack/react-query";
 import { fetchIndicatorSnapshot } from "../api";
 import type { IndicatorDefinition } from "../types";
 import { IndicatorCard } from "./IndicatorCard";
+import type { TimeRangeKey } from "./timeRange";
 
 type IndicatorGridProps = {
   indicators: IndicatorDefinition[];
+  timeRange: TimeRangeKey;
 };
 
-export function IndicatorGrid({ indicators }: IndicatorGridProps) {
+export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   const results = useQueries({
     queries: indicators.map((indicator) => ({
       queryKey: ["indicator", indicator.code],
@@ -31,7 +33,13 @@ export function IndicatorGrid({ indicators }: IndicatorGridProps) {
   return (
     <section className="indicator-grid">
       {results.map((result) =>
-        result.data ? <IndicatorCard key={result.data.definition.code} snapshot={result.data} /> : null,
+        result.data ? (
+          <IndicatorCard
+            key={result.data.definition.code}
+            snapshot={result.data}
+            timeRange={timeRange}
+          />
+        ) : null,
       )}
     </section>
   );

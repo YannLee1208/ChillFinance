@@ -9,12 +9,15 @@ import { IndicatorGrid } from "./components/IndicatorGrid";
 import { OverviewPanel } from "./components/OverviewPanel";
 import { RatesCurvePanel } from "./components/RatesCurvePanel";
 import { SelectorBar } from "./components/SelectorBar";
+import { TimeRangeBar } from "./components/TimeRangeBar";
+import type { TimeRangeKey } from "./components/timeRange";
 
 const DEFAULT_DOMAIN = "rates";
 
 export default function App() {
   const [activeDomain, setActiveDomain] = useState(DEFAULT_DOMAIN);
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string>>({});
+  const [timeRange, setTimeRange] = useState<TimeRangeKey>("3y");
   const queryClient = useQueryClient();
   const {
     data: catalog = [],
@@ -101,8 +104,11 @@ export default function App() {
             onChange={setSelectedFilters}
             selected={selectedFilters}
           />
-          {activeDomain === "rates" ? <RatesCurvePanel indicators={selectedIndicators} /> : null}
-          <IndicatorGrid indicators={filteredIndicators} />
+          <TimeRangeBar onChange={setTimeRange} value={timeRange} />
+          {activeDomain === "rates" ? (
+            <RatesCurvePanel indicators={selectedIndicators} timeRange={timeRange} />
+          ) : null}
+          <IndicatorGrid indicators={filteredIndicators} timeRange={timeRange} />
         </main>
       </div>
     </div>

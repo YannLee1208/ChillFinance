@@ -1,4 +1,5 @@
 import type { IndicatorDefinition } from "../types";
+import { localizeSelectorValue } from "./localization";
 
 const SELECTOR_LABELS: Record<string, string> = {
   commodity: "品种",
@@ -66,7 +67,7 @@ export function SelectorBar({ indicators, selected, onChange }: SelectorBarProps
               <option value="">全部</option>
               {optionsByKey[key].map((value) => (
                 <option key={value} value={value}>
-                  {value}
+                  {localizeSelectorValue(value)}
                 </option>
               ))}
             </select>
