@@ -32,3 +32,29 @@ def test_parse_decimal_month_period() -> None:
     assert observations[0].period.isoformat() == "2026-03-01"
     assert observations[1].period.isoformat() == "2026-04-01"
     assert observations[1].value == Decimal("4272200")
+
+
+def test_parse_customs_monthly_amount_with_multiplier() -> None:
+    frame = pd.DataFrame(
+        {
+            "月份": ["2026年04月份", "2026年03月份"],
+            "当月出口额-金额": [359442100.0, 321045200.0],
+        }
+    )
+    indicator = get_indicator("CN_EXPORT_VALUE_USD")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "月份",
+            "value_column": "当月出口额-金额",
+            "source": "AKShare/Customs:macro_china_hgjck",
+            "period_type": "month",
+            "multiplier": "0.00001",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2026-03-01"
+    assert observations[1].period.isoformat() == "2026-04-01"
+    assert observations[1].value == Decimal("3594.421000")

@@ -143,3 +143,27 @@ def test_pboc_financing_and_money_indicators_use_public_data_provider() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert indicator.selectors.get("category") == "汇率与金融"
+
+
+def test_customs_trade_indicators_use_public_customs_table() -> None:
+    expected_codes = {
+        "CN_EXPORT_VALUE_USD",
+        "CN_IMPORT_VALUE_USD",
+        "CN_EXPORT_YOY_USD",
+        "CN_IMPORT_YOY_USD",
+    }
+
+    for code in expected_codes:
+        indicator = get_indicator(code)
+        assert indicator.provider == "akshare_china"
+        assert indicator.availability.status == "available"
+        assert "Customs" in indicator.source
+        assert indicator.selectors.get("category") == "进出口价格"
+
+
+def test_nbs_price_indicators_use_public_akshare_provider() -> None:
+    for code in {"CN_CPI_MONTHLY_YOY", "CN_PPI"}:
+        indicator = get_indicator(code)
+        assert indicator.provider == "akshare_china"
+        assert indicator.availability.status == "available"
+        assert indicator.selectors.get("country") == "China"
