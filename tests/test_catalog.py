@@ -326,6 +326,39 @@ def test_coal_futures_and_inventory_indicators_are_discoverable() -> None:
     assert "2022" in thermal_coal.availability.reason
 
 
+def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
+    expected_available = {
+        "CN_PRIMARY_INDUSTRY_ELECTRICITY",
+        "CN_PRIMARY_INDUSTRY_ELECTRICITY_YOY",
+        "CN_SECONDARY_INDUSTRY_ELECTRICITY",
+        "CN_SECONDARY_INDUSTRY_ELECTRICITY_YOY",
+        "CN_TERTIARY_INDUSTRY_ELECTRICITY",
+        "CN_TERTIARY_INDUSTRY_ELECTRICITY_YOY",
+        "CN_RESIDENTIAL_ELECTRICITY",
+        "CN_RESIDENTIAL_ELECTRICITY_YOY",
+        "CN_BEIJING_CARBON_AVG_PRICE",
+        "CN_HUBEI_CARBON_PRICE",
+    }
+
+    for code in expected_available:
+        indicator = get_indicator(code)
+        assert indicator.provider == "akshare_china"
+        assert indicator.domain == "power"
+        assert indicator.availability.status == "available"
+
+    for code in {
+        "CN_THERMAL_POWER_GENERATION",
+        "CN_HYDRO_POWER_GENERATION",
+        "CN_WIND_POWER_GENERATION",
+        "CN_SOLAR_POWER_GENERATION",
+        "CN_NUCLEAR_POWER_GENERATION",
+    }:
+        indicator = get_indicator(code)
+        assert indicator.provider == "unavailable"
+        assert indicator.domain == "power"
+        assert indicator.availability.status == "pending_source"
+
+
 def test_additional_macro_indicators_are_discoverable() -> None:
     expected = {
         "CN_MANUFACTURING_PMI": ("akshare_china", "country_macro"),

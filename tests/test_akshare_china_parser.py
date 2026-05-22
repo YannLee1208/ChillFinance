@@ -1,11 +1,13 @@
 """AkShare 中国宏观解析测试。"""
 
+import json
 from decimal import Decimal
 
 import pandas as pd
 
+from backend.constant import AKSHARE_CHINA_SERIES
 from backend.domain.catalog import get_indicator
-from backend.ingest.akshare_china import parse_akshare_series_frame
+from backend.ingest.akshare_china import AkShareChinaProvider, parse_akshare_series_frame
 
 
 def test_parse_decimal_month_period() -> None:
@@ -132,3 +134,110 @@ def test_parse_99qh_inventory() -> None:
 
     assert observations[0].period.isoformat() == "2026-05-21"
     assert observations[1].value == Decimal("200")
+
+
+def test_parse_power_consumption_decimal_month_with_multiplier() -> None:
+    frame = pd.DataFrame(
+        {
+            "统计时间": ["2026.3", "2026.4"],
+            "第二产业用电量": [159870000.0, 215690000.0],
+        }
+    )
+    indicator = get_indicator("CN_SECONDARY_INDUSTRY_ELECTRICITY")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "统计时间",
+            "value_column": "第二产业用电量",
+            "source": "AKShare/Sina:macro_china_society_electricity:secondary",
+            "period_type": "decimal_month",
+            "multiplier": "0.0001",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2026-03-01"
+    assert observations[1].value == Decimal("21569.00000")
+
+
+def test_parse_carbon_market_daily_price() -> None:
+    frame = pd.DataFrame(
+        {
+            "日期": ["2026-05-08", "2026-05-11"],
+            "成交价": [37.19, 37.50],
+        }
+    )
+    indicator = get_indicator("CN_HUBEI_CARBON_PRICE")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "日期",
+            "value_column": "成交价",
+            "source": "AKShare/Hubei:energy_carbon_hb",
+            "period_type": "date",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2026-05-08"
+    assert observations[1].value == Decimal("37.5")
+
+
+async def test_provider_reuses_same_akshare_frame(monkeypatch) -> None:
+    call_count = 0
+
+    def fake_call_akshare(config: dict[str, str]) -> pd.DataFrame:
+        nonlocal call_count
+        call_count += 1
+        return pd.DataFrame(
+            {
+                config["date_column"]: ["2026.4"],
+                AKSHARE_CHINA_SERIES["CN_SOCIETY_ELECTRICITY"]["value_column"]: [
+                    77210000.0
+                ],
+                AKSHARE_CHINA_SERIES["CN_SOCIETY_ELECTRICITY_YOY"]["value_column"]: [4.7],
+            }
+        )
+
+    monkeypatch.setattr("backend.ingest.akshare_china._call_akshare", fake_call_akshare)
+    provider = AkShareChinaProvider()
+
+    total = await provider.fetch(get_indicator("CN_SOCIETY_ELECTRICITY"))
+    yoy = await provider.fetch(get_indicator("CN_SOCIETY_ELECTRICITY_YOY"))
+
+    assert call_count == 1
+    assert total[0].value == Decimal("7721.00000")
+    assert yoy[0].value == Decimal("4.7")
+
+
+async def test_provider_retries_empty_json_response(monkeypatch) -> None:
+    call_count = 0
+
+    def fake_akshare() -> pd.DataFrame:
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            raise json.JSONDecodeError("No value to decode", "", 0)
+        config = AKSHARE_CHINA_SERIES["CN_SOCIETY_ELECTRICITY"]
+        return pd.DataFrame(
+            {
+                config["date_column"]: ["2026.4"],
+                AKSHARE_CHINA_SERIES["CN_SOCIETY_ELECTRICITY"]["value_column"]: [
+                    77210000.0
+                ],
+            }
+        )
+
+    monkeypatch.setattr("backend.ingest.akshare_china.time.sleep", lambda _: None)
+    monkeypatch.setattr(
+        "backend.ingest.akshare_china.ak.macro_china_society_electricity",
+        fake_akshare,
+    )
+
+    provider = AkShareChinaProvider()
+    observations = await provider.fetch(get_indicator("CN_SOCIETY_ELECTRICITY"))
+
+    assert call_count == 3
+    assert observations[0].value == Decimal("7721.00000")

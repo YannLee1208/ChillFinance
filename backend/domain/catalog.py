@@ -1580,6 +1580,132 @@ _POWER_AKSHARE_INDICATORS = [
     ),
 ]
 
+_POWER_AKSHARE_EXTRA_SPECS = [
+    (
+        "CN_PRIMARY_INDUSTRY_ELECTRICITY",
+        "China primary industry electricity consumption",
+        "100 million kWh",
+        "第一产业用电量，用于观察农业和乡村生产用电需求。",
+        605,
+        "Primary electricity",
+    ),
+    (
+        "CN_PRIMARY_INDUSTRY_ELECTRICITY_YOY",
+        "China primary industry electricity consumption YoY",
+        "%",
+        "第一产业用电量同比，用于观察农业和乡村生产用电增速。",
+        606,
+        "Primary electricity YoY",
+    ),
+    (
+        "CN_SECONDARY_INDUSTRY_ELECTRICITY",
+        "China secondary industry electricity consumption",
+        "100 million kWh",
+        "第二产业用电量，用于观察工业生产和制造业景气。",
+        607,
+        "Secondary electricity",
+    ),
+    (
+        "CN_SECONDARY_INDUSTRY_ELECTRICITY_YOY",
+        "China secondary industry electricity consumption YoY",
+        "%",
+        "第二产业用电量同比，用于观察工业用电强弱。",
+        608,
+        "Secondary electricity YoY",
+    ),
+    (
+        "CN_TERTIARY_INDUSTRY_ELECTRICITY",
+        "China tertiary industry electricity consumption",
+        "100 million kWh",
+        "第三产业用电量，用于观察服务业活动。",
+        609,
+        "Tertiary electricity",
+    ),
+    (
+        "CN_TERTIARY_INDUSTRY_ELECTRICITY_YOY",
+        "China tertiary industry electricity consumption YoY",
+        "%",
+        "第三产业用电量同比，用于观察服务业用电增速。",
+        610,
+        "Tertiary electricity YoY",
+    ),
+    (
+        "CN_RESIDENTIAL_ELECTRICITY",
+        "China residential electricity consumption",
+        "100 million kWh",
+        "城乡居民生活用电量，用于观察居民端电力需求。",
+        611,
+        "Residential electricity",
+    ),
+    (
+        "CN_RESIDENTIAL_ELECTRICITY_YOY",
+        "China residential electricity consumption YoY",
+        "%",
+        "城乡居民生活用电量同比，用于观察居民端用电增速。",
+        612,
+        "Residential electricity YoY",
+    ),
+    (
+        "CN_BEIJING_CARBON_AVG_PRICE",
+        "Beijing carbon allowance average price",
+        "CNY/tonne",
+        "北京碳排放权成交均价，用于观察绿电与碳成本环境。",
+        613,
+        "Beijing carbon",
+    ),
+    (
+        "CN_HUBEI_CARBON_PRICE",
+        "Hubei carbon allowance trade price",
+        "CNY/tonne",
+        "湖北碳排放权成交价，用于观察区域碳价和绿电成本环境。",
+        614,
+        "Hubei carbon",
+    ),
+]
+
+_POWER_AKSHARE_EXTRA_INDICATORS = [
+    _indicator(
+        code=code,
+        name=name,
+        domain="power",
+        region="China",
+        unit=unit,
+        frequency="daily" if "CARBON" in code else "monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES[code]["source"],
+        description=description,
+        display_order=display_order,
+        selectors={"country": "China", "metric": metric},
+    )
+    for code, name, unit, description, display_order, metric in _POWER_AKSHARE_EXTRA_SPECS
+]
+
+_POWER_UNAVAILABLE_SPECS = [
+    ("CN_THERMAL_POWER_GENERATION", "China thermal power generation", "火电发电量"),
+    ("CN_HYDRO_POWER_GENERATION", "China hydro power generation", "水电发电量"),
+    ("CN_WIND_POWER_GENERATION", "China wind power generation", "风电发电量"),
+    ("CN_SOLAR_POWER_GENERATION", "China solar power generation", "太阳能发电量"),
+    ("CN_NUCLEAR_POWER_GENERATION", "China nuclear power generation", "核电发电量"),
+]
+
+_POWER_UNAVAILABLE_INDICATORS = [
+    _indicator(
+        code=code,
+        name=name,
+        domain="power",
+        region="China",
+        unit="100 million kWh",
+        frequency="monthly",
+        provider="unavailable",
+        source="Pending:NEA/CEC/NBS/Wind",
+        description=f"{metric}用于观察中国电源结构变化。",
+        display_order=615 + index,
+        selectors={"country": "China", "metric": metric},
+        availability=_availability_for(code),
+    )
+    for index, (code, name, metric) in enumerate(_POWER_UNAVAILABLE_SPECS)
+]
+
 _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
     _indicator(
         code="CN_MANUFACTURING_PMI",
@@ -2055,6 +2181,8 @@ def get_catalog() -> list[IndicatorDefinition]:
             *_EXCHANGE_PENDING_INDICATORS,
             *_NONFERROUS_AKSHARE_INDICATORS,
             *_POWER_AKSHARE_INDICATORS,
+            *_POWER_AKSHARE_EXTRA_INDICATORS,
+            *_POWER_UNAVAILABLE_INDICATORS,
             *_ADDITIONAL_MACRO_AKSHARE_INDICATORS,
             *_WORLD_BANK_INDICATORS,
         ],

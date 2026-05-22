@@ -1,6 +1,8 @@
 """AkShare 中国宏观与市场数据适配器。"""
 
 import calendar
+import json
+import time
 from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -17,6 +19,9 @@ class AkShareChinaProvider:
 
     name = "akshare_china"
 
+    def __init__(self) -> None:
+        self._frame_cache: dict[tuple[str, str | None], pd.DataFrame] = {}
+
     def supports(self, indicator: IndicatorDefinition) -> bool:
         """判断指标是否配置了 AkShare 中国数据源。"""
 
@@ -26,21 +31,41 @@ class AkShareChinaProvider:
         """拉取 AkShare DataFrame 并转换为统一观察值。"""
 
         config = AKSHARE_CHINA_SERIES[indicator.code]
-        frame = _call_akshare(config)
+        frame = self._call_akshare(config)
         if config.get("computed") == "m1_yoy_minus_m2_yoy":
             return _parse_m1_m2_scissors(frame, indicator)
         if config.get("aggregate") == "mean_by_date":
             return _parse_mean_by_date(frame, indicator, config)
         return parse_akshare_series_frame(frame, indicator, config)
 
+    def _call_akshare(self, config: dict[str, str]) -> pd.DataFrame:
+        function_name = config["function"]
+        symbol = config.get("symbol")
+        cache_key = (function_name, symbol)
+        if cache_key not in self._frame_cache:
+            self._frame_cache[cache_key] = _call_akshare(config)
+        return self._frame_cache[cache_key]
+
 
 def _call_akshare(config: dict[str, str]) -> pd.DataFrame:
     function_name = config["function"]
     function = getattr(ak, function_name)
-    if "symbol" in config:
-        frame = function(symbol=config["symbol"])
+    last_json_error: json.JSONDecodeError | None = None
+    for attempt in range(3):
+        try:
+            if "symbol" in config:
+                frame = function(symbol=config["symbol"])
+            else:
+                frame = function()
+            break
+        except json.JSONDecodeError as exc:
+            last_json_error = exc
+            if attempt < 2:
+                time.sleep(1 + attempt)
     else:
-        frame = function()
+        if last_json_error is not None:
+            raise last_json_error
+        raise ValueError(f"AkShare {function_name} did not return a DataFrame")
     if not isinstance(frame, pd.DataFrame):
         raise ValueError(f"AkShare {function_name} did not return a DataFrame")
     if frame.empty:
