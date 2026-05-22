@@ -38,6 +38,14 @@ class AkShareChinaProvider:
             return _parse_nominal_gdp_current_quarter_qoq(frame, indicator)
         if config.get("computed") == "index_mom_change":
             return _parse_index_mom_change(frame, indicator, config)
+        if config.get("computed") == "customs_mom_change":
+            return _parse_customs_mom_change(frame, indicator, config)
+        if config.get("computed") == "customs_trade_balance":
+            return _parse_customs_trade_balance(frame, indicator, config)
+        if config.get("computed") == "customs_trade_balance_mom":
+            return _parse_customs_trade_balance_change(frame, indicator, config, months_back=1)
+        if config.get("computed") == "customs_trade_balance_yoy":
+            return _parse_customs_trade_balance_change(frame, indicator, config, months_back=12)
         if config.get("aggregate") == "mean_by_date":
             return _parse_mean_by_date(frame, indicator, config)
         return parse_akshare_series_frame(frame, indicator, config)
@@ -247,6 +255,136 @@ def _parse_index_mom_change(
         previous_value = value
 
     return observations
+
+
+def _parse_customs_mom_change(
+    frame: pd.DataFrame,
+    indicator: IndicatorDefinition,
+    config: dict[str, str],
+) -> list[Observation]:
+    """用海关当月金额计算月度环比变化。"""
+
+    points = _customs_amount_points(frame, config, config["value_column"])
+    return _change_observations(indicator, config["source"], points, months_back=1)
+
+
+def _parse_customs_trade_balance(
+    frame: pd.DataFrame,
+    indicator: IndicatorDefinition,
+    config: dict[str, str],
+) -> list[Observation]:
+    """计算海关口径月度贸易差额，正值为顺差，负值为逆差。"""
+
+    points = _customs_trade_balance_points(frame, config)
+    ingested_at = datetime.now(UTC)
+    return [
+        _build_observation(
+            indicator=indicator,
+            period=period,
+            value=value,
+            source=config["source"],
+            ingested_at=ingested_at,
+        )
+        for period, value in points
+    ]
+
+
+def _parse_customs_trade_balance_change(
+    frame: pd.DataFrame,
+    indicator: IndicatorDefinition,
+    config: dict[str, str],
+    months_back: int,
+) -> list[Observation]:
+    """计算贸易差额的环比或同比变化。"""
+
+    points = _customs_trade_balance_points(frame, config)
+    return _change_observations(indicator, config["source"], points, months_back=months_back)
+
+
+def _customs_amount_points(
+    frame: pd.DataFrame,
+    config: dict[str, str],
+    value_column: str,
+) -> list[tuple[date, Decimal]]:
+    date_column = config["date_column"]
+    _ensure_columns(frame, [date_column, value_column])
+    multiplier = Decimal(config.get("multiplier", "1"))
+
+    points: list[tuple[date, Decimal]] = []
+    for _, row in frame.iterrows():
+        if _is_missing(row[date_column]) or _is_missing(row[value_column]):
+            continue
+        points.append(
+            (
+                _parse_period(row[date_column], config["period_type"]),
+                _to_decimal(row[value_column]) * multiplier,
+            )
+        )
+    return sorted(points, key=lambda item: item[0])
+
+
+def _customs_trade_balance_points(
+    frame: pd.DataFrame,
+    config: dict[str, str],
+) -> list[tuple[date, Decimal]]:
+    date_column = config["date_column"]
+    export_column = config["export_column"]
+    import_column = config["import_column"]
+    _ensure_columns(frame, [date_column, export_column, import_column])
+    multiplier = Decimal(config.get("multiplier", "1"))
+
+    points: list[tuple[date, Decimal]] = []
+    for _, row in frame.iterrows():
+        has_missing_value = (
+            _is_missing(row[date_column])
+            or _is_missing(row[export_column])
+            or _is_missing(row[import_column])
+        )
+        if has_missing_value:
+            continue
+        points.append(
+            (
+                _parse_period(row[date_column], config["period_type"]),
+                (_to_decimal(row[export_column]) - _to_decimal(row[import_column])) * multiplier,
+            )
+        )
+    return sorted(points, key=lambda item: item[0])
+
+
+def _change_observations(
+    indicator: IndicatorDefinition,
+    source: str,
+    points: list[tuple[date, Decimal]],
+    months_back: int,
+) -> list[Observation]:
+    """按月份间隔计算百分比变化。"""
+
+    observations: list[Observation] = []
+    ingested_at = datetime.now(UTC)
+    value_by_period = dict(points)
+    for period, value in points:
+        previous_period = _shift_month(period, -months_back)
+        previous_value = value_by_period.get(previous_period)
+        if previous_value is None or previous_value == 0:
+            continue
+        observations.append(
+            _build_observation(
+                indicator=indicator,
+                period=period,
+                value=(value - previous_value) / abs(previous_value) * Decimal("100"),
+                source=source,
+                ingested_at=ingested_at,
+            )
+        )
+    return observations
+
+
+def _shift_month(period: date, month_delta: int) -> date:
+    month_index = period.year * 12 + period.month - 1 + month_delta
+    year = month_index // 12
+    month = month_index % 12 + 1
+    day = min(period.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
 
 
 def _build_observation(

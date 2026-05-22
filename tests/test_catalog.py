@@ -221,8 +221,8 @@ def test_china_cpi_ppi_order_and_mom_comparison_group() -> None:
     assert get_indicator("CN_CPI_MONTHLY_MOM").selectors.get("metric") == "CPI环比"
     assert get_indicator("CN_CPI_MONTHLY_MOM").selectors.get("display_group") == "CPI"
     assert get_indicator("CN_PPI_INDEX").selectors.get("metric") == "PPI指数"
-    assert get_indicator("CN_PPI_ACCUMULATED_INDEX").selectors.get("metric") == "PPI累计指数"
     assert get_indicator("CN_PPI_MOM").selectors.get("display_group") == "PPI"
+    assert not any(indicator.code == "CN_PPI_ACCUMULATED_INDEX" for indicator in get_catalog())
 
 
 def test_annual_cpi_inflation_is_not_mixed_with_monthly_cpi_ppi() -> None:
@@ -242,13 +242,17 @@ def test_china_price_trade_topic_uses_row_groups_and_chart_styles() -> None:
         "CN_PPI_INDEX": ("PPI", "price"),
         "CN_PPI": ("PPI", "price"),
         "CN_PPI_MOM": ("PPI", "price"),
-        "CN_PPI_ACCUMULATED_INDEX": ("PPI", "price"),
         "CN_EXPORT_VALUE_USD": ("出口", "trade"),
         "CN_EXPORT_YOY_USD": ("出口", "trade"),
+        "CN_EXPORT_MOM_USD": ("出口", "trade"),
         "CN_EXPORTS_GOODS_SERVICES": ("出口", "trade"),
         "CN_IMPORT_VALUE_USD": ("进口", "trade"),
         "CN_IMPORT_YOY_USD": ("进口", "trade"),
+        "CN_IMPORT_MOM_USD": ("进口", "trade"),
         "CN_IMPORTS_GOODS_SERVICES": ("进口", "trade"),
+        "CN_TRADE_BALANCE_USD": ("顺逆差", "trade"),
+        "CN_TRADE_BALANCE_YOY_USD": ("顺逆差", "trade"),
+        "CN_TRADE_BALANCE_MOM_USD": ("顺逆差", "trade"),
     }
 
     for code, (display_group, chart_style) in expected.items():
@@ -264,6 +268,11 @@ def test_customs_trade_indicators_use_public_customs_table() -> None:
         "CN_IMPORT_VALUE_USD",
         "CN_EXPORT_YOY_USD",
         "CN_IMPORT_YOY_USD",
+        "CN_EXPORT_MOM_USD",
+        "CN_IMPORT_MOM_USD",
+        "CN_TRADE_BALANCE_USD",
+        "CN_TRADE_BALANCE_YOY_USD",
+        "CN_TRADE_BALANCE_MOM_USD",
     }
 
     for code in expected_codes:
@@ -275,7 +284,7 @@ def test_customs_trade_indicators_use_public_customs_table() -> None:
 
 
 def test_nbs_price_indicators_use_public_akshare_provider() -> None:
-    for code in {"CN_CPI_MONTHLY_YOY", "CN_PPI", "CN_PPI_INDEX", "CN_PPI_ACCUMULATED_INDEX"}:
+    for code in {"CN_CPI_MONTHLY_YOY", "CN_PPI", "CN_PPI_INDEX"}:
         indicator = get_indicator(code)
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"

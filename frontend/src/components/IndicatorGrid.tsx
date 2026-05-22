@@ -28,6 +28,7 @@ const GROUP_ORDER = [
   "PPI",
   "出口",
   "进口",
+  "顺逆差",
   "其他价格指标",
   "汇率与金融",
   "用电量",
@@ -84,7 +85,7 @@ function groupSnapshots(snapshots: IndicatorSnapshot[]): [string, IndicatorSnaps
 }
 
 function sectionClassName(group: string): string {
-  if (["CPI", "PPI", "出口", "进口"].includes(group)) {
+  if (["CPI", "PPI", "出口", "进口", "顺逆差"].includes(group)) {
     return "indicator-grid grouped-row";
   }
   return "indicator-grid";

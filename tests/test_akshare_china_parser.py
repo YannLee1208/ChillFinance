@@ -284,3 +284,51 @@ async def test_provider_computes_ppi_mom_from_index(monkeypatch) -> None:
 
     assert observations[0].period.isoformat() == "2026-04-01"
     assert observations[0].value.quantize(Decimal("0.000001")) == Decimal("0.300601")
+
+
+async def test_provider_computes_customs_export_mom(monkeypatch) -> None:
+    def fake_call_akshare(config: dict[str, str]) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "月份": ["2026年03月份", "2026年04月份"],
+                "当月出口额-金额": [320000000.0, 352000000.0],
+            }
+        )
+
+    monkeypatch.setattr("backend.ingest.akshare_china._call_akshare", fake_call_akshare)
+    provider = AkShareChinaProvider()
+
+    observations = await provider.fetch(get_indicator("CN_EXPORT_MOM_USD"))
+
+    assert observations[0].period.isoformat() == "2026-04-01"
+    assert observations[0].value == Decimal("10.0")
+
+
+async def test_provider_computes_customs_trade_balance_and_changes(monkeypatch) -> None:
+    def fake_call_akshare(config: dict[str, str]) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                "月份": [
+                    "2025年03月份",
+                    "2025年04月份",
+                    "2026年03月份",
+                    "2026年04月份",
+                ],
+                "当月出口额-金额": [300000000.0, 320000000.0, 360000000.0, 390000000.0],
+                "当月进口额-金额": [250000000.0, 270000000.0, 300000000.0, 310000000.0],
+            }
+        )
+
+    monkeypatch.setattr("backend.ingest.akshare_china._call_akshare", fake_call_akshare)
+    provider = AkShareChinaProvider()
+
+    balance = await provider.fetch(get_indicator("CN_TRADE_BALANCE_USD"))
+    mom = await provider.fetch(get_indicator("CN_TRADE_BALANCE_MOM_USD"))
+    yoy = await provider.fetch(get_indicator("CN_TRADE_BALANCE_YOY_USD"))
+
+    assert balance[-1].period.isoformat() == "2026-04-01"
+    assert balance[-1].value == Decimal("800.000000")
+    assert mom[-1].period.isoformat() == "2026-04-01"
+    assert mom[-1].value.quantize(Decimal("0.000001")) == Decimal("33.333333")
+    assert yoy[-1].period.isoformat() == "2026-04-01"
+    assert yoy[-1].value == Decimal("60.0")
