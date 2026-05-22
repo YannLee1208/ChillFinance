@@ -122,6 +122,26 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
     unit: "百分点",
     sourceLabel: "人民银行/Wind 待接入",
   },
+  CN_REAL_GDP_GROWTH: { name: "中国实际 GDP 增速", description: "实际 GDP 增速用于观察经济总量的真实增长。", unit: "%", sourceLabel: "世界银行" },
+  CN_HOUSEHOLD_CONSUMPTION: { name: "居民最终消费支出", description: "居民最终消费支出用于观察消费对总需求的贡献。", unit: "美元", sourceLabel: "世界银行" },
+  CN_RETAIL_SALES: { name: "社会消费品零售总额", description: "社零是国内消费修复的核心月度指标，待接入国家统计局或 Wind。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_GROSS_CAPITAL_FORMATION: { name: "资本形成总额", description: "资本形成总额用于观察投资和库存变动形成的需求。", unit: "美元", sourceLabel: "世界银行" },
+  CN_INDUSTRY_VALUE_ADDED: { name: "工业增加值", description: "工业增加值用于观察工业部门产出规模。", unit: "美元", sourceLabel: "世界银行" },
+  CN_INDUSTRIAL_PRODUCTION_YOY: { name: "规模以上工业增加值同比", description: "工增同比用于跟踪工业生产景气，待接入国家统计局或 Wind。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_FIXED_ASSET_INVESTMENT: { name: "固定资产投资", description: "固定资产投资累计同比用于观察投资需求。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_MANUFACTURING_INVESTMENT: { name: "制造业投资", description: "制造业投资累计同比用于观察企业扩产和设备更新。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_INFRASTRUCTURE_INVESTMENT: { name: "基建投资", description: "基建投资累计同比用于观察财政发力强度。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_REAL_ESTATE_INVESTMENT: { name: "房地产开发投资", description: "房地产开发投资累计同比用于观察地产链投资强弱。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_PROPERTY_SALES_AREA: { name: "商品房销售面积", description: "商品房销售面积用于观察地产销售和去化。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_NEW_HOME_PRICE_INDEX: { name: "70城新房价格指数", description: "新建商品住宅价格指数用于观察房价变化。", unit: "指数", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_EXPORTS_GOODS_SERVICES: { name: "货物和服务出口额", description: "出口额用于观察外需和贸易景气。", unit: "美元", sourceLabel: "世界银行" },
+  CN_IMPORTS_GOODS_SERVICES: { name: "货物和服务进口额", description: "进口额用于观察内需和补库变化。", unit: "美元", sourceLabel: "世界银行" },
+  CN_CPI_INFLATION: { name: "CPI 通胀率", description: "CPI 年度通胀率用于观察居民端价格压力。", unit: "%", sourceLabel: "世界银行" },
+  CN_PPI: { name: "PPI", description: "PPI 用于观察工业品出厂价格和企业盈利压力。", unit: "%", sourceLabel: "国家统计局/Wind 待接入" },
+  CN_EXPORT_PRICE_INDEX: { name: "出口价格指数", description: "出口价格指数用于拆分出口量价。", unit: "指数", sourceLabel: "海关总署/Wind 待接入" },
+  CN_IMPORT_PRICE_INDEX: { name: "进口价格指数", description: "进口价格指数用于观察输入性价格变化。", unit: "指数", sourceLabel: "海关总署/Wind 待接入" },
+  CN_OFFICIAL_EXCHANGE_RATE: { name: "人民币兑美元官方平均汇率", description: "官方平均汇率用于观察汇率与外部金融条件。", unit: "人民币/美元", sourceLabel: "世界银行" },
+  CN_SHCOMP: { name: "上证综指", description: "上证综指用于补充观察国内金融市场风险偏好。", unit: "指数", sourceLabel: "交易所/Wind 待接入" },
   CU_PRICE: { name: "铜价", description: "全球铜价，用于观察工业需求和制造业景气。", unit: "美元/吨", sourceLabel: "FRED" },
   AL_PRICE: { name: "铝价", description: "全球铝价，用于观察轻金属供需。", unit: "美元/吨", sourceLabel: "FRED" },
   NI_PRICE: { name: "镍价", description: "全球镍价，用于跟踪不锈钢和新能源材料链。", unit: "美元/吨", sourceLabel: "FRED" },
@@ -189,6 +209,10 @@ export function localizeIndicator(definition: IndicatorDefinition): LocalizedInd
       sourceLabel: definition.provider,
     }
   );
+}
+
+export function localizeIndicatorCode(code: string): string {
+  return INDICATOR_LABELS[code]?.name ?? code;
 }
 
 export function localizeSelectorValue(value: string): string {

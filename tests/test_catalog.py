@@ -57,6 +57,16 @@ def test_catalog_has_filterable_dimensions() -> None:
     )
     assert any(indicator.code == "CN_M2" for indicator in catalog)
     assert any(indicator.code == "CN_M1_M2_SCISSORS" for indicator in catalog)
+    assert any(
+        indicator.code == "CN_RETAIL_SALES"
+        and indicator.selectors.get("category") == "消费"
+        for indicator in catalog
+    )
+    assert any(
+        indicator.code == "CN_OFFICIAL_EXCHANGE_RATE"
+        and indicator.provider == "world_bank"
+        for indicator in catalog
+    )
 
 
 def test_catalog_codes_are_unique() -> None:

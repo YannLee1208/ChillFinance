@@ -2,6 +2,7 @@ import type { IndicatorDefinition } from "../types";
 import { localizeSelectorValue } from "./localization";
 
 const SELECTOR_LABELS: Record<string, string> = {
+  category: "专题",
   commodity: "品种",
   country: "国家/地区",
   metric: "指标",
@@ -33,7 +34,7 @@ function buildOptions(indicators: IndicatorDefinition[]): Record<string, string[
 export function SelectorBar({ indicators, selected, onChange }: SelectorBarProps) {
   const optionsByKey = buildOptions(indicators);
   const selectorKeys = Object.keys(optionsByKey).sort((left, right) => {
-    const order = ["country", "commodity", "metric", "tenor"];
+    const order = ["country", "category", "commodity", "metric", "tenor"];
     return order.indexOf(left) - order.indexOf(right);
   });
 

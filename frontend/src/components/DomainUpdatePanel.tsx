@@ -1,7 +1,8 @@
 import { RefreshCw } from "lucide-react";
 
-import type { IngestionRunRecord } from "../types";
+import type { IngestionAttemptRecord, IngestionRunRecord } from "../types";
 import { DOMAIN_LABELS } from "./DomainSidebar";
+import { localizeIndicatorCode } from "./localization";
 
 type DomainUpdatePanelProps = {
   activeDomain: string;
@@ -32,6 +33,15 @@ function statusText(status: IngestionRunRecord["status"] | undefined): string {
     return "全部失败";
   }
   return "未更新";
+}
+
+function attemptText(attempt: IngestionAttemptRecord): string {
+  const title = localizeIndicatorCode(attempt.indicator_code);
+  if (attempt.status === "success") {
+    return `${title} 已更新，写入 ${attempt.observation_count} 条数据。`;
+  }
+  const reason = attempt.message.split("更新失败：").at(-1) ?? attempt.message;
+  return `${title} 更新失败：${reason}`;
 }
 
 export function DomainUpdatePanel({
@@ -76,8 +86,8 @@ export function DomainUpdatePanel({
                 {attempt.status === "success" ? "成功" : "失败"}
               </b>
               <div>
-                <strong>{attempt.indicator_code}</strong>
-                <p>{attempt.message}</p>
+                <strong>{localizeIndicatorCode(attempt.indicator_code)}</strong>
+                <p>{attemptText(attempt)}</p>
               </div>
               <span>{attempt.provider}</span>
             </article>
