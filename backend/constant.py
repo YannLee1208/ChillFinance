@@ -7,6 +7,7 @@ DEFAULT_HTTP_TIMEOUT_SECONDS = 20
 DEFAULT_USER_AGENT = "local-macro-monitor/0.1"
 
 DATE_FORMAT = "%Y-%m-%d"
+US_TREASURY_BACKFILL_START_YEAR = 2020
 
 NEA_PUBLIC_SERIES = {
     "CN_SOCIETY_ELECTRICITY": {"metric": "total", "kind": "value"},
@@ -337,6 +338,20 @@ AKSHARE_CHINA_SERIES = {
         "function": "macro_china_ppi",
         "date_column": "月份",
         "value_column": "当月同比增长",
+        "source": "AKShare/Eastmoney:macro_china_ppi",
+        "period_type": "month",
+    },
+    "CN_PPI_INDEX": {
+        "function": "macro_china_ppi",
+        "date_column": "月份",
+        "value_column": "当月",
+        "source": "AKShare/Eastmoney:macro_china_ppi",
+        "period_type": "month",
+    },
+    "CN_PPI_ACCUMULATED_INDEX": {
+        "function": "macro_china_ppi",
+        "date_column": "月份",
+        "value_column": "累计",
         "source": "AKShare/Eastmoney:macro_china_ppi",
         "period_type": "month",
     },

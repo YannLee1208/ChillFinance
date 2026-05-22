@@ -1,6 +1,6 @@
 """美国财政部国债收益率解析测试。"""
 
-from backend.ingest.us_treasury import parse_us_treasury_csv
+from backend.ingest.us_treasury import _month_codes_since, parse_us_treasury_csv
 
 
 def test_parse_us_treasury_csv() -> None:
@@ -16,3 +16,11 @@ def test_parse_us_treasury_csv() -> None:
     assert rows[0]["Date"] == "05/21/2026"
     assert rows[0]["3 Mo"] == "3.68"
     assert rows[0]["10 Yr"] == "4.57"
+
+
+def test_month_codes_since_covers_backfill_window() -> None:
+    month_codes = list(_month_codes_since(start_year=2020))
+
+    assert month_codes[0] == "202001"
+    assert "202605" in month_codes
+    assert month_codes == sorted(month_codes)

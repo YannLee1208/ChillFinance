@@ -2,7 +2,12 @@ import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
 
 import type { IndicatorSnapshot, Observation } from "../types";
-import { latestInRange, localizeIndicator, selectorSummary } from "./localization";
+import {
+  latestInRange,
+  localizeIndicator,
+  localizeSelectorValue,
+  selectorSummary,
+} from "./localization";
 import { filterPointsByRange, type TimeRangeKey } from "./timeRange";
 
 type IndicatorCardProps = {
@@ -166,6 +171,7 @@ function buildSeries(
 export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const { definition } = snapshot;
   const localized = localizeIndicator(definition);
+  const regionLabel = localizeSelectorValue(definition.region);
   const scale = displayScale(definition.unit, localized.unit);
   const rawPoints = filterPointsByRange(snapshot.points, timeRange);
   const points = rawPoints
@@ -220,6 +226,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       <div className="card-topline">
         <div>
           <h3>{localized.name}</h3>
+          {definition.domain === "country_macro" ? <small>{regionLabel}</small> : null}
           <span>{selectorSummary(definition)}</span>
         </div>
         <time dateTime={latest?.period}>{latest?.period ?? "暂无日期"}</time>

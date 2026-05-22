@@ -771,7 +771,7 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_EXPORT_YOY_USD"]["source"],
         description="中国以美元计出口同比，用于观察外需变化。",
         display_order=216,
-        selectors={"country": "China", "category": "进出口价格", "metric": "出口同比"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "出口同比"},
     ),
     _indicator(
         code="CN_EXPORT_VALUE_USD",
@@ -784,7 +784,7 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_EXPORT_VALUE_USD"]["source"],
         description="中国海关总署口径当月出口额，折算为亿美元，用于观察外需规模。",
         display_order=216,
-        selectors={"country": "China", "category": "进出口价格", "metric": "出口额"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "出口额"},
     ),
     _indicator(
         code="CN_IMPORT_YOY_USD",
@@ -797,7 +797,7 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_IMPORT_YOY_USD"]["source"],
         description="中国以美元计进口同比，用于观察内需与补库变化。",
         display_order=217,
-        selectors={"country": "China", "category": "进出口价格", "metric": "进口同比"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "进口同比"},
     ),
     _indicator(
         code="CN_IMPORT_VALUE_USD",
@@ -810,7 +810,7 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_IMPORT_VALUE_USD"]["source"],
         description="中国海关总署口径当月进口额，折算为亿美元，用于观察内需和补库规模。",
         display_order=217,
-        selectors={"country": "China", "category": "进出口价格", "metric": "进口额"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "进口额"},
     ),
 ]
 
@@ -878,7 +878,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_EXPORTS_GOODS_SERVICES'][1]}",
         description="中国货物和服务出口额，用于观察外需变化。",
         display_order=210,
-        selectors={"country": "China", "category": "进出口价格", "metric": "出口额"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "出口额"},
     ),
     _indicator(
         code="CN_IMPORTS_GOODS_SERVICES",
@@ -891,7 +891,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_IMPORTS_GOODS_SERVICES'][1]}",
         description="中国货物和服务进口额，用于观察内需和补库变化。",
         display_order=211,
-        selectors={"country": "China", "category": "进出口价格", "metric": "进口额"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "进口额"},
     ),
     _indicator(
         code="CN_CPI_INFLATION",
@@ -904,7 +904,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_CPI_INFLATION'][1]}",
         description="中国 CPI 年度通胀率，用于观察居民端价格压力。",
         display_order=212,
-        selectors={"country": "China", "category": "进出口价格", "metric": "CPI通胀"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "CPI通胀"},
     ),
     _indicator(
         code="CN_OFFICIAL_EXCHANGE_RATE",
@@ -1535,7 +1535,7 @@ _NONFERROUS_AKSHARE_SPECS = [
         "CNY/tonne",
         "国际铜主连收盘价，用于观察保税铜定价。",
         330,
-        "Bonded copper",
+        "Copper",
         "INE",
         "Futures close",
     ),
@@ -1623,7 +1623,7 @@ _NONFERROUS_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES[code]["source"],
         description=description,
         display_order=display_order,
-        selectors={"commodity": commodity, "market": market, "metric": metric},
+        selectors={"commodity": commodity, "metric": f"{market} {metric}"},
     )
     for code, name, unit, description, display_order, commodity, market, metric in (
         _NONFERROUS_AKSHARE_SPECS
@@ -1839,7 +1839,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CORPORATE_GOODS_PRICE_INDEX"]["source"],
         description="中国企业商品价格指数用于观察上游和企业端价格压力。",
         display_order=214,
-        selectors={"country": "China", "category": "进出口价格", "metric": "企业商品价格"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "企业商品价格"},
     ),
     _indicator(
         code="US_ISM_MANUFACTURING_PMI",
@@ -1891,7 +1891,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["US_CPI_YOY"]["source"],
         description="美国 CPI 同比用于观察居民端通胀压力。",
         display_order=181,
-        selectors={"country": "United States", "category": "价格", "metric": "CPI同比"},
+        selectors={"country": "United States", "category": "价格与进出口", "metric": "CPI同比"},
     ),
     _indicator(
         code="US_CORE_PCE_YOY",
@@ -1904,7 +1904,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["US_CORE_PCE_YOY"]["source"],
         description="美国核心 PCE 年率用于观察美联储关注的通胀压力。",
         display_order=182,
-        selectors={"country": "United States", "category": "价格", "metric": "核心PCE"},
+        selectors={"country": "United States", "category": "价格与进出口", "metric": "核心PCE"},
     ),
     _indicator(
         code="US_RETAIL_SALES_MOM",
@@ -2185,16 +2185,42 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
     ),
     _indicator(
         code="CN_PPI",
-        name="China PPI",
+        name="China PPI YoY",
         domain="country_macro",
         region="China",
         unit="%",
         frequency="monthly",
         provider="akshare_china",
         source=AKSHARE_CHINA_SERIES["CN_PPI"]["source"],
-        description="PPI 用于观察工业品出厂价格和企业盈利压力。",
+        description="中国 PPI 同比用于观察工业品出厂价格和企业盈利压力。",
         display_order=213,
-        selectors={"country": "China", "category": "进出口价格", "metric": "PPI"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "PPI同比"},
+    ),
+    _indicator(
+        code="CN_PPI_INDEX",
+        name="China PPI index",
+        domain="country_macro",
+        region="China",
+        unit="index",
+        frequency="monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_PPI_INDEX"]["source"],
+        description="中国 PPI 当月指数用于补充同比之外的工业品价格水平观察。",
+        display_order=213,
+        selectors={"country": "China", "category": "价格与进出口", "metric": "PPI当月"},
+    ),
+    _indicator(
+        code="CN_PPI_ACCUMULATED_INDEX",
+        name="China PPI accumulated index",
+        domain="country_macro",
+        region="China",
+        unit="index",
+        frequency="monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_PPI_ACCUMULATED_INDEX"]["source"],
+        description="中国 PPI 累计指数用于观察年内工业品价格累计变化。",
+        display_order=213,
+        selectors={"country": "China", "category": "价格与进出口", "metric": "PPI累计"},
     ),
     _indicator(
         code="CN_CPI_MONTHLY_YOY",
@@ -2207,7 +2233,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_YOY"]["source"],
         description="国家统计口径 CPI 月度同比，用于观察居民端通胀压力。",
         display_order=214,
-        selectors={"country": "China", "category": "进出口价格", "metric": "CPI同比"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "CPI同比"},
     ),
     _indicator(
         code="CN_EXPORT_PRICE_INDEX",
@@ -2220,7 +2246,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source="Pending:Customs/Wind",
         description="出口价格指数用于拆分出口量价。",
         display_order=218,
-        selectors={"country": "China", "category": "进出口价格", "metric": "出口价格"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "出口价格"},
         availability=_availability_for("CN_EXPORT_PRICE_INDEX"),
     ),
     _indicator(
@@ -2234,7 +2260,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source="Pending:Customs/Wind",
         description="进口价格指数用于观察输入性价格变化。",
         display_order=219,
-        selectors={"country": "China", "category": "进出口价格", "metric": "进口价格"},
+        selectors={"country": "China", "category": "价格与进出口", "metric": "进口价格"},
         availability=_availability_for("CN_IMPORT_PRICE_INDEX"),
     ),
     _indicator(

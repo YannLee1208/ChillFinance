@@ -8,7 +8,7 @@ from io import StringIO
 
 import httpx
 
-from backend.constant import US_TREASURY_SERIES
+from backend.constant import US_TREASURY_BACKFILL_START_YEAR, US_TREASURY_SERIES
 from backend.domain.models import IndicatorDefinition, Observation
 
 
@@ -28,7 +28,7 @@ class USTreasuryProvider:
         return indicator.code in US_TREASURY_SERIES
 
     async def fetch(self, indicator: IndicatorDefinition) -> list[Observation]:
-        """拉取最近两年的月度 CSV，并抽取对应期限列。"""
+        """拉取 2020 年以来的月度 CSV，并抽取对应期限列。"""
 
         rows = await self._fetch_recent_rows()
         column = US_TREASURY_SERIES[indicator.code]
@@ -57,8 +57,8 @@ class USTreasuryProvider:
         return sorted(observations, key=lambda observation: observation.period)
 
     async def _fetch_recent_rows(self) -> list[dict[str, str]]:
-        # 财政部按月份提供 CSV。页面最重要的是“最新曲线”，先取当前月，避免一次更新等待过久。
-        months = list(_recent_month_codes(month_count=1))
+        # 财政部按月份提供 CSV；从 2020 年回填，覆盖完整监控窗口。
+        months = list(_month_codes_since(start_year=US_TREASURY_BACKFILL_START_YEAR))
         missing_months = [month for month in months if month not in self._cache]
         if missing_months:
             headers = {"User-Agent": self.user_agent}
@@ -92,6 +92,20 @@ def _recent_month_codes(month_count: int) -> Iterable[str]:
         if month == 0:
             month = 12
             year -= 1
+
+
+def _month_codes_since(start_year: int) -> Iterable[str]:
+    """生成 start_year 年初至当前月的财政部月度 CSV 编码。"""
+
+    today = datetime.now(UTC).date()
+    year = start_year
+    month = 1
+    while (year, month) <= (today.year, today.month):
+        yield f"{year}{month:02d}"
+        month += 1
+        if month == 13:
+            month = 1
+            year += 1
 
 
 def _month_csv_url(month_code: str) -> str:

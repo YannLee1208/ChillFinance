@@ -160,15 +160,16 @@ def test_customs_trade_indicators_use_public_customs_table() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert "Customs" in indicator.source
-        assert indicator.selectors.get("category") == "进出口价格"
+        assert indicator.selectors.get("category") == "价格与进出口"
 
 
 def test_nbs_price_indicators_use_public_akshare_provider() -> None:
-    for code in {"CN_CPI_MONTHLY_YOY", "CN_PPI"}:
+    for code in {"CN_CPI_MONTHLY_YOY", "CN_PPI", "CN_PPI_INDEX", "CN_PPI_ACCUMULATED_INDEX"}:
         indicator = get_indicator(code)
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert indicator.selectors.get("country") == "China"
+        assert indicator.selectors.get("category") == "价格与进出口"
 
 
 def test_cross_sector_public_indicators_are_discoverable() -> None:
@@ -217,6 +218,23 @@ def test_nonferrous_exchange_indicators_are_discoverable() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.domain == "nonferrous"
         assert indicator.availability.status == "available"
+        assert "market" not in indicator.selectors
+
+
+def test_country_macro_price_trade_topic_is_merged() -> None:
+    country_macro = [
+        indicator for indicator in get_catalog() if indicator.domain == "country_macro"
+    ]
+
+    assert all(indicator.selectors.get("country") for indicator in country_macro)
+    assert not any(
+        indicator.selectors.get("category") in {"价格", "进出口价格"}
+        for indicator in country_macro
+    )
+    assert any(
+        indicator.selectors.get("category") == "价格与进出口"
+        for indicator in country_macro
+    )
 
 
 def test_gold_indicators_are_expanded() -> None:
