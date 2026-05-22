@@ -1,8 +1,9 @@
 import { useQueries } from "@tanstack/react-query";
 
 import { fetchIndicatorSnapshot } from "../api";
-import type { IndicatorDefinition } from "../types";
+import type { IndicatorDefinition, IndicatorSnapshot } from "../types";
 import { IndicatorCard } from "./IndicatorCard";
+import { localizeIndicator } from "./localization";
 import type { TimeRangeKey } from "./timeRange";
 
 type IndicatorGridProps = {
@@ -30,17 +31,47 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
     return <section className="state-panel compact">指标快照加载失败</section>;
   }
 
+  const snapshots = results
+    .map((result) => result.data)
+    .filter((snapshot): snapshot is IndicatorSnapshot => Boolean(snapshot));
+  const availableSnapshots = snapshots.filter((snapshot) => snapshot.points.length > 0);
+  const unavailableSnapshots = snapshots.filter((snapshot) => snapshot.points.length === 0);
+
   return (
-    <section className="indicator-grid">
-      {results.map((result) =>
-        result.data ? (
-          <IndicatorCard
-            key={result.data.definition.code}
-            snapshot={result.data}
-            timeRange={timeRange}
-          />
-        ) : null,
+    <>
+      {availableSnapshots.length > 0 ? (
+        <section className="indicator-grid">
+          {availableSnapshots.map((snapshot) => (
+            <IndicatorCard
+              key={snapshot.definition.code}
+              snapshot={snapshot}
+              timeRange={timeRange}
+            />
+          ))}
+        </section>
+      ) : (
+        <section className="state-panel compact">当前筛选下暂无已入库的真实序列。</section>
       )}
-    </section>
+      {unavailableSnapshots.length > 0 ? (
+        <section className="pending-panel">
+          <div className="pending-head">
+            <span>待接入 / 暂无返回</span>
+            <strong>{unavailableSnapshots.length} 个指标未展示为空图</strong>
+          </div>
+          <div className="pending-list">
+            {unavailableSnapshots.map((snapshot) => {
+              const localized = localizeIndicator(snapshot.definition);
+              return (
+                <article key={snapshot.definition.code}>
+                  <b>{localized.name}</b>
+                  <p>{localized.description}</p>
+                  <span>{localized.sourceLabel}</span>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+    </>
   );
 }

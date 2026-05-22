@@ -475,6 +475,66 @@ h1 {
   gap: 14px;
 }
 
+.pending-panel {
+  margin-top: 14px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px dashed #c8d4e5;
+  border-radius: 8px;
+}
+
+.pending-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pending-head span {
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.pending-head strong {
+  color: #172033;
+  font-size: 15px;
+}
+
+.pending-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pending-list article {
+  min-height: 96px;
+  padding: 12px;
+  background: #fffaf2;
+  border: 1px solid #f1dfc4;
+  border-radius: 8px;
+}
+
+.pending-list b {
+  display: block;
+  color: #172033;
+  font-size: 14px;
+}
+
+.pending-list p {
+  margin: 6px 0;
+  color: #6b5a42;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pending-list span {
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .indicator-card {
   min-width: 0;
   min-height: 476px;
