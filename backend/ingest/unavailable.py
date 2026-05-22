@@ -17,5 +17,9 @@ class UnavailableProvider:
     async def fetch(self, indicator: IndicatorDefinition) -> list[Observation]:
         """始终失败，但失败原因会被采集服务记录并展示在页面。"""
 
-        reason = UNAVAILABLE_SERIES[indicator.code]
-        raise RuntimeError(f"{reason}当前不会写入模拟数据。")
+        metadata = UNAVAILABLE_SERIES[indicator.code]
+        reason = (
+            f"{metadata['reason']} 下一步：{metadata['next_step']} "
+            "当前不会写入模拟数据。"
+        )
+        raise RuntimeError(reason)

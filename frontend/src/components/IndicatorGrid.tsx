@@ -11,6 +11,24 @@ type IndicatorGridProps = {
   timeRange: TimeRangeKey;
 };
 
+const AVAILABILITY_LABELS: Record<string, string> = {
+  available: "可更新",
+  pending_source: "待接入数据源",
+  needs_key: "需要密钥",
+  blocked: "当前受阻",
+  no_data: "暂无返回",
+};
+
+function availabilityText(indicator: IndicatorDefinition, fallbackDescription: string): string {
+  const availability = indicator.availability;
+  if (!availability || availability.status === "available") {
+    return fallbackDescription;
+  }
+  return [availability.reason, availability.next_step ? `下一步：${availability.next_step}` : ""]
+    .filter(Boolean)
+    .join(" ");
+}
+
 export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   const results = useQueries({
     queries: indicators.map((indicator) => ({
@@ -64,8 +82,11 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
               return (
                 <article key={snapshot.definition.code}>
                   <b>{localized.name}</b>
-                  <p>{localized.description}</p>
-                  <span>{localized.sourceLabel}</span>
+                  <p>{availabilityText(snapshot.definition, localized.description)}</p>
+                  <span>
+                    {AVAILABILITY_LABELS[snapshot.definition.availability.status] ?? "待确认"} ·{" "}
+                    {localized.sourceLabel}
+                  </span>
                 </article>
               );
             })}

@@ -174,18 +174,44 @@ AKSHARE_CHINA_SERIES = {
 }
 
 UNAVAILABLE_SERIES = {
-    "CN_REAL_GDP": (
-        "已尝试国家统计局 data.stats.gov.cn，当前环境返回 403；"
-        "需要 Wind 或可访问的官方统计局接口。"
-    ),
-    "CN_TOTAL_SOCIAL_FINANCING": (
-        "需要接入人民银行社会融资规模月度表或 Wind 宏观数据库；"
-        "当前没有稳定官方 JSON 接口。"
-    ),
-    "CN_MANUFACTURING_INVESTMENT": "需要接入制造业投资累计同比或 Wind。",
-    "CN_INFRASTRUCTURE_INVESTMENT": "需要接入基础设施投资累计同比或 Wind。",
-    "CN_REAL_ESTATE_INVESTMENT": "需要接入国家统计局房地产开发投资累计同比或 Wind。",
-    "CN_PROPERTY_SALES_AREA": "需要接入商品房销售面积累计同比或 Wind。",
-    "CN_EXPORT_PRICE_INDEX": "需要接入海关总署出口价格指数或 Wind。",
-    "CN_IMPORT_PRICE_INDEX": "需要接入海关总署进口价格指数或 Wind。",
+    "CN_REAL_GDP": {
+        "status": "blocked",
+        "reason": "已尝试国家统计局 data.stats.gov.cn，当前环境返回 403。",
+        "next_step": "配置 Wind，或改用可访问的国家统计局官方接口。",
+    },
+    "CN_TOTAL_SOCIAL_FINANCING": {
+        "status": "pending_source",
+        "reason": "当前没有稳定官方 JSON 接口可直接拉取人民银行社会融资规模月度表。",
+        "next_step": "接入人民银行表格解析或 Wind 宏观数据库。",
+    },
+    "CN_MANUFACTURING_INVESTMENT": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回制造业投资累计同比的公开接口。",
+        "next_step": "接入国家统计局分项接口或 Wind。",
+    },
+    "CN_INFRASTRUCTURE_INVESTMENT": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回基础设施投资累计同比的公开接口。",
+        "next_step": "接入国家统计局分项接口或 Wind。",
+    },
+    "CN_REAL_ESTATE_INVESTMENT": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回房地产开发投资累计同比的公开接口。",
+        "next_step": "接入国家统计局房地产月度表或 Wind。",
+    },
+    "CN_PROPERTY_SALES_AREA": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回商品房销售面积累计同比的公开接口。",
+        "next_step": "接入国家统计局房地产月度表或 Wind。",
+    },
+    "CN_EXPORT_PRICE_INDEX": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回海关出口价格指数的公开接口。",
+        "next_step": "接入海关总署价格指数表或 Wind。",
+    },
+    "CN_IMPORT_PRICE_INDEX": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回海关进口价格指数的公开接口。",
+        "next_step": "接入海关总署价格指数表或 Wind。",
+    },
 }

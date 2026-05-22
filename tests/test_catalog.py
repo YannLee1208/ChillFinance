@@ -80,3 +80,20 @@ def test_catalog_codes_are_unique() -> None:
     codes = [indicator.code for indicator in catalog]
 
     assert len(codes) == len(set(codes))
+
+
+def test_unavailable_indicators_explain_status_and_next_step() -> None:
+    indicator = get_indicator("CN_REAL_GDP")
+
+    assert indicator.provider == "unavailable"
+    assert indicator.availability.status == "blocked"
+    assert "403" in indicator.availability.reason
+    assert "Wind" in indicator.availability.next_step
+
+
+def test_available_indicators_default_to_available_status() -> None:
+    indicator = get_indicator("CN_M2")
+
+    assert indicator.provider == "akshare_china"
+    assert indicator.availability.status == "available"
+    assert indicator.availability.reason == ""

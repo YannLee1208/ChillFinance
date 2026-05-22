@@ -1,4 +1,11 @@
 export type Frequency = "daily" | "weekly" | "monthly" | "quarterly" | "annual";
+export type AvailabilityStatus = "available" | "pending_source" | "needs_key" | "blocked" | "no_data";
+
+export type IndicatorAvailability = {
+  status: AvailabilityStatus;
+  reason: string;
+  next_step: string;
+};
 
 export type IndicatorDefinition = {
   code: string;
@@ -12,6 +19,7 @@ export type IndicatorDefinition = {
   description: string;
   display_order: number;
   selectors: Record<string, string>;
+  availability: IndicatorAvailability;
 };
 
 export type Observation = {

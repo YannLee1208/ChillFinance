@@ -7,6 +7,15 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 Frequency = Literal["daily", "weekly", "monthly", "quarterly", "annual"]
+AvailabilityStatus = Literal["available", "pending_source", "needs_key", "blocked", "no_data"]
+
+
+class IndicatorAvailability(BaseModel):
+    """指标数据源可用性说明。"""
+
+    status: AvailabilityStatus = "available"
+    reason: str = ""
+    next_step: str = ""
 
 
 class IndicatorDefinition(BaseModel):
@@ -23,6 +32,7 @@ class IndicatorDefinition(BaseModel):
     description: str
     display_order: int = 0
     selectors: dict[str, str] = Field(default_factory=dict)
+    availability: IndicatorAvailability = Field(default_factory=IndicatorAvailability)
 
 
 class Observation(BaseModel):

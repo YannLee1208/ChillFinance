@@ -3,6 +3,7 @@
 from backend.constant import (
     AKSHARE_CHINA_SERIES,
     FRED_SERIES,
+    UNAVAILABLE_SERIES,
     US_TREASURY_SERIES,
     WORLD_BANK_SERIES,
 )
@@ -30,6 +31,7 @@ def _indicator(
     description: str,
     display_order: int,
     selectors: dict[str, str],
+    availability: dict[str, str] | None = None,
 ) -> IndicatorDefinition:
     return IndicatorDefinition(
         code=code,
@@ -43,7 +45,19 @@ def _indicator(
         description=description,
         display_order=display_order,
         selectors=selectors,
+        availability=availability or {},
     )
+
+
+def _availability_for(code: str) -> dict[str, str] | None:
+    metadata = UNAVAILABLE_SERIES.get(code)
+    if metadata is None:
+        return None
+    return {
+        "status": metadata["status"],
+        "reason": metadata["reason"],
+        "next_step": metadata["next_step"],
+    }
 
 
 def _treasury_indicators() -> list[IndicatorDefinition]:
@@ -631,6 +645,7 @@ _UNAVAILABLE_INDICATORS = [
         description="中国实际 GDP 需要国家统计局不变价序列或 Wind 宏观数据，尚未写入模拟值。",
         display_order=110,
         selectors={"country": "China", "category": "经济总量", "metric": "Real GDP"},
+        availability=_availability_for("CN_REAL_GDP"),
     ),
     _indicator(
         code="CN_TOTAL_SOCIAL_FINANCING",
@@ -644,6 +659,7 @@ _UNAVAILABLE_INDICATORS = [
         description="社会融资规模需要人民银行月度表或 Wind 宏观数据，尚未写入模拟值。",
         display_order=140,
         selectors={"country": "China", "category": "汇率与金融", "metric": "Social financing"},
+        availability=_availability_for("CN_TOTAL_SOCIAL_FINANCING"),
     ),
     _indicator(
         code="CN_RMB_LOANS",
@@ -738,6 +754,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         description="制造业投资累计同比用于观察企业扩产和设备更新。",
         display_order=174,
         selectors={"country": "China", "category": "工业与投资", "metric": "制造业投资"},
+        availability=_availability_for("CN_MANUFACTURING_INVESTMENT"),
     ),
     _indicator(
         code="CN_INFRASTRUCTURE_INVESTMENT",
@@ -751,6 +768,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         description="基建投资累计同比用于观察财政发力强度。",
         display_order=175,
         selectors={"country": "China", "category": "工业与投资", "metric": "基建投资"},
+        availability=_availability_for("CN_INFRASTRUCTURE_INVESTMENT"),
     ),
     _indicator(
         code="CN_REAL_ESTATE_INVESTMENT",
@@ -764,6 +782,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         description="房地产开发投资累计同比用于观察地产链投资强弱。",
         display_order=190,
         selectors={"country": "China", "category": "房地产", "metric": "开发投资"},
+        availability=_availability_for("CN_REAL_ESTATE_INVESTMENT"),
     ),
     _indicator(
         code="CN_PROPERTY_SALES_AREA",
@@ -777,6 +796,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         description="商品房销售面积累计同比用于观察地产销售和去化。",
         display_order=191,
         selectors={"country": "China", "category": "房地产", "metric": "销售面积"},
+        availability=_availability_for("CN_PROPERTY_SALES_AREA"),
     ),
     _indicator(
         code="CN_NEW_HOME_PRICE_INDEX",
@@ -816,6 +836,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         description="出口价格指数用于拆分出口量价。",
         display_order=214,
         selectors={"country": "China", "category": "进出口价格", "metric": "出口价格"},
+        availability=_availability_for("CN_EXPORT_PRICE_INDEX"),
     ),
     _indicator(
         code="CN_IMPORT_PRICE_INDEX",
@@ -829,6 +850,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         description="进口价格指数用于观察输入性价格变化。",
         display_order=215,
         selectors={"country": "China", "category": "进出口价格", "metric": "进口价格"},
+        availability=_availability_for("CN_IMPORT_PRICE_INDEX"),
     ),
     _indicator(
         code="CN_SHCOMP",
