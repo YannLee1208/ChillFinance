@@ -14,6 +14,8 @@ const akMarket = "AkShare / 行情源";
 const pendingNbsWind = "国家统计局 / Wind 待接入";
 const pendingPbocWind = "人民银行 / Wind 待接入";
 const pendingCustomsWind = "海关总署 / Wind 待接入";
+const cctd = "CCTD 中国煤炭市场网";
+const cfdCoal = "曹妃甸煤贸数港";
 
 const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   US_DGS3MO: {
@@ -128,6 +130,20 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   US_GASOLINE_PRICE: { name: "美国汽油零售价", description: "用于观察成品油终端价格。", unit: "美元/加仑", sourceLabel: fred },
   EU_NATURAL_GAS_PRICE: { name: "欧洲天然气价格", description: "用于观察能源链价格压力。", unit: "美元/MMBtu", sourceLabel: fred },
   COAL_AUSTRALIA_PRICE: { name: "澳洲动力煤价格", description: "用于观察海运动力煤基准变化。", unit: "美元/吨", sourceLabel: fred },
+  CCTD_HUANGLING_QI_COAL: { name: "黄陵气精煤价格", description: "CCTD 延安（黄陵）气精煤价格。", unit: "元/吨", sourceLabel: cctd },
+  CCTD_QHD_THERMAL_COAL_5500: { name: "秦皇岛动力煤 5500", description: "CCTD 秦皇岛动力煤 5500 大卡综合交易价。", unit: "元/吨", sourceLabel: cctd },
+  CCTD_QHD_THERMAL_COAL_5000: { name: "秦皇岛动力煤 5000", description: "CCTD 秦皇岛动力煤 5000 大卡综合交易价。", unit: "元/吨", sourceLabel: cctd },
+  CCTD_QHD_THERMAL_COAL_4500: { name: "秦皇岛动力煤 4500", description: "CCTD 秦皇岛动力煤 4500 大卡综合交易价。", unit: "元/吨", sourceLabel: cctd },
+  CCTD_TANGSHAN_COKING_COAL: { name: "唐山主焦煤价格", description: "CCTD 唐山主焦煤价格。", unit: "元/吨", sourceLabel: cctd },
+  CCTD_TANGSHAN_FAT_COAL: { name: "唐山肥煤价格", description: "CCTD 唐山肥煤价格。", unit: "元/吨", sourceLabel: cctd },
+  CCTD_ORIGIN_SHANXI_THERMAL_COAL_5500: { name: "山西产地动力煤 5500", description: "CCTD 产地动力煤山西 5500 大卡价格。", unit: "元/吨", sourceLabel: cctd },
+  CFD_TTCI_THERMAL_COAL_5500: { name: "曹妃甸 TTCI 5500", description: "唐山动力煤 5500K 现货价格。", unit: "元/吨", sourceLabel: cfdCoal },
+  CFD_TTCI_THERMAL_COAL_5000: { name: "曹妃甸 TTCI 5000", description: "唐山动力煤 5000K 现货价格。", unit: "元/吨", sourceLabel: cfdCoal },
+  CFD_TTCI_THERMAL_COAL_4500: { name: "曹妃甸 TTCI 4500", description: "唐山动力煤 4500K 现货价格。", unit: "元/吨", sourceLabel: cfdCoal },
+  CFD_TTCI_INDEX: { name: "TTCI 唐山动力煤指数", description: "曹妃甸 TTCI 唐山动力煤现货价格指数。", unit: "指数", sourceLabel: cfdCoal },
+  CFD_TOFI_INDEX: { name: "TOFI 唐山海运煤炭运价指数", description: "曹妃甸 TOFI 唐山海运煤炭运价指数。", unit: "指数", sourceLabel: cfdCoal },
+  CN_XIAOBAODANG_MIXED_COAL_5500: { name: "小保当 5500 混煤", description: "尚未找到稳定公开历史接口，等待 CCTD 数据库授权、矿方报价表或 Wind。", unit: "元/吨", sourceLabel: "CCTD / Wind 待接入" },
+  CN_HONGLIULIN_WASHED_MIDDLE_LUMP: { name: "红柳林洗中块", description: "尚未找到稳定公开历史接口，等待 CCTD 数据库授权、矿方报价表或 Wind。", unit: "元/吨", sourceLabel: "CCTD / Wind 待接入" },
   US_POWER_PRODUCTION: { name: "美国电力生产指数", description: "用于观察电力需求和工业活动。", unit: "指数", sourceLabel: fred },
   CN_SOCIETY_ELECTRICITY: { name: "全社会用电量", description: "中国全社会用电量，用于观察实体经济活动和电力需求。", unit: "亿千瓦时", sourceLabel: "AkShare / 新浪财经" },
   CN_SOCIETY_ELECTRICITY_YOY: { name: "全社会用电量同比", description: "中国全社会用电量同比，用于观察实体经济用电强弱。", unit: "%", sourceLabel: "AkShare / 新浪财经" },
@@ -175,6 +191,23 @@ const SELECTOR_VALUE_LABELS: Record<string, string> = {
   Gasoline: "汽油",
   "Natural gas": "天然气",
   "Thermal coal": "动力煤",
+  CCTD: "CCTD",
+  "曹妃甸": "曹妃甸",
+  "矿口": "矿口",
+  "黄陵气精煤": "黄陵气精煤",
+  "秦皇岛5500": "秦皇岛 5500",
+  "秦皇岛5000": "秦皇岛 5000",
+  "秦皇岛4500": "秦皇岛 4500",
+  "唐山主焦煤": "唐山主焦煤",
+  "唐山肥煤": "唐山肥煤",
+  "山西5500": "山西 5500",
+  TTCI5500: "TTCI 5500",
+  TTCI5000: "TTCI 5000",
+  TTCI4500: "TTCI 4500",
+  "TTCI指数": "TTCI 指数",
+  "TOFI指数": "TOFI 指数",
+  "小保当5500混煤": "小保当 5500 混煤",
+  "红柳林洗中块": "红柳林洗中块",
   "Long-term": "长期",
   "就业与消费": "就业与消费",
   "价格": "价格",

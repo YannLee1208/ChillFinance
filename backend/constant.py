@@ -70,6 +70,89 @@ CHINA_DATA_SERIES = {
     "CN_M2": "china-m2-money-supply",
 }
 
+COAL_PUBLIC_SERIES = {
+    "CCTD_HUANGLING_QI_COAL": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_HL.php",
+        "value_field": "age",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_HL.php:age",
+    },
+    "CCTD_QHD_THERMAL_COAL_5500": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_QHD.php",
+        "value_field": "age",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_QHD.php:age",
+    },
+    "CCTD_QHD_THERMAL_COAL_5000": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_QHD.php",
+        "value_field": "age1",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_QHD.php:age1",
+    },
+    "CCTD_QHD_THERMAL_COAL_4500": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_QHD.php",
+        "value_field": "age2",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_QHD.php:age2",
+    },
+    "CCTD_TANGSHAN_COKING_COAL": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_TS.php",
+        "value_field": "age",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_TS.php:age",
+    },
+    "CCTD_TANGSHAN_FAT_COAL": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_TS.php",
+        "value_field": "age1",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_TS.php:age1",
+    },
+    "CCTD_ORIGIN_SHANXI_THERMAL_COAL_5500": {
+        "type": "cctd_price",
+        "url": "https://www.cctd.com.cn/Echarts/data/CCTD_PRICE_CD.php",
+        "value_field": "age",
+        "source": "CCTD:/Echarts/data/CCTD_PRICE_CD.php:age",
+    },
+    "CFD_TTCI_THERMAL_COAL_5500": {
+        "type": "cfd_latest",
+        "url": "https://www.cfdcoal.com/api/indexs/home",
+        "section": "ts_index",
+        "date_field": "public_date",
+        "value_field": "k5500",
+        "source": "CFDCoal:/api/indexs/home:ts_index.k5500",
+    },
+    "CFD_TTCI_THERMAL_COAL_5000": {
+        "type": "cfd_latest",
+        "url": "https://www.cfdcoal.com/api/indexs/home",
+        "section": "ts_index",
+        "date_field": "public_date",
+        "value_field": "k5000",
+        "source": "CFDCoal:/api/indexs/home:ts_index.k5000",
+    },
+    "CFD_TTCI_THERMAL_COAL_4500": {
+        "type": "cfd_latest",
+        "url": "https://www.cfdcoal.com/api/indexs/home",
+        "section": "ts_index",
+        "date_field": "public_date",
+        "value_field": "k4500",
+        "source": "CFDCoal:/api/indexs/home:ts_index.k4500",
+    },
+    "CFD_TTCI_INDEX": {
+        "type": "cfd_history",
+        "url": "https://www.cfdcoal.com/api/indexs/home",
+        "date_list_key": "ts_index_date",
+        "value_list_key": "ts_index_9999",
+        "source": "CFDCoal:/api/indexs/home:ts_index_9999",
+    },
+    "CFD_TOFI_INDEX": {
+        "type": "cfd_history",
+        "url": "https://www.cfdcoal.com/api/indexs/home",
+        "date_list_key": "tofi_index_date",
+        "value_list_key": "tofi_index",
+        "source": "CFDCoal:/api/indexs/home:tofi_index",
+    },
+}
+
 AKSHARE_CHINA_SERIES = {
     "CN_NOMINAL_GDP_QUARTERLY": {
         "function": "macro_china_gdp",
@@ -424,6 +507,16 @@ UNAVAILABLE_SERIES = {
         "status": "pending_source",
         "reason": "上期所铜库存需要稳定解析交易所仓单或周库存表。",
         "next_step": "确认 SHFE 官方表格结构后接入解析器。",
+    },
+    "CN_XIAOBAODANG_MIXED_COAL_5500": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回小保当 5500 大卡混煤历史价格的公开接口。",
+        "next_step": "接入中国煤炭市场网数据库授权接口、矿方报价表或 Wind。",
+    },
+    "CN_HONGLIULIN_WASHED_MIDDLE_LUMP": {
+        "status": "pending_source",
+        "reason": "尚未找到稳定返回红柳林洗中块历史价格的公开接口。",
+        "next_step": "接入中国煤炭市场网数据库授权接口、矿方报价表或 Wind。",
     },
 }
 

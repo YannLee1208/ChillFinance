@@ -211,3 +211,35 @@ def test_additional_macro_indicators_are_discoverable() -> None:
         assert indicator.provider == provider
         assert indicator.domain == domain
         assert indicator.availability.status == "available"
+
+
+def test_coal_price_indicators_are_discoverable() -> None:
+    available_expected = {
+        "CCTD_HUANGLING_QI_COAL",
+        "CCTD_QHD_THERMAL_COAL_5500",
+        "CCTD_QHD_THERMAL_COAL_5000",
+        "CCTD_QHD_THERMAL_COAL_4500",
+        "CCTD_TANGSHAN_COKING_COAL",
+        "CCTD_TANGSHAN_FAT_COAL",
+        "CCTD_ORIGIN_SHANXI_THERMAL_COAL_5500",
+        "CFD_TTCI_THERMAL_COAL_5500",
+        "CFD_TTCI_THERMAL_COAL_5000",
+        "CFD_TTCI_THERMAL_COAL_4500",
+        "CFD_TTCI_INDEX",
+        "CFD_TOFI_INDEX",
+    }
+
+    for code in available_expected:
+        indicator = get_indicator(code)
+        assert indicator.domain == "coal"
+        assert indicator.provider == "coal_public"
+        assert indicator.availability.status == "available"
+
+
+def test_requested_mine_coal_prices_explain_missing_public_source() -> None:
+    for code in {"CN_XIAOBAODANG_MIXED_COAL_5500", "CN_HONGLIULIN_WASHED_MIDDLE_LUMP"}:
+        indicator = get_indicator(code)
+        assert indicator.domain == "coal"
+        assert indicator.provider == "unavailable"
+        assert indicator.availability.status == "pending_source"
+        assert "稳定" in indicator.availability.reason
