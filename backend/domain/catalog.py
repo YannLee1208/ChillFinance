@@ -993,8 +993,13 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         provider="world_bank",
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_CPI_INFLATION'][1]}",
         description="中国 CPI 年度通胀率，用于观察居民端价格压力。",
-        display_order=212,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "CPI通胀"},
+        display_order=220,
+        selectors={
+            "country": "China",
+            "category": "价格与进出口",
+            "metric": "年度CPI通胀率",
+            "display_group": "年度价格指标",
+        },
     ),
     _indicator(
         code="CN_OFFICIAL_EXCHANGE_RATE",

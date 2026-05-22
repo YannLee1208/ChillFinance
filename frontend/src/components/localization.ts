@@ -87,7 +87,7 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   CN_IMPORT_VALUE_USD: { name: "中国进口额（美元）", description: "海关总署口径当月进口额，用于观察内需和补库规模。", unit: "亿美元", sourceLabel: "AkShare / 海关总署" },
   CN_EXPORT_YOY_USD: { name: "中国出口同比（美元）", description: "海关总署口径美元计出口同比，用于观察外需变化。", unit: "%", sourceLabel: "AkShare / 海关总署" },
   CN_IMPORT_YOY_USD: { name: "中国进口同比（美元）", description: "海关总署口径美元计进口同比，用于观察内需和补库变化。", unit: "%", sourceLabel: "AkShare / 海关总署" },
-  CN_CPI_INFLATION: { name: "中国 CPI 通胀率", description: "年度 CPI 通胀率，用于观察居民端价格压力。", unit: "%", sourceLabel: wb },
+  CN_CPI_INFLATION: { name: "中国年度 CPI 通胀率（World Bank）", description: "World Bank 年度 CPI 通胀率，和月度 CPI 环比不是同一口径。", unit: "%", sourceLabel: wb },
   CN_CPI_MONTHLY_YOY: { name: "中国 CPI 同比", description: "国家统计口径 CPI 月度同比，用于观察居民端通胀压力。", unit: "%", sourceLabel: akEastmoney },
   CN_PPI: { name: "中国 PPI 同比", description: "用于观察工业品出厂价格和企业盈利压力。", unit: "%", sourceLabel: akEastmoney },
   CN_PPI_INDEX: { name: "中国 PPI 当月指数", description: "PPI 当月指数，用于补充观察工业品价格水平。", unit: "指数", sourceLabel: akEastmoney },

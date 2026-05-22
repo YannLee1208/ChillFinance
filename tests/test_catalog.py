@@ -219,6 +219,15 @@ def test_china_cpi_ppi_order_and_mom_comparison_group() -> None:
     assert get_indicator("CN_PPI_MOM").selectors.get("compare_group") == "CPI/PPI环比"
 
 
+def test_annual_cpi_inflation_is_not_mixed_with_monthly_cpi_ppi() -> None:
+    indicator = get_indicator("CN_CPI_INFLATION")
+
+    assert indicator.frequency == "annual"
+    assert indicator.provider == "world_bank"
+    assert indicator.selectors.get("metric") == "年度CPI通胀率"
+    assert indicator.selectors.get("display_group") == "年度价格指标"
+
+
 def test_customs_trade_indicators_use_public_customs_table() -> None:
     expected_codes = {
         "CN_EXPORT_VALUE_USD",
