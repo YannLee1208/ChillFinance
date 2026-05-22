@@ -3,7 +3,7 @@
 from backend.constant import (
     CHINA_DATA_SERIES,
     FRED_SERIES,
-    FRED_TREASURY_SERIES,
+    US_TREASURY_SERIES,
     WORLD_BANK_SERIES,
 )
 from backend.domain.models import Frequency, IndicatorDefinition
@@ -50,7 +50,7 @@ def _treasury_indicators() -> list[IndicatorDefinition]:
     """生成 FRED 美国国债收益率指标定义。"""
 
     indicators: list[IndicatorDefinition] = []
-    for display_order, (code, fred_code) in enumerate(FRED_TREASURY_SERIES.items(), start=1):
+    for display_order, (code, treasury_column) in enumerate(US_TREASURY_SERIES.items(), start=1):
         name, tenor = _TREASURY_NAMES[code]
         indicators.append(
             _indicator(
@@ -60,8 +60,8 @@ def _treasury_indicators() -> list[IndicatorDefinition]:
                 region="United States",
                 unit="%",
                 frequency="daily",
-                provider="fred",
-                source=f"FRED:{fred_code}",
+                provider="us_treasury",
+                source=f"U.S. Treasury Daily Treasury Rates:{treasury_column}",
                 description="美国国债收益率，用于观察美元利率曲线和市场风险偏好。",
                 display_order=display_order,
                 selectors={"country": "United States", "tenor": tenor, "metric": "Yield"},

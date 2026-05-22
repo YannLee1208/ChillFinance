@@ -25,8 +25,8 @@ def test_us_treasury_indicator_has_frequency_and_unit() -> None:
     assert indicator.region == "United States"
     assert indicator.frequency == "daily"
     assert indicator.unit == "%"
-    assert indicator.provider == "fred"
-    assert indicator.source == "FRED:DGS10"
+    assert indicator.provider == "us_treasury"
+    assert indicator.source == "U.S. Treasury Daily Treasury Rates:10 Yr"
     assert indicator.display_order == 4
     assert indicator.selectors == {
         "country": "United States",
@@ -40,7 +40,7 @@ def test_catalog_replaces_seed_with_public_providers() -> None:
     providers = {indicator.provider for indicator in catalog}
 
     assert "seed" not in providers
-    assert {"china_data", "fred", "unavailable", "world_bank"}.issubset(providers)
+    assert {"china_data", "fred", "unavailable", "us_treasury", "world_bank"}.issubset(providers)
 
 
 def test_catalog_has_filterable_dimensions() -> None:
