@@ -34,6 +34,30 @@ def test_parse_decimal_month_period() -> None:
     assert observations[1].value == Decimal("4272200")
 
 
+def test_parse_decimal_month_keeps_two_digit_month() -> None:
+    frame = pd.DataFrame(
+        {
+            "统计时间": ["2004.10", "2004.12"],
+            "全社会用电量": [175828690.0, 217350000.0],
+        }
+    )
+    indicator = get_indicator("CN_TOTAL_SOCIAL_FINANCING")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "统计时间",
+            "value_column": "全社会用电量",
+            "source": "AKShare/Sina:macro_china_society_electricity",
+            "period_type": "decimal_month",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2004-10-01"
+    assert observations[1].period.isoformat() == "2004-12-01"
+
+
 def test_parse_customs_monthly_amount_with_multiplier() -> None:
     frame = pd.DataFrame(
         {

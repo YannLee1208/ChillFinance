@@ -185,7 +185,7 @@ def _parse_period(value: Any, period_type: str) -> date:
 
 def _parse_decimal_month(text: str) -> date:
     year_text, month_text = text.split(".", maxsplit=1)
-    month = int(month_text.rstrip("0") or "0")
+    month = int(month_text)
     return date(int(year_text), month, 1)
 
 

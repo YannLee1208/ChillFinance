@@ -120,9 +120,11 @@ def test_key_gated_and_exchange_indicators_are_discoverable() -> None:
     assert eia_indicator.availability.status == "needs_key"
     assert "EIA_API_KEY" in eia_indicator.availability.next_step
     assert lme_indicator.domain == "nonferrous"
-    assert lme_indicator.availability.status == "pending_source"
+    assert lme_indicator.provider == "akshare_china"
+    assert lme_indicator.availability.status == "available"
     assert shfe_indicator.domain == "nonferrous"
-    assert shfe_indicator.availability.status == "pending_source"
+    assert shfe_indicator.provider == "akshare_china"
+    assert shfe_indicator.availability.status == "available"
 
 
 def test_pboc_financing_and_money_indicators_use_public_data_provider() -> None:
@@ -167,3 +169,45 @@ def test_nbs_price_indicators_use_public_akshare_provider() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert indicator.selectors.get("country") == "China"
+
+
+def test_cross_sector_public_indicators_are_discoverable() -> None:
+    expected = {
+        "LME_COPPER_INVENTORY": ("akshare_china", "nonferrous"),
+        "LME_ALUMINUM_INVENTORY": ("akshare_china", "nonferrous"),
+        "LME_ZINC_INVENTORY": ("akshare_china", "nonferrous"),
+        "LME_NICKEL_INVENTORY": ("akshare_china", "nonferrous"),
+        "COMEX_GOLD_INVENTORY": ("akshare_china", "nonferrous"),
+        "SHFE_COPPER_INVENTORY": ("akshare_china", "nonferrous"),
+        "US_API_CRUDE_STOCK_CHANGE": ("akshare_china", "crude_oil"),
+        "US_EIA_CRUDE_STOCK_CHANGE": ("akshare_china", "crude_oil"),
+        "CN_SOCIETY_ELECTRICITY": ("akshare_china", "power"),
+        "CN_SOCIETY_ELECTRICITY_YOY": ("akshare_china", "power"),
+        "CN_ENERGY_INDEX": ("akshare_china", "power"),
+    }
+
+    for code, (provider, domain) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.provider == provider
+        assert indicator.domain == domain
+        assert indicator.availability.status == "available"
+
+
+def test_additional_macro_indicators_are_discoverable() -> None:
+    expected = {
+        "CN_MANUFACTURING_PMI": ("akshare_china", "country_macro"),
+        "CN_NON_MANUFACTURING_PMI": ("akshare_china", "country_macro"),
+        "CN_CORPORATE_GOODS_PRICE_INDEX": ("akshare_china", "country_macro"),
+        "US_ISM_MANUFACTURING_PMI": ("akshare_china", "country_macro"),
+        "US_UNEMPLOYMENT_RATE": ("akshare_china", "country_macro"),
+        "US_NONFARM_PAYROLLS": ("akshare_china", "country_macro"),
+        "US_CPI_YOY": ("akshare_china", "country_macro"),
+        "US_CORE_PCE_YOY": ("akshare_china", "country_macro"),
+        "US_RETAIL_SALES_MOM": ("akshare_china", "country_macro"),
+    }
+
+    for code, (provider, domain) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.provider == provider
+        assert indicator.domain == domain
+        assert indicator.availability.status == "available"
