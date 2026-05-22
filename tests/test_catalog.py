@@ -160,7 +160,7 @@ def test_customs_trade_indicators_use_public_customs_table() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert "Customs" in indicator.source
-        assert indicator.selectors.get("category") == "价格与进出口"
+        assert indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
 
 
 def test_nbs_price_indicators_use_public_akshare_provider() -> None:
@@ -169,7 +169,7 @@ def test_nbs_price_indicators_use_public_akshare_provider() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert indicator.selectors.get("country") == "China"
-        assert indicator.selectors.get("category") == "价格与进出口"
+        assert indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
 
 
 def test_cross_sector_public_indicators_are_discoverable() -> None:
@@ -219,6 +219,7 @@ def test_nonferrous_exchange_indicators_are_discoverable() -> None:
         assert indicator.domain == "nonferrous"
         assert indicator.availability.status == "available"
         assert "market" not in indicator.selectors
+        assert indicator.selectors.get("display_group")
 
 
 def test_country_macro_price_trade_topic_is_merged() -> None:
@@ -228,13 +229,26 @@ def test_country_macro_price_trade_topic_is_merged() -> None:
 
     assert all(indicator.selectors.get("country") for indicator in country_macro)
     assert not any(
-        indicator.selectors.get("category") in {"价格", "进出口价格"}
+        indicator.selectors.get("category") in {"\u4ef7\u683c", "\u8fdb\u51fa\u53e3\u4ef7\u683c"}
         for indicator in country_macro
     )
     assert any(
-        indicator.selectors.get("category") == "价格与进出口"
+        indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
         for indicator in country_macro
     )
+
+
+def test_china_price_trade_titles_include_country() -> None:
+    price_trade_indicators = [
+        indicator
+        for indicator in get_catalog()
+        if indicator.domain == "country_macro"
+        and indicator.selectors.get("country") == "China"
+        and indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
+    ]
+
+    assert price_trade_indicators
+    assert all(indicator.name.startswith("China ") for indicator in price_trade_indicators)
 
 
 def test_gold_indicators_are_expanded() -> None:
@@ -247,6 +261,11 @@ def test_gold_indicators_are_expanded() -> None:
         "SHFE_GOLD_FUTURES_CLOSE",
         "SHFE_GOLD_FUTURES_SETTLE",
         "SHFE_SILVER_FUTURES_CLOSE",
+        "SHFE_SILVER_FUTURES_SETTLE",
+        "CN_SILVER_ETF_HOLDINGS",
+        "CN_SILVER_ETF_HOLDINGS_CHANGE",
+        "SGE_AG9999_CLOSE",
+        "SGE_SILVER_BENCHMARK_PM",
     }
 
     for code in expected:
@@ -254,6 +273,16 @@ def test_gold_indicators_are_expanded() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.domain == "nonferrous"
         assert indicator.availability.status == "available"
+        assert indicator.selectors.get("commodity") == "Gold"
+
+
+def test_nonferrous_does_not_split_silver_as_commodity() -> None:
+    catalog = get_catalog()
+
+    assert not any(
+        indicator.domain == "nonferrous" and indicator.selectors.get("commodity") == "Silver"
+        for indicator in catalog
+    )
 
 
 def test_stale_crude_inventory_event_sources_are_not_marked_available() -> None:
@@ -384,12 +413,14 @@ def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
         assert indicator.provider == "nea_public"
         assert indicator.domain == "power"
         assert indicator.availability.status == "available"
+        assert indicator.selectors.get("display_group") == "\u7528\u7535\u91cf"
 
     for code in akshare_expected:
         indicator = get_indicator(code)
         assert indicator.provider == "akshare_china"
         assert indicator.domain == "power"
         assert indicator.availability.status == "available"
+        assert indicator.selectors.get("display_group") == "\u78b3\u4ef7"
 
     for code in {
         "CN_THERMAL_POWER_GENERATION",
@@ -402,6 +433,7 @@ def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
         assert indicator.provider == "askci_public"
         assert indicator.domain == "power"
         assert indicator.availability.status == "available"
+        assert indicator.selectors.get("display_group") == "\u53d1\u7535\u7ed3\u6784"
 
 
 def test_additional_macro_indicators_are_discoverable() -> None:

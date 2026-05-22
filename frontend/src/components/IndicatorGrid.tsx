@@ -3,7 +3,7 @@ import { useQueries } from "@tanstack/react-query";
 import { fetchIndicatorSnapshot } from "../api";
 import type { IndicatorDefinition, IndicatorSnapshot } from "../types";
 import { IndicatorCard } from "./IndicatorCard";
-import { localizeIndicator } from "./localization";
+import { localizeIndicator, localizeSelectorValue } from "./localization";
 import type { TimeRangeKey } from "./timeRange";
 
 type IndicatorGridProps = {
@@ -19,6 +19,25 @@ const AVAILABILITY_LABELS: Record<string, string> = {
   no_data: "暂无返回",
 };
 
+const GROUP_ORDER = [
+  "经济总量",
+  "就业与消费",
+  "工业与投资",
+  "价格与进出口",
+  "汇率与金融",
+  "用电量",
+  "发电结构",
+  "碳价",
+  "市场指数",
+  "现货价格",
+  "价格",
+  "持仓与储备",
+  "库存",
+  "期货",
+  "指数",
+  "综合指数",
+];
+
 function availabilityText(indicator: IndicatorDefinition, fallbackDescription: string): string {
   const availability = indicator.availability;
   if (!availability || availability.status === "available") {
@@ -27,6 +46,36 @@ function availabilityText(indicator: IndicatorDefinition, fallbackDescription: s
   return [availability.reason, availability.next_step ? `下一步：${availability.next_step}` : ""]
     .filter(Boolean)
     .join(" ");
+}
+
+function displayGroup(snapshot: IndicatorSnapshot): string {
+  return (
+    snapshot.definition.selectors.display_group ||
+    snapshot.definition.selectors.category ||
+    "其他"
+  );
+}
+
+function groupSnapshots(snapshots: IndicatorSnapshot[]): [string, IndicatorSnapshot[]][] {
+  const grouped = new Map<string, IndicatorSnapshot[]>();
+  for (const snapshot of snapshots) {
+    const group = displayGroup(snapshot);
+    grouped.set(group, [...(grouped.get(group) ?? []), snapshot]);
+  }
+  return Array.from(grouped.entries()).sort(([left], [right]) => {
+    const leftIndex = GROUP_ORDER.indexOf(left);
+    const rightIndex = GROUP_ORDER.indexOf(right);
+    if (leftIndex === -1 && rightIndex === -1) {
+      return left.localeCompare(right, "zh-CN");
+    }
+    if (leftIndex === -1) {
+      return 1;
+    }
+    if (rightIndex === -1) {
+      return -1;
+    }
+    return leftIndex - rightIndex;
+  });
 }
 
 export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
@@ -58,15 +107,23 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   return (
     <>
       {availableSnapshots.length > 0 ? (
-        <section className="indicator-grid">
-          {availableSnapshots.map((snapshot) => (
-            <IndicatorCard
-              key={snapshot.definition.code}
-              snapshot={snapshot}
-              timeRange={timeRange}
-            />
-          ))}
-        </section>
+        groupSnapshots(availableSnapshots).map(([group, groupItems]) => (
+          <section className="indicator-section" key={group}>
+            <div className="indicator-section-head">
+              <h2>{localizeSelectorValue(group)}</h2>
+              <span>{groupItems.length} 个指标</span>
+            </div>
+            <div className="indicator-grid">
+              {groupItems.map((snapshot) => (
+                <IndicatorCard
+                  key={snapshot.definition.code}
+                  snapshot={snapshot}
+                  timeRange={timeRange}
+                />
+              ))}
+            </div>
+          </section>
+        ))
       ) : (
         <section className="state-panel compact">当前筛选下暂无已入库的真实序列。</section>
       )}

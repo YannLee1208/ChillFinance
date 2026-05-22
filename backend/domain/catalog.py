@@ -64,6 +64,44 @@ def _availability_for(code: str) -> dict[str, str] | None:
     }
 
 
+def _display_group_for(indicator: IndicatorDefinition) -> str:
+    if indicator.domain == "power":
+        metric = indicator.selectors.get("metric", "")
+        if "发电量" in metric:
+            return "发电结构"
+        if "carbon" in metric.lower():
+            return "碳价"
+        if "index" in metric.lower():
+            return "市场指数"
+        return "用电量"
+    if indicator.domain == "nonferrous":
+        metric = indicator.selectors.get("metric", "")
+        if "Inventory" in metric or "inventory" in metric:
+            return "库存"
+        if "reserve" in metric.lower() or "holding" in metric.lower():
+            return "持仓与储备"
+        if "index" in metric.lower():
+            return "综合指数"
+        return "价格"
+    if indicator.domain == "coal":
+        metric = indicator.selectors.get("metric", "")
+        if "库存" in metric:
+            return "库存"
+        if "期货" in metric:
+            return "期货"
+        if "指数" in metric:
+            return "指数"
+        return "现货价格"
+    return indicator.selectors.get("category", "")
+
+
+def _with_display_group(indicator: IndicatorDefinition) -> IndicatorDefinition:
+    display_group = _display_group_for(indicator)
+    if display_group:
+        indicator.selectors.setdefault("display_group", display_group)
+    return indicator
+
+
 def _treasury_indicators() -> list[IndicatorDefinition]:
     """生成 FRED 美国国债收益率指标定义。"""
 
@@ -1279,7 +1317,7 @@ _EXCHANGE_PENDING_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["LME_COPPER_INVENTORY"]["source"],
         description="LME 铜库存用于观察海外有色金属显性库存变化。",
         display_order=307,
-        selectors={"commodity": "Copper", "market": "LME", "metric": "Inventory"},
+        selectors={"commodity": "Copper", "metric": "LME Inventory"},
     ),
     _indicator(
         code="LME_ALUMINUM_INVENTORY",
@@ -1292,7 +1330,7 @@ _EXCHANGE_PENDING_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["LME_ALUMINUM_INVENTORY"]["source"],
         description="LME 铝库存用于观察海外轻金属显性库存变化。",
         display_order=308,
-        selectors={"commodity": "Aluminum", "market": "LME", "metric": "Inventory"},
+        selectors={"commodity": "Aluminum", "metric": "LME Inventory"},
     ),
     _indicator(
         code="LME_ZINC_INVENTORY",
@@ -1305,7 +1343,7 @@ _EXCHANGE_PENDING_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["LME_ZINC_INVENTORY"]["source"],
         description="LME 锌库存用于观察海外镀锌和基建需求相关库存变化。",
         display_order=309,
-        selectors={"commodity": "Zinc", "market": "LME", "metric": "Inventory"},
+        selectors={"commodity": "Zinc", "metric": "LME Inventory"},
     ),
     _indicator(
         code="LME_NICKEL_INVENTORY",
@@ -1318,7 +1356,7 @@ _EXCHANGE_PENDING_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["LME_NICKEL_INVENTORY"]["source"],
         description="LME 镍库存用于观察不锈钢和新能源材料链库存变化。",
         display_order=310,
-        selectors={"commodity": "Nickel", "market": "LME", "metric": "Inventory"},
+        selectors={"commodity": "Nickel", "metric": "LME Inventory"},
     ),
     _indicator(
         code="COMEX_GOLD_INVENTORY",
@@ -1331,7 +1369,7 @@ _EXCHANGE_PENDING_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["COMEX_GOLD_INVENTORY"]["source"],
         description="COMEX 黄金库存用于补充观察贵金属市场显性库存。",
         display_order=311,
-        selectors={"commodity": "Gold", "market": "COMEX", "metric": "Inventory"},
+        selectors={"commodity": "Gold", "metric": "COMEX Inventory"},
     ),
     _indicator(
         code="SHFE_COPPER_INVENTORY",
@@ -1344,7 +1382,7 @@ _EXCHANGE_PENDING_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["SHFE_COPPER_INVENTORY"]["source"],
         description="上期所铜库存用于观察国内有色金属显性库存变化。",
         display_order=308,
-        selectors={"commodity": "Copper", "market": "SHFE", "metric": "Inventory"},
+        selectors={"commodity": "Copper", "metric": "SHFE Inventory"},
     ),
 ]
 
@@ -1435,9 +1473,59 @@ _NONFERROUS_AKSHARE_SPECS = [
         "CNY/kg",
         "沪银主连收盘价用于观察贵金属链条风险偏好。",
         320,
-        "Silver",
+        "Gold",
         "SHFE",
-        "Futures close",
+        "Silver futures close",
+    ),
+    (
+        "SHFE_SILVER_FUTURES_SETTLE",
+        "SHFE silver futures continuous settlement",
+        "CNY/kg",
+        "沪银主连结算价用于观察白银期货定价。",
+        320,
+        "Gold",
+        "SHFE",
+        "Silver futures settlement",
+    ),
+    (
+        "CN_SILVER_ETF_HOLDINGS",
+        "Silver ETF holdings",
+        "tonne",
+        "白银 ETF 总库存用于观察贵金属投资需求和显性持仓变化。",
+        320,
+        "Gold",
+        "ETF",
+        "Silver holdings",
+    ),
+    (
+        "CN_SILVER_ETF_HOLDINGS_CHANGE",
+        "Silver ETF holdings change",
+        "tonne",
+        "白银 ETF 增持/减持用于观察贵金属投资需求边际变化。",
+        320,
+        "Gold",
+        "ETF",
+        "Silver holdings change",
+    ),
+    (
+        "SGE_AG9999_CLOSE",
+        "SGE Ag99.99 close",
+        "CNY/kg",
+        "上海黄金交易所 Ag99.99 收盘价用于观察国内现货白银定价。",
+        320,
+        "Gold",
+        "SGE",
+        "Silver spot close",
+    ),
+    (
+        "SGE_SILVER_BENCHMARK_PM",
+        "Shanghai silver benchmark PM",
+        "CNY/kg",
+        "上海银基准晚盘价用于观察人民币白银基准价格。",
+        320,
+        "Gold",
+        "SGE",
+        "Silver benchmark PM",
     ),
     (
         "SHFE_COPPER_FUTURES_CLOSE",
@@ -2282,7 +2370,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
 def get_catalog() -> list[IndicatorDefinition]:
     """返回按展示顺序排序的指标目录。"""
 
-    return sorted(
+    catalog = sorted(
         [
             *_treasury_indicators(),
             *_FRED_INDICATORS,
@@ -2309,6 +2397,7 @@ def get_catalog() -> list[IndicatorDefinition]:
         ],
         key=lambda item: item.display_order,
     )
+    return [_with_display_group(indicator) for indicator in catalog]
 
 
 def get_indicator(code: str) -> IndicatorDefinition:

@@ -469,6 +469,35 @@ h1 {
   white-space: nowrap;
 }
 
+.indicator-section {
+  display: grid;
+  gap: 10px;
+}
+
+.indicator-section + .indicator-section {
+  margin-top: 16px;
+}
+
+.indicator-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.indicator-section-head h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.indicator-section-head span {
+  color: #66758a;
+  font-size: 12px;
+}
+
 .indicator-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

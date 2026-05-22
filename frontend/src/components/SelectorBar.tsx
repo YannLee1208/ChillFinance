@@ -5,6 +5,7 @@ const SELECTOR_LABELS: Record<string, string> = {
   category: "专题",
   commodity: "品种",
   country: "国家/地区",
+  display_group: "分组",
   market: "市场",
   metric: "指标",
   tenor: "期限",
@@ -35,7 +36,7 @@ function buildOptions(indicators: IndicatorDefinition[]): Record<string, string[
 export function SelectorBar({ indicators, selected, onChange }: SelectorBarProps) {
   const optionsByKey = buildOptions(indicators);
   const selectorKeys = Object.keys(optionsByKey).sort((left, right) => {
-    const order = ["country", "category", "commodity", "market", "metric", "tenor"];
+    const order = ["country", "category", "display_group", "commodity", "market", "metric", "tenor"];
     return order.indexOf(left) - order.indexOf(right);
   });
 
