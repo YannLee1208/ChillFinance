@@ -60,6 +60,31 @@ def test_parse_decimal_month_keeps_two_digit_month() -> None:
     assert observations[1].period.isoformat() == "2004-12-01"
 
 
+def test_parse_year_month_period() -> None:
+    frame = pd.DataFrame(
+        {
+            "月份": ["2026-04", "2026-03"],
+            "新增人民币贷款-总额": [-100.0, 29952.24],
+        }
+    )
+    indicator = get_indicator("CN_RMB_LOANS")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "月份",
+            "value_column": "新增人民币贷款-总额",
+            "source": "AKShare/10jqka:macro_rmb_loan",
+            "period_type": "year_month",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2026-03-01"
+    assert observations[1].period.isoformat() == "2026-04-01"
+    assert observations[1].value == Decimal("-100.0")
+
+
 def test_parse_customs_monthly_amount_with_multiplier() -> None:
     frame = pd.DataFrame(
         {

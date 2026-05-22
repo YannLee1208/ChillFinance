@@ -8,6 +8,7 @@ from backend.constant import (
     FRED_SERIES,
     INDICATOR_AVAILABILITY,
     NEA_PUBLIC_SERIES,
+    PBC_PUBLIC_SERIES,
     US_TREASURY_SERIES,
     WORLD_BANK_SERIES,
 )
@@ -99,6 +100,14 @@ def _with_display_group(indicator: IndicatorDefinition) -> IndicatorDefinition:
     display_group = _display_group_for(indicator)
     if display_group:
         indicator.selectors.setdefault("display_group", display_group)
+    return indicator
+
+
+def _with_china_macro_domain(indicator: IndicatorDefinition) -> IndicatorDefinition:
+    """把中国经济指标从各国经济拆成独立板块。"""
+
+    if indicator.domain == "country_macro" and indicator.region == "China":
+        return indicator.model_copy(update={"domain": "china_macro"})
     return indicator
 
 
@@ -784,6 +793,19 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         description="中国季度现价 GDP 累计值，用于观察国内经济总量。",
         display_order=113,
         selectors={"country": "China", "category": "经济总量", "metric": "名义GDP"},
+    ),
+    _indicator(
+        code="CN_NOMINAL_GDP_CURRENT_QUARTER_QOQ",
+        name="China nominal GDP current-quarter QoQ",
+        domain="country_macro",
+        region="China",
+        unit="%",
+        frequency="quarterly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_NOMINAL_GDP_CURRENT_QUARTER_QOQ"]["source"],
+        description="用累计现价 GDP 还原当季值后计算环比，用于观察名义增长的季度动能。",
+        display_order=113,
+        selectors={"country": "China", "category": "经济总量", "metric": "名义GDP当季环比"},
     ),
     _indicator(
         code="CN_REAL_GDP_QUARTERLY_YOY",
@@ -2031,24 +2053,114 @@ _UNAVAILABLE_INDICATORS = [
         region="China",
         unit="100 million CNY",
         frequency="monthly",
-        provider="akshare_china",
-        source=AKSHARE_CHINA_SERIES["CN_TOTAL_SOCIAL_FINANCING"]["source"],
-        description="社会融资规模月度值用于观察实体经济融资需求。",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_TOTAL_SOCIAL_FINANCING"]["source"],
+        description="人民银行社会融资规模增量当月值，用于观察实体经济融资需求。",
         display_order=140,
-        selectors={"country": "China", "category": "汇率与金融", "metric": "Social financing"},
+        selectors={
+            "country": "China",
+            "category": "汇率与金融",
+            "metric": "社融增量",
+            "compare_group": "信用增量",
+        },
     ),
     _indicator(
-        code="CN_RMB_LOANS",
-        name="China RMB loans",
+        code="CN_TOTAL_SOCIAL_FINANCING_STOCK",
+        name="China total social financing stock",
         domain="country_macro",
         region="China",
         unit="100 million CNY",
         frequency="monthly",
-        provider="akshare_china",
-        source=AKSHARE_CHINA_SERIES["CN_RMB_LOANS"]["source"],
-        description="中国新增信贷当月值，用于观察银行体系信用投放强弱。",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_TOTAL_SOCIAL_FINANCING_STOCK"]["source"],
+        description="人民银行社会融资规模存量，用于观察实体经济融资余额。",
+        display_order=140,
+        selectors={"country": "China", "category": "汇率与金融", "metric": "社融存量"},
+    ),
+    _indicator(
+        code="CN_RMB_LOANS",
+        name="China RMB loan monthly change",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_RMB_LOANS"]["source"],
+        description="由人民银行人民币贷款余额计算的月度新增额，用于观察银行体系信用投放强弱。",
         display_order=141,
-        selectors={"country": "China", "category": "汇率与金融", "metric": "人民币贷款"},
+        selectors={
+            "country": "China",
+            "category": "汇率与金融",
+            "metric": "人民币贷款新增",
+            "compare_group": "贷款增量",
+        },
+    ),
+    _indicator(
+        code="CN_RMB_LOAN_BALANCE",
+        name="China RMB loan balance",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_RMB_LOAN_BALANCE"]["source"],
+        description="人民银行金融机构人民币贷款余额，用于核对信贷总量水平。",
+        display_order=141,
+        selectors={"country": "China", "category": "汇率与金融", "metric": "人民币贷款余额"},
+    ),
+    _indicator(
+        code="CN_HOUSEHOLD_LOAN_INCREMENT",
+        name="China household loan monthly change",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_HOUSEHOLD_LOAN_INCREMENT"]["source"],
+        description="由住户贷款余额计算的月度新增额，用于观察居民部门加杠杆变化。",
+        display_order=142,
+        selectors={
+            "country": "China",
+            "category": "汇率与金融",
+            "metric": "住户贷款新增",
+            "compare_group": "贷款增量",
+        },
+    ),
+    _indicator(
+        code="CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT",
+        name="China household short-term loan monthly change",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT"]["source"],
+        description="由住户短期贷款余额计算的月度新增额，用于观察居民短贷和消费信用变化。",
+        display_order=142,
+        selectors={
+            "country": "China",
+            "category": "汇率与金融",
+            "metric": "住户短期贷款新增",
+            "compare_group": "贷款增量",
+        },
+    ),
+    _indicator(
+        code="CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT",
+        name="China household medium and long-term loan monthly change",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="pbc_public",
+        source=PBC_PUBLIC_SERIES["CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT"]["source"],
+        description="由住户中长期贷款余额计算的月度新增额，用于观察居民按揭和长期融资变化。",
+        display_order=142,
+        selectors={
+            "country": "China",
+            "category": "汇率与金融",
+            "metric": "住户中长期贷款新增",
+            "compare_group": "贷款增量",
+        },
     ),
     _indicator(
         code="CN_M1",
@@ -2397,7 +2509,7 @@ def get_catalog() -> list[IndicatorDefinition]:
         ],
         key=lambda item: item.display_order,
     )
-    return [_with_display_group(indicator) for indicator in catalog]
+    return [_with_display_group(_with_china_macro_domain(indicator)) for indicator in catalog]
 
 
 def get_indicator(code: str) -> IndicatorDefinition:

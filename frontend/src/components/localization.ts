@@ -11,6 +11,7 @@ const wb = "世界银行";
 const fred = "FRED";
 const akEastmoney = "AkShare / 东方财富";
 const akMarket = "AkShare / 行情源";
+const pbc = "中国人民银行";
 const pendingNbsWind = "国家统计局 / Wind 待接入";
 const pendingPbocWind = "人民银行 / Wind 待接入";
 const pendingCustomsWind = "海关总署 / Wind 待接入";
@@ -63,7 +64,8 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   US_RETAIL_SALES_MOM: { name: "美国零售销售月率", description: "用于观察消费需求动能。", unit: "%", sourceLabel: "AkShare / Jin10" },
   CN_GDP: { name: "中国名义 GDP（美元口径）", description: "世界银行年度现价美元 GDP。", unit: "美元", sourceLabel: wb },
   CN_NOMINAL_GDP_QUARTERLY: { name: "中国名义 GDP", description: "国家统计口径季度累计现价 GDP。", unit: "亿元", sourceLabel: akEastmoney },
-  CN_REAL_GDP: { name: "中国实际 GDP", description: "需要国家统计局不变价序列或 Wind 接入，当前不写入模拟值。", unit: "指数 / 人民币", sourceLabel: pendingNbsWind },
+  CN_NOMINAL_GDP_CURRENT_QUARTER_QOQ: { name: "中国名义 GDP 当季环比", description: "用累计现价 GDP 还原当季值后计算环比。", unit: "%", sourceLabel: akEastmoney },
+  CN_REAL_GDP: { name: "中国实际 GDP", description: "公开可稳定抓取的是季度不变价同比发布值，月度实际 GDP 水平仍需确认官方接口。", unit: "指数 / 人民币", sourceLabel: pendingNbsWind },
   CN_REAL_GDP_GROWTH: { name: "中国实际 GDP 增速（年度）", description: "用于观察经济总量的真实增长。", unit: "%", sourceLabel: wb },
   CN_REAL_GDP_QUARTERLY_YOY: { name: "中国实际 GDP 增速", description: "GDP 不变价同比增速，用于观察实际增长。", unit: "%", sourceLabel: akEastmoney },
   CN_HOUSEHOLD_CONSUMPTION: { name: "居民最终消费支出", description: "用于观察消费对总需求的贡献。", unit: "美元", sourceLabel: wb },
@@ -93,8 +95,13 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   CN_CORPORATE_GOODS_PRICE_INDEX: { name: "中国企业商品价格指数", description: "用于观察上游和企业端价格压力。", unit: "指数", sourceLabel: akEastmoney },
   CN_EXPORT_PRICE_INDEX: { name: "中国出口价格指数", description: "出口价格指数仍需海关总署稳定接口或 Wind。", unit: "指数", sourceLabel: pendingCustomsWind },
   CN_IMPORT_PRICE_INDEX: { name: "中国进口价格指数", description: "进口价格指数仍需海关总署稳定接口或 Wind。", unit: "指数", sourceLabel: pendingCustomsWind },
-  CN_TOTAL_SOCIAL_FINANCING: { name: "社会融资规模", description: "社会融资规模月度值，用于观察实体经济融资需求。", unit: "亿元", sourceLabel: akEastmoney },
-  CN_RMB_LOANS: { name: "新增人民币贷款", description: "新增信贷当月值，用于观察信用投放强弱。", unit: "亿元", sourceLabel: akEastmoney },
+  CN_TOTAL_SOCIAL_FINANCING: { name: "社会融资规模增量", description: "人民银行社会融资规模增量当月值，用于观察实体经济融资需求。", unit: "亿元", sourceLabel: pbc },
+  CN_TOTAL_SOCIAL_FINANCING_STOCK: { name: "社会融资规模存量", description: "人民银行社会融资规模存量，用于观察实体经济融资余额。", unit: "亿元", sourceLabel: pbc },
+  CN_RMB_LOANS: { name: "人民币贷款新增", description: "由人民银行贷款余额计算的月度新增额，用于观察信用投放强弱。", unit: "亿元", sourceLabel: pbc },
+  CN_RMB_LOAN_BALANCE: { name: "人民币贷款余额", description: "人民银行金融机构人民币贷款余额，用于核对信贷总量水平。", unit: "亿元", sourceLabel: pbc },
+  CN_HOUSEHOLD_LOAN_INCREMENT: { name: "住户贷款新增", description: "由住户贷款余额计算的月度新增额，用于观察居民部门加杠杆变化。", unit: "亿元", sourceLabel: pbc },
+  CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT: { name: "住户短期贷款新增", description: "由住户短期贷款余额计算的月度新增额。", unit: "亿元", sourceLabel: pbc },
+  CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT: { name: "住户中长期贷款新增", description: "由住户中长期贷款余额计算的月度新增额，用于观察按揭和长期融资变化。", unit: "亿元", sourceLabel: pbc },
   CN_M2: { name: "中国 M2", description: "广义货币供应量，反映总量流动性。", unit: "亿元", sourceLabel: akEastmoney },
   CN_M2_YOY: { name: "中国 M2 同比", description: "广义货币供应量同比增速，反映总量流动性扩张速度。", unit: "%", sourceLabel: akEastmoney },
   CN_M1: { name: "中国 M1", description: "狭义货币供应量，用于观察企业活期资金和交易活跃度。", unit: "亿元", sourceLabel: akEastmoney },
@@ -284,6 +291,16 @@ const SELECTOR_VALUE_LABELS: Record<string, string> = {
   "PPI当月": "PPI 当月",
   "PPI累计": "PPI 累计",
   "价格与进出口": "价格与进出口",
+  信用增量: "信用增量",
+  贷款增量: "贷款增量",
+  社融增量: "社融增量",
+  社融存量: "社融存量",
+  人民币贷款新增: "人民币贷款新增",
+  人民币贷款余额: "人民币贷款余额",
+  住户贷款新增: "住户贷款新增",
+  住户短期贷款新增: "住户短期贷款新增",
+  住户中长期贷款新增: "住户中长期贷款新增",
+  名义GDP当季环比: "名义 GDP 当季环比",
   用电量: "用电量",
   发电结构: "发电结构",
   碳价: "碳价",
@@ -451,7 +468,12 @@ export function localizeSelectorValue(value: string): string {
 }
 
 export function selectorSummary(definition: IndicatorDefinition): string {
-  return Object.values(definition.selectors).map(localizeSelectorValue).join(" / ") || definition.region;
+  return (
+    Object.entries(definition.selectors)
+      .filter(([key]) => key !== "display_group" && key !== "compare_group")
+      .map(([, value]) => localizeSelectorValue(value))
+      .join(" / ") || definition.region
+  );
 }
 
 export function latestInRange(points: Observation[]): Observation | null {

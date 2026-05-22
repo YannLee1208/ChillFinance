@@ -17,12 +17,12 @@ type IndicatorCardProps = {
 
 const LINE_COLORS = ["#1f5eff", "#d92d20", "#039855", "#d97706", "#7c3aed", "#0e9384"];
 
-type DisplayPoint = Observation & {
+export type DisplayPoint = Observation & {
   numericValue: number;
   displayValue: number;
 };
 
-type DisplayScale = {
+export type DisplayScale = {
   unit: string;
   divisor: number;
 };
@@ -32,7 +32,7 @@ function colorForCode(code: string): string {
   return LINE_COLORS[total % LINE_COLORS.length];
 }
 
-function displayScale(definitionUnit: string, localizedUnit: string): DisplayScale {
+export function displayScale(definitionUnit: string, localizedUnit: string): DisplayScale {
   const normalizedUnit = localizedUnit || definitionUnit;
   if (normalizedUnit === "美元") {
     return { unit: "亿美元", divisor: 100_000_000 };
@@ -46,7 +46,7 @@ function displayScale(definitionUnit: string, localizedUnit: string): DisplaySca
   return { unit: normalizedUnit, divisor: 1 };
 }
 
-function toDisplayPoint(point: Observation, scale: DisplayScale): DisplayPoint | null {
+export function toDisplayPoint(point: Observation, scale: DisplayScale): DisplayPoint | null {
   const numericValue = Number(point.value);
   if (!Number.isFinite(numericValue)) {
     return null;
@@ -58,7 +58,7 @@ function toDisplayPoint(point: Observation, scale: DisplayScale): DisplayPoint |
   };
 }
 
-function formatValue(value: number | string | undefined): string {
+export function formatValue(value: number | string | undefined): string {
   if (value === undefined) {
     return "--";
   }

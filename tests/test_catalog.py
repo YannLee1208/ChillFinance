@@ -9,6 +9,7 @@ def test_catalog_contains_requested_domains() -> None:
 
     assert {
         "rates",
+        "china_macro",
         "country_macro",
         "nonferrous",
         "crude_oil",
@@ -54,6 +55,10 @@ def test_catalog_has_filterable_dimensions() -> None:
         for indicator in catalog
     )
     assert any(
+        indicator.domain == "china_macro" and indicator.selectors.get("country") == "China"
+        for indicator in catalog
+    )
+    assert not any(
         indicator.domain == "country_macro" and indicator.selectors.get("country") == "China"
         for indicator in catalog
     )
@@ -86,8 +91,9 @@ def test_unavailable_indicators_explain_status_and_next_step() -> None:
     indicator = get_indicator("CN_REAL_GDP")
 
     assert indicator.provider == "unavailable"
-    assert indicator.availability.status == "blocked"
-    assert "403" in indicator.availability.reason
+    assert indicator.domain == "china_macro"
+    assert indicator.availability.status == "pending_source"
+    assert "月度实际 GDP" in indicator.availability.reason
     assert "Wind" in indicator.availability.next_step
 
 
@@ -128,9 +134,16 @@ def test_key_gated_and_exchange_indicators_are_discoverable() -> None:
 
 
 def test_pboc_financing_and_money_indicators_use_public_data_provider() -> None:
-    expected_codes = {
+    pbc_codes = {
         "CN_TOTAL_SOCIAL_FINANCING",
+        "CN_TOTAL_SOCIAL_FINANCING_STOCK",
         "CN_RMB_LOANS",
+        "CN_RMB_LOAN_BALANCE",
+        "CN_HOUSEHOLD_LOAN_INCREMENT",
+        "CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT",
+        "CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT",
+    }
+    akshare_codes = {
         "CN_M2",
         "CN_M2_YOY",
         "CN_M1",
@@ -140,11 +153,32 @@ def test_pboc_financing_and_money_indicators_use_public_data_provider() -> None:
         "CN_M1_M2_SCISSORS",
     }
 
-    for code in expected_codes:
+    for code in pbc_codes:
+        indicator = get_indicator(code)
+        assert indicator.provider == "pbc_public"
+        assert indicator.availability.status == "available"
+        assert indicator.domain == "china_macro"
+        assert indicator.selectors.get("category") == "汇率与金融"
+
+    for code in akshare_codes:
         indicator = get_indicator(code)
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
+        assert indicator.domain == "china_macro"
         assert indicator.selectors.get("category") == "汇率与金融"
+
+
+def test_china_macro_credit_indicators_define_comparison_groups() -> None:
+    expected = {
+        "CN_RMB_LOANS",
+        "CN_HOUSEHOLD_LOAN_INCREMENT",
+        "CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT",
+        "CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT",
+    }
+
+    for code in expected:
+        indicator = get_indicator(code)
+        assert indicator.selectors.get("compare_group") == "贷款增量"
 
 
 def test_customs_trade_indicators_use_public_customs_table() -> None:
@@ -242,7 +276,7 @@ def test_china_price_trade_titles_include_country() -> None:
     price_trade_indicators = [
         indicator
         for indicator in get_catalog()
-        if indicator.domain == "country_macro"
+        if indicator.domain == "china_macro"
         and indicator.selectors.get("country") == "China"
         and indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
     ]
@@ -442,9 +476,9 @@ def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
 
 def test_additional_macro_indicators_are_discoverable() -> None:
     expected = {
-        "CN_MANUFACTURING_PMI": ("akshare_china", "country_macro"),
-        "CN_NON_MANUFACTURING_PMI": ("akshare_china", "country_macro"),
-        "CN_CORPORATE_GOODS_PRICE_INDEX": ("akshare_china", "country_macro"),
+        "CN_MANUFACTURING_PMI": ("akshare_china", "china_macro"),
+        "CN_NON_MANUFACTURING_PMI": ("akshare_china", "china_macro"),
+        "CN_CORPORATE_GOODS_PRICE_INDEX": ("akshare_china", "china_macro"),
         "US_ISM_MANUFACTURING_PMI": ("akshare_china", "country_macro"),
         "US_UNEMPLOYMENT_RATE": ("akshare_china", "country_macro"),
         "US_NONFARM_PAYROLLS": ("akshare_china", "country_macro"),

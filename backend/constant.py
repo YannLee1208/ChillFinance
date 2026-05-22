@@ -8,6 +8,7 @@ DEFAULT_USER_AGENT = "local-macro-monitor/0.1"
 
 DATE_FORMAT = "%Y-%m-%d"
 US_TREASURY_BACKFILL_START_YEAR = 2020
+PBC_STATS_YEAR_START = 2020
 
 NEA_PUBLIC_SERIES = {
     "CN_SOCIETY_ELECTRICITY": {"metric": "total", "kind": "value"},
@@ -90,6 +91,60 @@ WORLD_BANK_SERIES = {
 
 CHINA_DATA_SERIES = {
     "CN_M2": "china-m2-money-supply",
+}
+
+PBC_PUBLIC_SERIES = {
+    "CN_TOTAL_SOCIAL_FINANCING": {
+        "table": "social_financing_flow",
+        "row_label": "社会融资规模增量",
+        "source": "PBOC:社会融资规模增量统计表",
+        "unit_multiplier": "1",
+        "value_transform": "level",
+    },
+    "CN_TOTAL_SOCIAL_FINANCING_STOCK": {
+        "table": "social_financing_stock",
+        "row_label": "社会融资规模存量",
+        "source": "PBOC:社会融资规模存量统计表",
+        "unit_multiplier": "10000",
+        "value_transform": "level",
+    },
+    "CN_RMB_LOANS": {
+        "table": "rmb_credit",
+        "row_label": "一、各项贷款",
+        "source": "PBOC:金融机构人民币信贷收支表",
+        "unit_multiplier": "1",
+        "value_transform": "monthly_change",
+    },
+    "CN_RMB_LOAN_BALANCE": {
+        "table": "rmb_credit",
+        "row_label": "一、各项贷款",
+        "source": "PBOC:金融机构人民币信贷收支表",
+        "unit_multiplier": "1",
+        "value_transform": "level",
+    },
+    "CN_HOUSEHOLD_LOAN_INCREMENT": {
+        "table": "rmb_credit",
+        "row_label": "1.住户贷款",
+        "source": "PBOC:金融机构人民币信贷收支表",
+        "unit_multiplier": "1",
+        "value_transform": "monthly_change",
+    },
+    "CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT": {
+        "table": "rmb_credit",
+        "row_label": "（1）短期贷款",
+        "row_context": "住户贷款",
+        "source": "PBOC:金融机构人民币信贷收支表",
+        "unit_multiplier": "1",
+        "value_transform": "monthly_change",
+    },
+    "CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT": {
+        "table": "rmb_credit",
+        "row_label": "（2） 中长期贷款",
+        "row_context": "住户贷款",
+        "source": "PBOC:金融机构人民币信贷收支表",
+        "unit_multiplier": "1",
+        "value_transform": "monthly_change",
+    },
 }
 
 COAL_PUBLIC_SERIES = {
@@ -249,6 +304,13 @@ AKSHARE_CHINA_SERIES = {
         "source": "AKShare/Eastmoney:macro_china_gdp",
         "period_type": "quarter",
     },
+    "CN_NOMINAL_GDP_CURRENT_QUARTER_QOQ": {
+        "function": "macro_china_gdp",
+        "date_column": "季度",
+        "source": "AKShare/Eastmoney:macro_china_gdp",
+        "period_type": "quarter",
+        "computed": "nominal_gdp_current_quarter_qoq",
+    },
     "CN_RETAIL_SALES": {
         "function": "macro_china_consumer_goods_retail",
         "date_column": "月份",
@@ -268,13 +330,6 @@ AKSHARE_CHINA_SERIES = {
         "date_column": "月份",
         "value_column": "同比增长",
         "source": "AKShare/Eastmoney:macro_china_gdzctz",
-        "period_type": "month",
-    },
-    "CN_RMB_LOANS": {
-        "function": "macro_china_new_financial_credit",
-        "date_column": "月份",
-        "value_column": "当月",
-        "source": "AKShare/Eastmoney:macro_china_new_financial_credit",
         "period_type": "month",
     },
     "CN_M2": {
@@ -961,20 +1016,13 @@ AKSHARE_CHINA_SERIES = {
         "source": "AKShare/Jin10:macro_usa_retail_sales",
         "period_type": "date",
     },
-    "CN_TOTAL_SOCIAL_FINANCING": {
-        "function": "macro_china_bank_financing",
-        "date_column": "日期",
-        "value_column": "最新值",
-        "source": "AKShare/Eastmoney:macro_china_bank_financing",
-        "period_type": "date",
-    },
 }
 
 UNAVAILABLE_SERIES = {
     "CN_REAL_GDP": {
-        "status": "blocked",
-        "reason": "已尝试国家统计局 data.stats.gov.cn，当前环境返回 403。",
-        "next_step": "配置 Wind，或改用可访问的国家统计局官方接口。",
+        "status": "pending_source",
+        "reason": "公开可稳定抓取的是季度不变价同比发布值，尚未找到月度实际 GDP 水平官方接口。",
+        "next_step": "如需月度实际 GDP 水平，接入 Wind 或确认国家统计局可访问的专用接口。",
     },
     "CN_MANUFACTURING_INVESTMENT": {
         "status": "pending_source",

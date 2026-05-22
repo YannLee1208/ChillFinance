@@ -2,7 +2,8 @@ import type { IndicatorDefinition } from "../types";
 
 export const DOMAIN_LABELS: Record<string, { title: string; subtitle: string }> = {
   rates: { title: "国债利率", subtitle: "期限 / 曲线" },
-  country_macro: { title: "各国经济", subtitle: "GDP / 财政 / 债务" },
+  china_macro: { title: "中国经济", subtitle: "GDP / 信贷 / 价格" },
+  country_macro: { title: "各国经济", subtitle: "海外 GDP / 财政 / 价格" },
   nonferrous: { title: "有色板块", subtitle: "金银铜铝 / 库存" },
   crude_oil: { title: "原油板块", subtitle: "EIA / 原油 / 成品油" },
   oil_shipping: { title: "油运板块", subtitle: "BDTI / BCTI / TD 航线" },
@@ -12,6 +13,7 @@ export const DOMAIN_LABELS: Record<string, { title: string; subtitle: string }> 
 
 const DOMAIN_ORDER = [
   "rates",
+  "china_macro",
   "country_macro",
   "nonferrous",
   "crude_oil",

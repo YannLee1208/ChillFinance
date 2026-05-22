@@ -34,6 +34,8 @@ class AkShareChinaProvider:
         frame = self._call_akshare(config)
         if config.get("computed") == "m1_yoy_minus_m2_yoy":
             return _parse_m1_m2_scissors(frame, indicator)
+        if config.get("computed") == "nominal_gdp_current_quarter_qoq":
+            return _parse_nominal_gdp_current_quarter_qoq(frame, indicator)
         if config.get("aggregate") == "mean_by_date":
             return _parse_mean_by_date(frame, indicator, config)
         return parse_akshare_series_frame(frame, indicator, config)
@@ -153,6 +155,52 @@ def _parse_m1_m2_scissors(
     return sorted(observations, key=lambda observation: observation.period)
 
 
+def _parse_nominal_gdp_current_quarter_qoq(
+    frame: pd.DataFrame,
+    indicator: IndicatorDefinition,
+) -> list[Observation]:
+    """用累计现价 GDP 还原当季值，并计算当季环比。"""
+
+    date_column = "季度"
+    value_column = "国内生产总值-绝对值"
+    _ensure_columns(frame, [date_column, value_column])
+
+    quarterly_values: list[tuple[date, int, int, Decimal]] = []
+    previous_cumulative_by_year: dict[int, Decimal] = {}
+    for _, row in frame.iterrows():
+        if _is_missing(row[date_column]) or _is_missing(row[value_column]):
+            continue
+        period, year, quarter = _parse_chinese_quarter_detail(str(row[date_column]).strip())
+        cumulative_value = _to_decimal(row[value_column])
+        previous_cumulative = previous_cumulative_by_year.get(year, Decimal("0"))
+        current_quarter_value = cumulative_value - previous_cumulative
+        previous_cumulative_by_year[year] = cumulative_value
+        quarterly_values.append((period, year, quarter, current_quarter_value))
+
+    observations: list[Observation] = []
+    ingested_at = datetime.now(UTC)
+    previous_quarter_value: Decimal | None = None
+    for period, _, _, current_quarter_value in sorted(quarterly_values, key=lambda item: item[0]):
+        if previous_quarter_value is None or previous_quarter_value == 0:
+            previous_quarter_value = current_quarter_value
+            continue
+        value = (current_quarter_value - previous_quarter_value) / previous_quarter_value * Decimal(
+            "100"
+        )
+        observations.append(
+            _build_observation(
+                indicator=indicator,
+                period=period,
+                value=value,
+                source=AKSHARE_CHINA_SERIES[indicator.code]["source"],
+                ingested_at=ingested_at,
+            )
+        )
+        previous_quarter_value = current_quarter_value
+
+    return observations
+
+
 def _build_observation(
     *,
     indicator: IndicatorDefinition,
@@ -182,8 +230,11 @@ def _is_missing(value: Any) -> bool:
 
 
 def _to_decimal(value: Any) -> Decimal:
+    normalized = str(value).strip().replace(",", "")
+    if normalized.endswith("%"):
+        normalized = normalized[:-1]
     try:
-        return Decimal(str(value))
+        return Decimal(normalized)
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Invalid numeric value from AkShare: {value}") from exc
 
@@ -205,6 +256,8 @@ def _parse_period(value: Any, period_type: str) -> date:
         return datetime.strptime(text[:10], "%Y-%m-%d").date()
     if period_type == "decimal_month":
         return _parse_decimal_month(text)
+    if period_type == "year_month":
+        return datetime.strptime(text, "%Y-%m").date()
     raise ValueError(f"Unsupported AkShare period type: {period_type}")
 
 
@@ -215,10 +268,15 @@ def _parse_decimal_month(text: str) -> date:
 
 
 def _parse_chinese_quarter(text: str) -> date:
+    period, _, _ = _parse_chinese_quarter_detail(text)
+    return period
+
+
+def _parse_chinese_quarter_detail(text: str) -> tuple[date, int, int]:
     year_text, quarter_text = text.split("年第")
     year = int(year_text)
     quarter_part = quarter_text.replace("季度", "")
     quarter = int(quarter_part.split("-")[-1])
     month = quarter * 3
     day = calendar.monthrange(year, month)[1]
-    return date(year, month, day)
+    return date(year, month, day), year, quarter

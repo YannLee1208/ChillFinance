@@ -21,6 +21,9 @@ function buildOptions(indicators: IndicatorDefinition[]): Record<string, string[
   const values: Record<string, Set<string>> = {};
   for (const indicator of indicators) {
     for (const [key, value] of Object.entries(indicator.selectors)) {
+      if (key === "display_group" || key === "compare_group") {
+        continue;
+      }
       values[key] = values[key] ?? new Set<string>();
       values[key].add(value);
     }
@@ -36,7 +39,7 @@ function buildOptions(indicators: IndicatorDefinition[]): Record<string, string[
 export function SelectorBar({ indicators, selected, onChange }: SelectorBarProps) {
   const optionsByKey = buildOptions(indicators);
   const selectorKeys = Object.keys(optionsByKey).sort((left, right) => {
-    const order = ["country", "category", "display_group", "commodity", "market", "metric", "tenor"];
+    const order = ["country", "category", "commodity", "market", "metric", "tenor"];
     return order.indexOf(left) - order.indexOf(right);
   });
 

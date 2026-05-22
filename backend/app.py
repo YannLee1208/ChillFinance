@@ -18,6 +18,7 @@ from backend.ingest.coal_public import CoalPublicProvider
 from backend.ingest.eia_public import EIAPublicProvider
 from backend.ingest.fred import FredSeriesProvider
 from backend.ingest.nea_public import NEAPublicProvider
+from backend.ingest.pbc_public import PBCPublicProvider
 from backend.ingest.seed import SeedProvider
 from backend.ingest.service import IngestionService
 from backend.ingest.unavailable import UnavailableProvider
@@ -69,6 +70,10 @@ def create_ingestion_service(store: DuckDBMacroStore) -> IngestionService:
                 user_agent=settings.macro_user_agent,
             ),
             NEAPublicProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
+            PBCPublicProvider(
                 timeout_seconds=settings.macro_http_timeout_seconds,
                 user_agent=settings.macro_user_agent,
             ),

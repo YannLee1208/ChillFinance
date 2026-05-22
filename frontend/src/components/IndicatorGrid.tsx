@@ -2,6 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 
 import { fetchIndicatorSnapshot } from "../api";
 import type { IndicatorDefinition, IndicatorSnapshot } from "../types";
+import { ComparisonPanel } from "./ComparisonPanel";
 import { IndicatorCard } from "./IndicatorCard";
 import { localizeIndicator, localizeSelectorValue } from "./localization";
 import type { TimeRangeKey } from "./timeRange";
@@ -78,6 +79,18 @@ function groupSnapshots(snapshots: IndicatorSnapshot[]): [string, IndicatorSnaps
   });
 }
 
+function comparisonGroups(snapshots: IndicatorSnapshot[]): [string, IndicatorSnapshot[]][] {
+  const grouped = new Map<string, IndicatorSnapshot[]>();
+  for (const snapshot of snapshots) {
+    const group = snapshot.definition.selectors.compare_group;
+    if (!group) {
+      continue;
+    }
+    grouped.set(group, [...(grouped.get(group) ?? []), snapshot]);
+  }
+  return Array.from(grouped.entries()).filter(([, items]) => items.length >= 2);
+}
+
 export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   const results = useQueries({
     queries: indicators.map((indicator) => ({
@@ -113,6 +126,14 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
               <h2>{localizeSelectorValue(group)}</h2>
               <span>{groupItems.length} 个指标</span>
             </div>
+            {comparisonGroups(groupItems).map(([compareGroup, compareItems]) => (
+              <ComparisonPanel
+                group={compareGroup}
+                key={compareGroup}
+                snapshots={compareItems}
+                timeRange={timeRange}
+              />
+            ))}
             <div className="indicator-grid">
               {groupItems.map((snapshot) => (
                 <IndicatorCard

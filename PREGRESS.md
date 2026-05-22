@@ -450,3 +450,26 @@
 ### 提交记录
 
 - 待提交：拆分黄金白银品种并增加跨平台部署脚本。
+
+## 2026-05-22 中国经济拆分与央行信贷数据
+
+### 进展
+
+- 将 `region=China` 的宏观指标从 `country_macro` 自动拆分到 `china_macro`，前端侧边栏新增“中国经济”子模块；“各国经济”保留海外经济体。
+- 新增 `pbc_public` provider，直接从人民银行 2020 年以来年度统计页拉取 xlsx：社会融资规模增量、社会融资规模存量、金融机构人民币信贷收支表。
+- 修正 `CN_TOTAL_SOCIAL_FINANCING`：旧配置误用 `macro_china_bank_financing`，实际是银行理财发行数量；现改为人民银行“社会融资规模增量统计表”。4 月社融增量 6200 亿元可由官方表读取。
+- 新增 `CN_TOTAL_SOCIAL_FINANCING_STOCK`、`CN_RMB_LOAN_BALANCE`、`CN_HOUSEHOLD_LOAN_INCREMENT`、`CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT`、`CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT`。
+- 人民币贷款新增额现在由人民银行贷款余额环比计算，能对应 2026-04 贷款余额 2805018.53 亿元、余额环比减少约 114.98 亿元的口径。
+- 名义 GDP 新增“当季环比”：用 AkShare 季度累计现价 GDP 还原当季值后计算 QoQ。
+- 前端新增 `compare_group` 综合比较图：同一组相似指标会在分组顶部自动绘制多序列比较图，首批用于“贷款增量”和“信用增量”。
+- 筛选栏与卡片摘要隐藏 `display_group`、`compare_group` 这类布局字段，避免把工程标签暴露给使用者。
+
+### 教训
+
+- 社融必须核对表名和字段含义，不能只因为函数名里有 financing 就接入；`macro_china_bank_financing` 是银行理财发行数量，不是社会融资规模。
+- “实际 GDP 每月可拉到”需要区分发布频率和真实指标频率：当前稳定公开源能拿季度实际 GDP 同比发布值，未找到月度实际 GDP 水平官方接口，不能用事件发布日期伪造成月度水平数据。
+- 住户短贷、中长期贷款属于余额表分项，月新增需要由相邻月份余额差计算；这类相似指标应同时提供综合比较图，便于看总量和结构变化。
+
+### 提交记录
+
+- 待提交：拆分中国经济模块，接入人民银行社融/信贷表并新增综合比较图。
