@@ -8,6 +8,8 @@ from backend.domain.models import IndicatorDefinition, Observation
 
 _EXPORT_SERIES_CODE = "CN_EXPORT_VALUE_USD"
 _IMPORT_SERIES_CODE = "CN_IMPORT_VALUE_USD"
+_GOODS_SERVICES_EXPORT_SERIES_CODE = "CN_EXPORTS_GOODS_SERVICES"
+_GOODS_SERVICES_IMPORT_SERIES_CODE = "CN_IMPORTS_GOODS_SERVICES"
 
 
 def build_local_derived_series(
@@ -30,6 +32,13 @@ def build_local_derived_series(
             _balance_observations(definition, source_series),
             12,
         )
+    if definition.code == "CN_GOODS_SERVICES_TRADE_BALANCE":
+        return _balance_observations(
+            definition,
+            source_series,
+            _GOODS_SERVICES_EXPORT_SERIES_CODE,
+            _GOODS_SERVICES_IMPORT_SERIES_CODE,
+        )
     return []
 
 
@@ -46,20 +55,24 @@ def required_source_codes(indicator_code: str) -> set[str]:
         "CN_TRADE_BALANCE_YOY_USD",
     }:
         return {_EXPORT_SERIES_CODE, _IMPORT_SERIES_CODE}
+    if indicator_code == "CN_GOODS_SERVICES_TRADE_BALANCE":
+        return {_GOODS_SERVICES_EXPORT_SERIES_CODE, _GOODS_SERVICES_IMPORT_SERIES_CODE}
     return set()
 
 
 def _balance_observations(
     definition: IndicatorDefinition,
     source_series: dict[str, list[Observation]],
+    export_series_code: str = _EXPORT_SERIES_CODE,
+    import_series_code: str = _IMPORT_SERIES_CODE,
 ) -> list[Observation]:
     export_values = {
         point.period: point.value
-        for point in source_series.get(_EXPORT_SERIES_CODE, [])
+        for point in source_series.get(export_series_code, [])
     }
     import_values = {
         point.period: point.value
-        for point in source_series.get(_IMPORT_SERIES_CODE, [])
+        for point in source_series.get(import_series_code, [])
     }
     periods = sorted(set(export_values) & set(import_values))
     ingested_at = _latest_ingested_at(source_series)

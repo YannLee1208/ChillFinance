@@ -253,6 +253,7 @@ def test_china_price_trade_topic_uses_row_groups_and_chart_styles() -> None:
         "CN_TRADE_BALANCE_USD": ("顺逆差", "trade"),
         "CN_TRADE_BALANCE_YOY_USD": ("顺逆差", "trade"),
         "CN_TRADE_BALANCE_MOM_USD": ("顺逆差", "trade"),
+        "CN_GOODS_SERVICES_TRADE_BALANCE": ("顺逆差", "trade"),
     }
 
     for code, (display_group, chart_style) in expected.items():
@@ -260,6 +261,14 @@ def test_china_price_trade_topic_uses_row_groups_and_chart_styles() -> None:
         assert indicator.selectors.get("category") == "价格与进出口"
         assert indicator.selectors.get("display_group") == display_group
         assert indicator.selectors.get("chart_style") == chart_style
+
+
+def test_goods_services_trade_balance_is_local_derived() -> None:
+    indicator = get_indicator("CN_GOODS_SERVICES_TRADE_BALANCE")
+
+    assert indicator.provider == "local_derived"
+    assert indicator.frequency == "annual"
+    assert indicator.selectors.get("display_group") == "顺逆差"
 
 
 def test_customs_trade_indicators_use_public_customs_table() -> None:

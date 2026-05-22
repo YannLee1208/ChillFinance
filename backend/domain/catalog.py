@@ -987,6 +987,19 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         display_order=252,
         selectors=_price_trade_selectors("顺逆差环比", "顺逆差", "trade"),
     ),
+    _indicator(
+        code="CN_GOODS_SERVICES_TRADE_BALANCE",
+        name="China goods and services trade balance",
+        domain="country_macro",
+        region="China",
+        unit="USD",
+        frequency="annual",
+        provider="local_derived",
+        source="Derived:WorldBank:exports_of_goods_and_services-imports_of_goods_and_services",
+        description="用世界银行年度货物和服务出口额减进口额计算的顺逆差，正值为顺差，负值为逆差。",
+        display_order=253,
+        selectors=_price_trade_selectors("货物和服务顺逆差", "顺逆差", "trade"),
+    ),
 ]
 
 _CHINA_WORLD_BANK_EXTRA_INDICATORS = [

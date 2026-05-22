@@ -92,6 +92,7 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   CN_TRADE_BALANCE_USD: { name: "中国顺差/逆差（美元）", description: "出口额减进口额，正值为顺差，负值为逆差。", unit: "亿美元", sourceLabel: "AkShare / 海关总署" },
   CN_TRADE_BALANCE_YOY_USD: { name: "中国顺逆差同比", description: "由贸易差额计算的同比变化。", unit: "%", sourceLabel: "AkShare / 海关总署" },
   CN_TRADE_BALANCE_MOM_USD: { name: "中国顺逆差环比", description: "由贸易差额计算的环比变化。", unit: "%", sourceLabel: "AkShare / 海关总署" },
+  CN_GOODS_SERVICES_TRADE_BALANCE: { name: "中国货物和服务顺逆差", description: "世界银行年度货物和服务出口额减进口额，正值为顺差，负值为逆差。", unit: "美元", sourceLabel: "世界银行 / 本地派生" },
   CN_CPI_INFLATION: { name: "中国年度 CPI 通胀率（World Bank）", description: "World Bank 年度 CPI 通胀率，和月度 CPI 环比不是同一口径。", unit: "%", sourceLabel: wb },
   CN_CPI_MONTHLY_YOY: { name: "中国 CPI 同比", description: "国家统计口径 CPI 月度同比，用于观察居民端通胀压力。", unit: "%", sourceLabel: akEastmoney },
   CN_PPI: { name: "中国 PPI 同比", description: "用于观察工业品出厂价格和企业盈利压力。", unit: "%", sourceLabel: akEastmoney },

@@ -161,6 +161,44 @@ def test_observations_backfills_trade_balance_from_local_values(
     assert Decimal(payload[0]["value"]) == Decimal("780.0")
 
 
+def test_observations_backfills_goods_services_trade_balance(
+    temp_db_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MACRO_DB_PATH", str(temp_db_path))
+    store = DuckDBMacroStore(temp_db_path)
+    store.initialize()
+    ingested_at = datetime(2026, 5, 21, tzinfo=UTC)
+    store.upsert_observations(
+        [
+            Observation(
+                indicator_code="CN_EXPORTS_GOODS_SERVICES",
+                period=date(2024, 12, 31),
+                value=Decimal("3750"),
+                provider="world_bank",
+                source=get_indicator("CN_EXPORTS_GOODS_SERVICES").source,
+                ingested_at=ingested_at,
+            ),
+            Observation(
+                indicator_code="CN_IMPORTS_GOODS_SERVICES",
+                period=date(2024, 12, 31),
+                value=Decimal("3219"),
+                provider="world_bank",
+                source=get_indicator("CN_IMPORTS_GOODS_SERVICES").source,
+                ingested_at=ingested_at,
+            ),
+        ]
+    )
+    client = TestClient(create_app())
+
+    response = client.get("/api/observations/CN_GOODS_SERVICES_TRADE_BALANCE")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload[0]["period"] == "2024-12-31"
+    assert Decimal(payload[0]["value"]) == Decimal("531.0")
+
+
 def test_latest_ingestion_run_returns_none_before_update(
     temp_db_path: Path,
     monkeypatch: pytest.MonkeyPatch,
