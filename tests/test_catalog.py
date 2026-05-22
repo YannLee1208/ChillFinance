@@ -70,7 +70,8 @@ def test_catalog_has_filterable_dimensions() -> None:
     assert any(
         indicator.code == "CN_RETAIL_SALES"
         and indicator.provider == "akshare_china"
-        and indicator.selectors.get("category") == "消费"
+        and indicator.selectors.get("category") == "CPI/PPI/PMI"
+        and indicator.selectors.get("display_group") == "消费"
         for indicator in catalog
     )
     assert any(
@@ -236,12 +237,6 @@ def test_annual_cpi_inflation_is_not_mixed_with_monthly_cpi_ppi() -> None:
 
 def test_china_price_trade_topic_uses_row_groups_and_chart_styles() -> None:
     expected = {
-        "CN_CPI_MONTHLY_INDEX": ("CPI", "price"),
-        "CN_CPI_MONTHLY_YOY": ("CPI", "price"),
-        "CN_CPI_MONTHLY_MOM": ("CPI", "price"),
-        "CN_PPI_INDEX": ("PPI", "price"),
-        "CN_PPI": ("PPI", "price"),
-        "CN_PPI_MOM": ("PPI", "price"),
         "CN_EXPORT_VALUE_USD": ("出口", "trade"),
         "CN_EXPORT_YOY_USD": ("出口", "trade"),
         "CN_EXPORT_MOM_USD": ("出口", "trade"),
@@ -258,9 +253,34 @@ def test_china_price_trade_topic_uses_row_groups_and_chart_styles() -> None:
 
     for code, (display_group, chart_style) in expected.items():
         indicator = get_indicator(code)
-        assert indicator.selectors.get("category") == "价格与进出口"
+        assert indicator.selectors.get("category") == "进出口"
         assert indicator.selectors.get("display_group") == display_group
         assert indicator.selectors.get("chart_style") == chart_style
+
+
+def test_china_cycle_topic_contains_cpi_ppi_pmi_consumption_and_industry() -> None:
+    expected = {
+        "CN_CPI_MONTHLY_INDEX": "CPI",
+        "CN_CPI_MONTHLY_YOY": "CPI",
+        "CN_CPI_MONTHLY_MOM": "CPI",
+        "CN_PPI_INDEX": "PPI",
+        "CN_PPI": "PPI",
+        "CN_PPI_MOM": "PPI",
+        "CN_MANUFACTURING_PMI": "PMI",
+        "CN_MANUFACTURING_PMI_YOY": "PMI",
+        "CN_MANUFACTURING_PMI_MOM": "PMI",
+        "CN_NON_MANUFACTURING_PMI": "PMI",
+        "CN_NON_MANUFACTURING_PMI_YOY": "PMI",
+        "CN_NON_MANUFACTURING_PMI_MOM": "PMI",
+        "CN_RETAIL_SALES": "消费",
+        "CN_INDUSTRIAL_PRODUCTION_YOY": "工业与投资",
+        "CN_FIXED_ASSET_INVESTMENT": "工业与投资",
+    }
+
+    for code, display_group in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.selectors.get("category") == "CPI/PPI/PMI"
+        assert indicator.selectors.get("display_group") == display_group
 
 
 def test_goods_services_trade_balance_is_local_derived() -> None:
@@ -289,7 +309,7 @@ def test_customs_trade_indicators_use_public_customs_table() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert "Customs" in indicator.source
-        assert indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
+        assert indicator.selectors.get("category") == "进出口"
 
 
 def test_nbs_price_indicators_use_public_akshare_provider() -> None:
@@ -298,7 +318,7 @@ def test_nbs_price_indicators_use_public_akshare_provider() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.availability.status == "available"
         assert indicator.selectors.get("country") == "China"
-        assert indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
+        assert indicator.selectors.get("category") == "CPI/PPI/PMI"
 
 
 def test_cross_sector_public_indicators_are_discoverable() -> None:
@@ -362,7 +382,7 @@ def test_country_macro_price_trade_topic_is_merged() -> None:
         for indicator in country_macro
     )
     assert any(
-        indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
+        indicator.selectors.get("category") in {"\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3", "进出口"}
         for indicator in country_macro
     )
 
@@ -373,7 +393,7 @@ def test_china_price_trade_titles_include_country() -> None:
         for indicator in get_catalog()
         if indicator.domain == "china_macro"
         and indicator.selectors.get("country") == "China"
-        and indicator.selectors.get("category") == "\u4ef7\u683c\u4e0e\u8fdb\u51fa\u53e3"
+        and indicator.selectors.get("category") in {"进出口", "CPI/PPI/PMI"}
     ]
 
     assert price_trade_indicators

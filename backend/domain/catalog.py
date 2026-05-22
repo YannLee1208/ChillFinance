@@ -151,7 +151,27 @@ def _price_trade_selectors(
 
     selectors = {
         "country": "China",
-        "category": "价格与进出口",
+        "category": "进出口",
+        "metric": metric,
+        "display_group": display_group,
+        "chart_style": chart_style,
+    }
+    if compare_group is not None:
+        selectors["compare_group"] = compare_group
+    return selectors
+
+
+def _cycle_selectors(
+    metric: str,
+    display_group: str,
+    chart_style: str = "price",
+    compare_group: str | None = None,
+) -> dict[str, str]:
+    """生成 CPI/PPI/PMI 专题展示选择器。"""
+
+    selectors = {
+        "country": "China",
+        "category": "CPI/PPI/PMI",
         "metric": metric,
         "display_group": display_group,
         "chart_style": chart_style,
@@ -1027,7 +1047,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_HOUSEHOLD_CONSUMPTION'][1]}",
         description="中国居民最终消费支出，用于观察消费对经济的拉动。",
         display_order=150,
-        selectors={"country": "China", "category": "消费", "metric": "居民消费支出"},
+        selectors=_cycle_selectors("居民消费支出", "消费"),
     ),
     _indicator(
         code="CN_GROSS_CAPITAL_FORMATION",
@@ -1040,7 +1060,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_GROSS_CAPITAL_FORMATION'][1]}",
         description="中国资本形成总额，用于观察投资和库存变动形成的总需求。",
         display_order=170,
-        selectors={"country": "China", "category": "工业与投资", "metric": "资本形成总额"},
+        selectors=_cycle_selectors("资本形成总额", "工业与投资"),
     ),
     _indicator(
         code="CN_INDUSTRY_VALUE_ADDED",
@@ -1053,7 +1073,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_INDUSTRY_VALUE_ADDED'][1]}",
         description="中国工业增加值，用于观察工业部门产出规模。",
         display_order=171,
-        selectors={"country": "China", "category": "工业与投资", "metric": "工业增加值"},
+        selectors=_cycle_selectors("工业增加值", "工业与投资"),
     ),
     _indicator(
         code="CN_EXPORTS_GOODS_SERVICES",
@@ -1094,7 +1114,7 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         display_order=220,
         selectors={
             "country": "China",
-            "category": "价格与进出口",
+            "category": "CPI/PPI/PMI",
             "metric": "年度CPI通胀率",
             "display_group": "其他价格指标",
             "chart_style": "price",
@@ -2314,7 +2334,33 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_MANUFACTURING_PMI"]["source"],
         description="中国制造业 PMI 用于观察制造业景气和订单变化。",
         display_order=176,
-        selectors={"country": "China", "category": "工业与投资", "metric": "制造业PMI"},
+        selectors=_cycle_selectors("制造业PMI", "PMI", "price", "PMI"),
+    ),
+    _indicator(
+        code="CN_MANUFACTURING_PMI_YOY",
+        name="China manufacturing PMI YoY",
+        domain="country_macro",
+        region="China",
+        unit="%",
+        frequency="monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_MANUFACTURING_PMI_YOY"]["source"],
+        description="用制造业 PMI 指数计算的同比变化，用于观察景气相对去年同期的改善幅度。",
+        display_order=177,
+        selectors=_cycle_selectors("制造业PMI同比", "PMI", "price", "PMI变化"),
+    ),
+    _indicator(
+        code="CN_MANUFACTURING_PMI_MOM",
+        name="China manufacturing PMI MoM",
+        domain="country_macro",
+        region="China",
+        unit="%",
+        frequency="monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_MANUFACTURING_PMI_MOM"]["source"],
+        description="用制造业 PMI 指数计算的环比变化，用于观察景气短期动能。",
+        display_order=178,
+        selectors=_cycle_selectors("制造业PMI环比", "PMI", "price", "PMI变化"),
     ),
     _indicator(
         code="CN_NON_MANUFACTURING_PMI",
@@ -2326,8 +2372,36 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         provider="akshare_china",
         source=AKSHARE_CHINA_SERIES["CN_NON_MANUFACTURING_PMI"]["source"],
         description="中国非制造业 PMI 用于观察服务业和建筑业景气。",
-        display_order=177,
-        selectors={"country": "China", "category": "工业与投资", "metric": "非制造业PMI"},
+        display_order=179,
+        selectors=_cycle_selectors("非制造业PMI", "PMI", "price", "PMI"),
+    ),
+    _indicator(
+        code="CN_NON_MANUFACTURING_PMI_YOY",
+        name="China non-manufacturing PMI YoY",
+        domain="country_macro",
+        region="China",
+        unit="%",
+        frequency="monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_NON_MANUFACTURING_PMI_YOY"]["source"],
+        description=(
+            "用非制造业 PMI 指数计算的同比变化，用于观察服务业和建筑业景气相对去年同期变化。"
+        ),
+        display_order=180,
+        selectors=_cycle_selectors("非制造业PMI同比", "PMI", "price", "PMI变化"),
+    ),
+    _indicator(
+        code="CN_NON_MANUFACTURING_PMI_MOM",
+        name="China non-manufacturing PMI MoM",
+        domain="country_macro",
+        region="China",
+        unit="%",
+        frequency="monthly",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES["CN_NON_MANUFACTURING_PMI_MOM"]["source"],
+        description="用非制造业 PMI 指数计算的环比变化，用于观察服务业和建筑业短期动能。",
+        display_order=181,
+        selectors=_cycle_selectors("非制造业PMI环比", "PMI", "price", "PMI变化"),
     ),
     _indicator(
         code="CN_CORPORATE_GOODS_PRICE_INDEX",
@@ -2340,7 +2414,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CORPORATE_GOODS_PRICE_INDEX"]["source"],
         description="中国企业商品价格指数用于观察上游和企业端价格压力。",
         display_order=214,
-        selectors=_price_trade_selectors("企业商品价格", "其他价格指标", "price"),
+        selectors=_cycle_selectors("企业商品价格", "其他价格指标", "price"),
     ),
     _indicator(
         code="US_ISM_MANUFACTURING_PMI",
@@ -2677,7 +2751,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_RETAIL_SALES"]["source"],
         description="社会消费品零售总额同比，是观察国内消费修复的核心月度指标。",
         display_order=151,
-        selectors={"country": "China", "category": "消费", "metric": "社零"},
+        selectors=_cycle_selectors("社零", "消费"),
     ),
     _indicator(
         code="CN_INDUSTRIAL_PRODUCTION_YOY",
@@ -2690,7 +2764,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_INDUSTRIAL_PRODUCTION_YOY"]["source"],
         description="规模以上工业增加值同比用于跟踪工业生产景气。",
         display_order=172,
-        selectors={"country": "China", "category": "工业与投资", "metric": "工增同比"},
+        selectors=_cycle_selectors("工增同比", "工业与投资"),
     ),
     _indicator(
         code="CN_FIXED_ASSET_INVESTMENT",
@@ -2703,7 +2777,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_FIXED_ASSET_INVESTMENT"]["source"],
         description="固定资产投资累计同比用于观察投资需求。",
         display_order=173,
-        selectors={"country": "China", "category": "工业与投资", "metric": "固投"},
+        selectors=_cycle_selectors("固投", "工业与投资"),
     ),
     _indicator(
         code="CN_MANUFACTURING_INVESTMENT",
@@ -2716,7 +2790,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source="Pending:NBS/Wind",
         description="制造业投资累计同比用于观察企业扩产和设备更新。",
         display_order=174,
-        selectors={"country": "China", "category": "工业与投资", "metric": "制造业投资"},
+        selectors=_cycle_selectors("制造业投资", "工业与投资"),
         availability=_availability_for("CN_MANUFACTURING_INVESTMENT"),
     ),
     _indicator(
@@ -2730,7 +2804,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source="Pending:NBS/Wind",
         description="基建投资累计同比用于观察财政发力强度。",
         display_order=175,
-        selectors={"country": "China", "category": "工业与投资", "metric": "基建投资"},
+        selectors=_cycle_selectors("基建投资", "工业与投资"),
         availability=_availability_for("CN_INFRASTRUCTURE_INVESTMENT"),
     ),
     _indicator(
@@ -2785,7 +2859,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI_INDEX"]["source"],
         description="中国 PPI 当月指数用于补充同比之外的工业品价格水平观察。",
         display_order=213,
-        selectors=_price_trade_selectors("PPI指数", "PPI", "price"),
+        selectors=_cycle_selectors("PPI指数", "PPI", "price"),
     ),
     _indicator(
         code="CN_PPI",
@@ -2798,7 +2872,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI"]["source"],
         description="中国 PPI 同比用于观察工业品出厂价格和企业盈利压力。",
         display_order=214,
-        selectors=_price_trade_selectors("PPI同比", "PPI", "price"),
+        selectors=_cycle_selectors("PPI同比", "PPI", "price"),
     ),
     _indicator(
         code="CN_PPI_MOM",
@@ -2811,7 +2885,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI_MOM"]["source"],
         description="用 PPI 当月指数计算的环比变化，用于观察工业品价格短期动能。",
         display_order=215,
-        selectors=_price_trade_selectors("PPI环比", "PPI", "price", "CPI/PPI环比"),
+        selectors=_cycle_selectors("PPI环比", "PPI", "price", "CPI/PPI环比"),
     ),
     _indicator(
         code="CN_CPI_MONTHLY_INDEX",
@@ -2824,7 +2898,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_INDEX"]["source"],
         description="国家统计口径 CPI 当月指数，用于观察居民端价格水平。",
         display_order=210,
-        selectors=_price_trade_selectors("CPI指数", "CPI", "price"),
+        selectors=_cycle_selectors("CPI指数", "CPI", "price"),
     ),
     _indicator(
         code="CN_CPI_MONTHLY_YOY",
@@ -2837,7 +2911,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_YOY"]["source"],
         description="国家统计口径 CPI 月度同比，用于观察居民端通胀压力。",
         display_order=211,
-        selectors=_price_trade_selectors("CPI同比", "CPI", "price"),
+        selectors=_cycle_selectors("CPI同比", "CPI", "price"),
     ),
     _indicator(
         code="CN_CPI_MONTHLY_MOM",
@@ -2850,7 +2924,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_MOM"]["source"],
         description="国家统计口径 CPI 月度环比，用于观察居民端价格短期动能。",
         display_order=212,
-        selectors=_price_trade_selectors("CPI环比", "CPI", "price", "CPI/PPI环比"),
+        selectors=_cycle_selectors("CPI环比", "CPI", "price", "CPI/PPI环比"),
     ),
     _indicator(
         code="CN_EXPORT_PRICE_INDEX",

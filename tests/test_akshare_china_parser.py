@@ -286,6 +286,31 @@ async def test_provider_computes_ppi_mom_from_index(monkeypatch) -> None:
     assert observations[0].value.quantize(Decimal("0.000001")) == Decimal("0.300601")
 
 
+async def test_provider_computes_pmi_yoy_and_mom_from_index(monkeypatch) -> None:
+    def fake_call_akshare(config: dict[str, str]) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                config["date_column"]: [
+                    "2025年04月份",
+                    "2026年03月份",
+                    "2026年04月份",
+                ],
+                "制造业-指数": [49.3, 50.0, 50.3],
+            }
+        )
+
+    monkeypatch.setattr("backend.ingest.akshare_china._call_akshare", fake_call_akshare)
+    provider = AkShareChinaProvider()
+
+    yoy = await provider.fetch(get_indicator("CN_MANUFACTURING_PMI_YOY"))
+    mom = await provider.fetch(get_indicator("CN_MANUFACTURING_PMI_MOM"))
+
+    assert yoy[0].period.isoformat() == "2026-04-01"
+    assert yoy[0].value.quantize(Decimal("0.000001")) == Decimal("2.028398")
+    assert mom[-1].period.isoformat() == "2026-04-01"
+    assert mom[-1].value == Decimal("0.600")
+
+
 async def test_provider_computes_customs_export_mom(monkeypatch) -> None:
     def fake_call_akshare(config: dict[str, str]) -> pd.DataFrame:
         return pd.DataFrame(

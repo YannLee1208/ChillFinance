@@ -10,6 +10,12 @@ _EXPORT_SERIES_CODE = "CN_EXPORT_VALUE_USD"
 _IMPORT_SERIES_CODE = "CN_IMPORT_VALUE_USD"
 _GOODS_SERVICES_EXPORT_SERIES_CODE = "CN_EXPORTS_GOODS_SERVICES"
 _GOODS_SERVICES_IMPORT_SERIES_CODE = "CN_IMPORTS_GOODS_SERVICES"
+_INDEX_DERIVED_SOURCES = {
+    "CN_MANUFACTURING_PMI_YOY": ("CN_MANUFACTURING_PMI", 12),
+    "CN_MANUFACTURING_PMI_MOM": ("CN_MANUFACTURING_PMI", 1),
+    "CN_NON_MANUFACTURING_PMI_YOY": ("CN_NON_MANUFACTURING_PMI", 12),
+    "CN_NON_MANUFACTURING_PMI_MOM": ("CN_NON_MANUFACTURING_PMI", 1),
+}
 
 
 def build_local_derived_series(
@@ -39,6 +45,9 @@ def build_local_derived_series(
             _GOODS_SERVICES_EXPORT_SERIES_CODE,
             _GOODS_SERVICES_IMPORT_SERIES_CODE,
         )
+    if definition.code in _INDEX_DERIVED_SOURCES:
+        source_code, months_back = _INDEX_DERIVED_SOURCES[definition.code]
+        return _change_observations(definition, source_series.get(source_code, []), months_back)
     return []
 
 
@@ -57,6 +66,8 @@ def required_source_codes(indicator_code: str) -> set[str]:
         return {_EXPORT_SERIES_CODE, _IMPORT_SERIES_CODE}
     if indicator_code == "CN_GOODS_SERVICES_TRADE_BALANCE":
         return {_GOODS_SERVICES_EXPORT_SERIES_CODE, _GOODS_SERVICES_IMPORT_SERIES_CODE}
+    if indicator_code in _INDEX_DERIVED_SOURCES:
+        return {_INDEX_DERIVED_SOURCES[indicator_code][0]}
     return set()
 
 

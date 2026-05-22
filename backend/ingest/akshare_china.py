@@ -38,6 +38,8 @@ class AkShareChinaProvider:
             return _parse_nominal_gdp_current_quarter_qoq(frame, indicator)
         if config.get("computed") == "index_mom_change":
             return _parse_index_mom_change(frame, indicator, config)
+        if config.get("computed") == "index_yoy_change":
+            return _parse_index_change(frame, indicator, config, months_back=12)
         if config.get("computed") == "customs_mom_change":
             return _parse_customs_mom_change(frame, indicator, config)
         if config.get("computed") == "customs_trade_balance":
@@ -223,6 +225,17 @@ def _parse_index_mom_change(
 ) -> list[Observation]:
     """用月度指数计算环比百分比，补足只有指数没有环比的表。"""
 
+    return _parse_index_change(frame, indicator, config, months_back=1)
+
+
+def _parse_index_change(
+    frame: pd.DataFrame,
+    indicator: IndicatorDefinition,
+    config: dict[str, str],
+    months_back: int,
+) -> list[Observation]:
+    """用月度指数计算指定间隔的百分比变化。"""
+
     date_column = config["date_column"]
     value_column = config["value_column"]
     _ensure_columns(frame, [date_column, value_column])
@@ -240,19 +253,21 @@ def _parse_index_mom_change(
 
     observations: list[Observation] = []
     ingested_at = datetime.now(UTC)
-    previous_value: Decimal | None = None
+    value_by_period = dict(points)
     for period, value in sorted(points, key=lambda item: item[0]):
-        if previous_value is not None and previous_value != 0:
-            observations.append(
-                _build_observation(
-                    indicator=indicator,
-                    period=period,
-                    value=(value - previous_value) / previous_value * Decimal("100"),
-                    source=AKSHARE_CHINA_SERIES[indicator.code]["source"],
-                    ingested_at=ingested_at,
-                )
+        previous_period = _shift_month(period, -months_back)
+        previous_value = value_by_period.get(previous_period)
+        if previous_value is None or previous_value == 0:
+            continue
+        observations.append(
+            _build_observation(
+                indicator=indicator,
+                period=period,
+                value=(value - previous_value) / abs(previous_value) * Decimal("100"),
+                source=AKSHARE_CHINA_SERIES[indicator.code]["source"],
+                ingested_at=ingested_at,
             )
-        previous_value = value
+        )
 
     return observations
 
