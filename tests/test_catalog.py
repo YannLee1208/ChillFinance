@@ -179,8 +179,8 @@ def test_cross_sector_public_indicators_are_discoverable() -> None:
         "LME_NICKEL_INVENTORY": ("akshare_china", "nonferrous"),
         "COMEX_GOLD_INVENTORY": ("akshare_china", "nonferrous"),
         "SHFE_COPPER_INVENTORY": ("akshare_china", "nonferrous"),
-        "CN_SOCIETY_ELECTRICITY": ("akshare_china", "power"),
-        "CN_SOCIETY_ELECTRICITY_YOY": ("akshare_china", "power"),
+        "CN_SOCIETY_ELECTRICITY": ("nea_public", "power"),
+        "CN_SOCIETY_ELECTRICITY_YOY": ("nea_public", "power"),
         "CN_ENERGY_INDEX": ("akshare_china", "power"),
     }
 
@@ -327,7 +327,7 @@ def test_coal_futures_and_inventory_indicators_are_discoverable() -> None:
 
 
 def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
-    expected_available = {
+    nea_expected = {
         "CN_PRIMARY_INDUSTRY_ELECTRICITY",
         "CN_PRIMARY_INDUSTRY_ELECTRICITY_YOY",
         "CN_SECONDARY_INDUSTRY_ELECTRICITY",
@@ -336,11 +336,19 @@ def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
         "CN_TERTIARY_INDUSTRY_ELECTRICITY_YOY",
         "CN_RESIDENTIAL_ELECTRICITY",
         "CN_RESIDENTIAL_ELECTRICITY_YOY",
+    }
+    akshare_expected = {
         "CN_BEIJING_CARBON_AVG_PRICE",
         "CN_HUBEI_CARBON_PRICE",
     }
 
-    for code in expected_available:
+    for code in nea_expected:
+        indicator = get_indicator(code)
+        assert indicator.provider == "nea_public"
+        assert indicator.domain == "power"
+        assert indicator.availability.status == "available"
+
+    for code in akshare_expected:
         indicator = get_indicator(code)
         assert indicator.provider == "akshare_china"
         assert indicator.domain == "power"

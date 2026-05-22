@@ -48,6 +48,8 @@ export default function App() {
       ]);
     },
   });
+  const visibleLatestRun =
+    ingestMutation.data?.domain === activeDomain ? ingestMutation.data : latestRun;
   const filteredIndicators = useMemo(
     () =>
       selectedIndicators.filter((indicator) =>
@@ -96,7 +98,7 @@ export default function App() {
             activeDomain={activeDomain}
             isLoading={isRunLoading}
             isUpdating={ingestMutation.isPending}
-            latestRun={ingestMutation.data ?? latestRun}
+            latestRun={visibleLatestRun}
             onUpdate={() => ingestMutation.mutate()}
           />
           <SelectorBar

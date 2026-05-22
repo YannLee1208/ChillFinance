@@ -8,6 +8,19 @@ DEFAULT_USER_AGENT = "local-macro-monitor/0.1"
 
 DATE_FORMAT = "%Y-%m-%d"
 
+NEA_PUBLIC_SERIES = {
+    "CN_SOCIETY_ELECTRICITY": {"metric": "total", "kind": "value"},
+    "CN_SOCIETY_ELECTRICITY_YOY": {"metric": "total", "kind": "yoy"},
+    "CN_PRIMARY_INDUSTRY_ELECTRICITY": {"metric": "primary", "kind": "value"},
+    "CN_PRIMARY_INDUSTRY_ELECTRICITY_YOY": {"metric": "primary", "kind": "yoy"},
+    "CN_SECONDARY_INDUSTRY_ELECTRICITY": {"metric": "secondary", "kind": "value"},
+    "CN_SECONDARY_INDUSTRY_ELECTRICITY_YOY": {"metric": "secondary", "kind": "yoy"},
+    "CN_TERTIARY_INDUSTRY_ELECTRICITY": {"metric": "tertiary", "kind": "value"},
+    "CN_TERTIARY_INDUSTRY_ELECTRICITY_YOY": {"metric": "tertiary", "kind": "yoy"},
+    "CN_RESIDENTIAL_ELECTRICITY": {"metric": "residential", "kind": "value"},
+    "CN_RESIDENTIAL_ELECTRICITY_YOY": {"metric": "residential", "kind": "yoy"},
+}
+
 FRED_TREASURY_SERIES = {
     "US_DGS3MO": "DGS3MO",
     "US_DGS2": "DGS2",

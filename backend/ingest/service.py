@@ -168,6 +168,8 @@ class IngestionService:
         for provider in self.providers:
             if provider_name is not None and provider.name != provider_name:
                 continue
+            if provider_name is None and provider.name != indicator.provider:
+                continue
             if provider.supports(indicator):
                 return provider
         return None

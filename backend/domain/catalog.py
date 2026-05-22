@@ -6,6 +6,7 @@ from backend.constant import (
     EIA_PUBLIC_SERIES,
     FRED_SERIES,
     INDICATOR_AVAILABILITY,
+    NEA_PUBLIC_SERIES,
     US_TREASURY_SERIES,
     WORLD_BANK_SERIES,
 )
@@ -1546,8 +1547,8 @@ _POWER_AKSHARE_INDICATORS = [
         region="China",
         unit="100 million kWh",
         frequency="monthly",
-        provider="akshare_china",
-        source=AKSHARE_CHINA_SERIES["CN_SOCIETY_ELECTRICITY"]["source"],
+        provider="nea_public",
+        source="国家能源局:全社会用电量",
         description="中国全社会用电量用于观察实体经济活动和电力需求。",
         display_order=602,
         selectors={"country": "China", "metric": "Electricity consumption"},
@@ -1559,8 +1560,8 @@ _POWER_AKSHARE_INDICATORS = [
         region="China",
         unit="%",
         frequency="monthly",
-        provider="akshare_china",
-        source=AKSHARE_CHINA_SERIES["CN_SOCIETY_ELECTRICITY_YOY"]["source"],
+        provider="nea_public",
+        source="国家能源局:全社会用电量",
         description="中国全社会用电量同比用于观察实体经济用电强弱。",
         display_order=603,
         selectors={"country": "China", "metric": "Electricity consumption YoY"},
@@ -1671,8 +1672,12 @@ _POWER_AKSHARE_EXTRA_INDICATORS = [
         region="China",
         unit=unit,
         frequency="daily" if "CARBON" in code else "monthly",
-        provider="akshare_china",
-        source=AKSHARE_CHINA_SERIES[code]["source"],
+        provider="nea_public" if code in NEA_PUBLIC_SERIES else "akshare_china",
+        source=(
+            "国家能源局:全社会用电量"
+            if code in NEA_PUBLIC_SERIES
+            else AKSHARE_CHINA_SERIES[code]["source"]
+        ),
         description=description,
         display_order=display_order,
         selectors={"country": "China", "metric": metric},
