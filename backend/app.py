@@ -12,6 +12,7 @@ from backend.domain.models import (
     Observation,
 )
 from backend.ingest.akshare_china import AkShareChinaProvider
+from backend.ingest.askci_public import AskciPublicProvider
 from backend.ingest.china_data import ChinaDataProvider
 from backend.ingest.coal_public import CoalPublicProvider
 from backend.ingest.eia_public import EIAPublicProvider
@@ -46,6 +47,10 @@ def create_ingestion_service(store: DuckDBMacroStore) -> IngestionService:
     return IngestionService(
         store=store,
         providers=[
+            AskciPublicProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
             AkShareChinaProvider(),
             USTreasuryProvider(
                 timeout_seconds=settings.macro_http_timeout_seconds,

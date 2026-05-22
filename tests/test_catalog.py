@@ -219,6 +219,25 @@ def test_nonferrous_exchange_indicators_are_discoverable() -> None:
         assert indicator.availability.status == "available"
 
 
+def test_gold_indicators_are_expanded() -> None:
+    expected = {
+        "CN_PBOC_GOLD_RESERVE",
+        "CN_PBOC_FX_RESERVE",
+        "CN_GOLD_ETF_HOLDINGS",
+        "SGE_AU9999_CLOSE",
+        "SGE_GOLD_BENCHMARK_PM",
+        "SHFE_GOLD_FUTURES_CLOSE",
+        "SHFE_GOLD_FUTURES_SETTLE",
+        "SHFE_SILVER_FUTURES_CLOSE",
+    }
+
+    for code in expected:
+        indicator = get_indicator(code)
+        assert indicator.provider == "akshare_china"
+        assert indicator.domain == "nonferrous"
+        assert indicator.availability.status == "available"
+
+
 def test_stale_crude_inventory_event_sources_are_not_marked_available() -> None:
     for code in {"US_API_CRUDE_STOCK_CHANGE", "US_EIA_CRUDE_STOCK_CHANGE"}:
         indicator = get_indicator(code)
@@ -362,9 +381,9 @@ def test_power_consumption_and_carbon_indicators_are_discoverable() -> None:
         "CN_NUCLEAR_POWER_GENERATION",
     }:
         indicator = get_indicator(code)
-        assert indicator.provider == "unavailable"
+        assert indicator.provider == "askci_public"
         assert indicator.domain == "power"
-        assert indicator.availability.status == "pending_source"
+        assert indicator.availability.status == "available"
 
 
 def test_additional_macro_indicators_are_discoverable() -> None:

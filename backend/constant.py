@@ -21,6 +21,14 @@ NEA_PUBLIC_SERIES = {
     "CN_RESIDENTIAL_ELECTRICITY_YOY": {"metric": "residential", "kind": "yoy"},
 }
 
+ASKCI_PUBLIC_SERIES = {
+    "CN_THERMAL_POWER_GENERATION": {"indicator": "a03010h", "value_kind": "monthly_value"},
+    "CN_HYDRO_POWER_GENERATION": {"indicator": "a03010i", "value_kind": "monthly_value"},
+    "CN_NUCLEAR_POWER_GENERATION": {"indicator": "a03010j", "value_kind": "monthly_value"},
+    "CN_WIND_POWER_GENERATION": {"indicator": "a03010k", "value_kind": "monthly_value"},
+    "CN_SOLAR_POWER_GENERATION": {"indicator": "a03010l", "value_kind": "monthly_value"},
+}
+
 FRED_TREASURY_SERIES = {
     "US_DGS3MO": "DGS3MO",
     "US_DGS2": "DGS2",
@@ -420,6 +428,73 @@ AKSHARE_CHINA_SERIES = {
         "source": "AKShare/Eastmoney:futures_comex_inventory:黄金",
         "period_type": "date",
         "symbol": "黄金",
+    },
+    "CN_PBOC_GOLD_RESERVE": {
+        "function": "macro_china_foreign_exchange_gold",
+        "date_column": "统计时间",
+        "value_column": "黄金储备",
+        "source": "AKShare/Eastmoney:macro_china_foreign_exchange_gold:gold",
+        "period_type": "decimal_month",
+    },
+    "CN_PBOC_FX_RESERVE": {
+        "function": "macro_china_foreign_exchange_gold",
+        "date_column": "统计时间",
+        "value_column": "国家外汇储备",
+        "source": "AKShare/Eastmoney:macro_china_foreign_exchange_gold:fx",
+        "period_type": "decimal_month",
+    },
+    "CN_GOLD_ETF_HOLDINGS": {
+        "function": "macro_cons_gold",
+        "date_column": "日期",
+        "value_column": "总库存",
+        "source": "AKShare/Jin10:macro_cons_gold:holdings",
+        "period_type": "date",
+    },
+    "CN_GOLD_ETF_HOLDINGS_CHANGE": {
+        "function": "macro_cons_gold",
+        "date_column": "日期",
+        "value_column": "增持/减持",
+        "source": "AKShare/Jin10:macro_cons_gold:change",
+        "period_type": "date",
+    },
+    "SGE_AU9999_CLOSE": {
+        "function": "spot_hist_sge",
+        "symbol": "Au99.99",
+        "date_column": "date",
+        "value_column": "close",
+        "source": "AKShare/SGE:spot_hist_sge:Au99.99:close",
+        "period_type": "date",
+    },
+    "SGE_GOLD_BENCHMARK_PM": {
+        "function": "spot_golden_benchmark_sge",
+        "date_column": "交易时间",
+        "value_column": "晚盘价",
+        "source": "AKShare/SGE:spot_golden_benchmark_sge:PM",
+        "period_type": "date",
+    },
+    "SHFE_GOLD_FUTURES_CLOSE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "AU0",
+        "date_column": "date",
+        "value_column": "close",
+        "source": "AKShare/Sina:futures_zh_daily_sina:AU0:close",
+        "period_type": "date",
+    },
+    "SHFE_GOLD_FUTURES_SETTLE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "AU0",
+        "date_column": "date",
+        "value_column": "settle",
+        "source": "AKShare/Sina:futures_zh_daily_sina:AU0:settle",
+        "period_type": "date",
+    },
+    "SHFE_SILVER_FUTURES_CLOSE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "AG0",
+        "date_column": "date",
+        "value_column": "close",
+        "source": "AKShare/Sina:futures_zh_daily_sina:AG0:close",
+        "period_type": "date",
     },
     "SHFE_COPPER_FUTURES_CLOSE": {
         "function": "futures_zh_daily_sina",
