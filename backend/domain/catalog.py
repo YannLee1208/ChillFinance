@@ -495,6 +495,91 @@ _COAL_PUBLIC_INDICATORS = [
     ),
 ]
 
+_COAL_AKSHARE_INDICATOR_SPECS = [
+    (
+        "CN_COKING_COAL_FUTURES_CLOSE",
+        "China coking coal futures continuous close",
+        "CNY/tonne",
+        "焦煤主连收盘价，用于观察焦煤期货市场预期。",
+        524,
+        "大商所",
+        "焦煤期货收盘",
+    ),
+    (
+        "CN_COKING_COAL_FUTURES_SETTLE",
+        "China coking coal futures continuous settlement",
+        "CNY/tonne",
+        "焦煤主连结算价，用于观察焦煤期货定价。",
+        525,
+        "大商所",
+        "焦煤期货结算",
+    ),
+    (
+        "CN_COKE_FUTURES_CLOSE",
+        "China coke futures continuous close",
+        "CNY/tonne",
+        "焦炭主连收盘价，用于观察焦化利润和钢厂需求预期。",
+        526,
+        "大商所",
+        "焦炭期货收盘",
+    ),
+    (
+        "CN_COKE_FUTURES_SETTLE",
+        "China coke futures continuous settlement",
+        "CNY/tonne",
+        "焦炭主连结算价，用于观察焦炭期货定价。",
+        527,
+        "大商所",
+        "焦炭期货结算",
+    ),
+    (
+        "CN_COKING_COAL_99QH_INVENTORY",
+        "China coking coal 99qh inventory",
+        "tonne",
+        "99 期货网焦煤库存，用于观察交易所相关库存变化。",
+        528,
+        "99期货",
+        "焦煤库存",
+    ),
+    (
+        "CN_COKE_99QH_INVENTORY",
+        "China coke 99qh inventory",
+        "tonne",
+        "99 期货网焦炭库存，用于观察焦炭库存变化。",
+        529,
+        "99期货",
+        "焦炭库存",
+    ),
+    (
+        "CN_METHANOL_99QH_INVENTORY",
+        "China methanol 99qh inventory",
+        "tonne",
+        "99 期货网甲醇库存，用于补充观察煤化工链条。",
+        530,
+        "99期货",
+        "甲醇库存",
+    ),
+]
+
+_COAL_AKSHARE_INDICATORS = [
+    _indicator(
+        code=code,
+        name=name,
+        domain="coal",
+        region="China",
+        unit=unit,
+        frequency="daily",
+        provider="akshare_china",
+        source=AKSHARE_CHINA_SERIES[code]["source"],
+        description=description,
+        display_order=display_order,
+        selectors={"country": "China", "market": market, "metric": metric},
+    )
+    for code, name, unit, description, display_order, market, metric in (
+        _COAL_AKSHARE_INDICATOR_SPECS
+    )
+]
+
 _WORLD_BANK_INDICATORS = [
     _indicator(
         code="CN_GDP",
@@ -1010,63 +1095,42 @@ _OIL_SHIPPING_INDICATORS = [
     ),
 ]
 
+_ROUTE_TANKER_SPECS = [
+    ("TD3C", "Dirty tanker", "Middle East Gulf to China VLCC"),
+    ("TD7", "Dirty tanker", "North Sea to Continent Aframax"),
+    ("TD8", "Dirty tanker", "Kuwait to Singapore Aframax"),
+    ("TD9", "Dirty tanker", "Caribbean to U.S. Gulf Aframax"),
+    ("TD14", "Dirty tanker", "Southeast Asia to east coast Australia Aframax"),
+    ("TD15", "Dirty tanker", "West Africa to China Suezmax"),
+    ("TD19", "Dirty tanker", "cross-Mediterranean Aframax"),
+    ("TD20", "Dirty tanker", "West Africa to Europe Suezmax"),
+    ("TD22", "Dirty tanker", "U.S. Gulf to China VLCC"),
+    ("TD25", "Dirty tanker", "U.S. Gulf to Europe Aframax"),
+    ("TC2", "Clean tanker", "Continent to U.S. Atlantic Coast MR"),
+    ("TC5", "Clean tanker", "Middle East Gulf to Japan LR2"),
+    ("TC6", "Clean tanker", "Algeria to European Mediterranean MR"),
+    ("TC8", "Clean tanker", "Middle East Gulf to U.K. Continent LR1"),
+    ("TC14", "Clean tanker", "U.S. Gulf to Continent MR"),
+    ("TC17", "Clean tanker", "Middle East Gulf to East Africa MR"),
+    ("TC20", "Clean tanker", "Middle East Gulf to U.K. Continent LR2"),
+]
+
 _ROUTE_TANKER_PENDING_INDICATORS = [
     _indicator(
-        code="TD3C_TANKER_FREIGHT",
-        name="TD3C Middle East Gulf to China VLCC freight",
+        code=f"{route}_TANKER_FREIGHT",
+        name=f"{route} {description} tanker freight",
         domain="oil_shipping",
         region="Global",
         unit="Worldscale / USD per tonne",
         frequency="daily",
         provider="unavailable",
         source="Pending:Baltic Exchange route data",
-        description="TD3C 中东 Gulf 至中国 VLCC 航线运价，是观察中国原油进口油运成本的核心航线。",
-        display_order=706,
-        selectors={"market": "Baltic Exchange", "segment": "Dirty tanker", "route": "TD3C"},
-        availability=_availability_for("TD3C_TANKER_FREIGHT"),
-    ),
-    _indicator(
-        code="TD20_TANKER_FREIGHT",
-        name="TD20 West Africa to Europe tanker freight",
-        domain="oil_shipping",
-        region="Global",
-        unit="Worldscale / USD per tonne",
-        frequency="daily",
-        provider="unavailable",
-        source="Pending:Baltic Exchange route data",
-        description="TD20 西非至欧洲油轮航线运价，用于补充观察大西洋盆地原油运输。",
-        display_order=707,
-        selectors={"market": "Baltic Exchange", "segment": "Dirty tanker", "route": "TD20"},
-        availability=_availability_for("TD20_TANKER_FREIGHT"),
-    ),
-    _indicator(
-        code="TC2_TANKER_FREIGHT",
-        name="TC2 Europe to U.S. Atlantic Coast clean tanker freight",
-        domain="oil_shipping",
-        region="Global",
-        unit="Worldscale / USD per tonne",
-        frequency="daily",
-        provider="unavailable",
-        source="Pending:Baltic Exchange route data",
-        description="TC2 欧洲至美国大西洋沿岸成品油轮航线运价，用于观察成品油跨区套利运输成本。",
-        display_order=708,
-        selectors={"market": "Baltic Exchange", "segment": "Clean tanker", "route": "TC2"},
-        availability=_availability_for("TC2_TANKER_FREIGHT"),
-    ),
-    _indicator(
-        code="TC14_TANKER_FREIGHT",
-        name="TC14 U.S. Gulf to Europe clean tanker freight",
-        domain="oil_shipping",
-        region="Global",
-        unit="Worldscale / USD per tonne",
-        frequency="daily",
-        provider="unavailable",
-        source="Pending:Baltic Exchange route data",
-        description="TC14 美湾至欧洲成品油轮航线运价，用于观察美湾成品油出口运输成本。",
-        display_order=709,
-        selectors={"market": "Baltic Exchange", "segment": "Clean tanker", "route": "TC14"},
-        availability=_availability_for("TC14_TANKER_FREIGHT"),
-    ),
+        description=f"{route} {description} 航线运价，用于观察航线级油运成本。",
+        display_order=706 + index,
+        selectors={"market": "Baltic Exchange", "segment": segment, "route": route},
+        availability=_availability_for(f"{route}_TANKER_FREIGHT"),
+    )
+    for index, (route, segment, description) in enumerate(_ROUTE_TANKER_SPECS)
 ]
 
 _EIA_PUBLIC_INDICATOR_SPECS = [
@@ -1581,6 +1645,20 @@ _COAL_UNAVAILABLE_INDICATORS = [
         selectors={"country": "China", "market": "矿口", "metric": "红柳林洗中块"},
         availability=_availability_for("CN_HONGLIULIN_WASHED_MIDDLE_LUMP"),
     ),
+    _indicator(
+        code="CN_THERMAL_COAL_FUTURES_CLOSE",
+        name="China thermal coal futures continuous close",
+        domain="coal",
+        region="China",
+        unit="CNY/tonne",
+        frequency="daily",
+        provider="unavailable",
+        source="Pending:CZCE/Wind",
+        description="动力煤主连收盘价公开行情已停更，不能作为当前监控源。",
+        display_order=531,
+        selectors={"country": "China", "market": "郑商所", "metric": "动力煤期货"},
+        availability=_availability_for("CN_THERMAL_COAL_FUTURES_CLOSE"),
+    ),
 ]
 
 _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
@@ -1770,6 +1848,7 @@ def get_catalog() -> list[IndicatorDefinition]:
             *_treasury_indicators(),
             *_FRED_INDICATORS,
             *_COAL_PUBLIC_INDICATORS,
+            *_COAL_AKSHARE_INDICATORS,
             *_COAL_UNAVAILABLE_INDICATORS,
             *_UNAVAILABLE_INDICATORS,
             *_CHINA_DOMESTIC_UNAVAILABLE_INDICATORS,

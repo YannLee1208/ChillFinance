@@ -82,3 +82,53 @@ def test_parse_customs_monthly_amount_with_multiplier() -> None:
     assert observations[0].period.isoformat() == "2026-03-01"
     assert observations[1].period.isoformat() == "2026-04-01"
     assert observations[1].value == Decimal("3594.421000")
+
+
+def test_parse_sina_futures_daily_close() -> None:
+    frame = pd.DataFrame(
+        {
+            "date": ["2026-05-21", "2026-05-22"],
+            "close": [1190.5, 1162.5],
+            "settle": [1207.0, 1173.0],
+        }
+    )
+    indicator = get_indicator("CN_COKING_COAL_FUTURES_CLOSE")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "date",
+            "value_column": "close",
+            "source": "AKShare/Sina:futures_zh_daily_sina:JM0:close",
+            "period_type": "date",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2026-05-21"
+    assert observations[1].value == Decimal("1162.5")
+
+
+def test_parse_99qh_inventory() -> None:
+    frame = pd.DataFrame(
+        {
+            "日期": ["2026-05-21", "2026-05-22"],
+            "收盘价": [1190.5, 1162.5],
+            "库存": [500, 200],
+        }
+    )
+    indicator = get_indicator("CN_COKING_COAL_99QH_INVENTORY")
+
+    observations = parse_akshare_series_frame(
+        frame=frame,
+        indicator=indicator,
+        config={
+            "date_column": "日期",
+            "value_column": "库存",
+            "source": "AKShare/99qh:futures_inventory_99:焦煤:库存",
+            "period_type": "date",
+        },
+    )
+
+    assert observations[0].period.isoformat() == "2026-05-21"
+    assert observations[1].value == Decimal("200")

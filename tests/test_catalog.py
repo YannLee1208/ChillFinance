@@ -222,16 +222,29 @@ def test_current_crude_and_tanker_indicators_are_discoverable() -> None:
 
 def test_route_level_tanker_indicators_are_documented() -> None:
     expected = {
-        "TD3C_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
-        "TD20_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
-        "TC2_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
-        "TC14_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
+        "TD3C_TANKER_FREIGHT",
+        "TD7_TANKER_FREIGHT",
+        "TD8_TANKER_FREIGHT",
+        "TD9_TANKER_FREIGHT",
+        "TD14_TANKER_FREIGHT",
+        "TD15_TANKER_FREIGHT",
+        "TD19_TANKER_FREIGHT",
+        "TD20_TANKER_FREIGHT",
+        "TD22_TANKER_FREIGHT",
+        "TD25_TANKER_FREIGHT",
+        "TC2_TANKER_FREIGHT",
+        "TC5_TANKER_FREIGHT",
+        "TC6_TANKER_FREIGHT",
+        "TC8_TANKER_FREIGHT",
+        "TC14_TANKER_FREIGHT",
+        "TC17_TANKER_FREIGHT",
+        "TC20_TANKER_FREIGHT",
     }
 
-    for code, (provider, domain) in expected.items():
+    for code in expected:
         indicator = get_indicator(code)
-        assert indicator.provider == provider
-        assert indicator.domain == domain
+        assert indicator.provider == "unavailable"
+        assert indicator.domain == "oil_shipping"
         assert indicator.availability.status == "pending_source"
         assert "Baltic" in indicator.availability.next_step
 
@@ -259,6 +272,29 @@ def test_eia_public_petroleum_indicators_are_discoverable() -> None:
         assert indicator.provider == "eia_public"
         assert indicator.domain == "crude_oil"
         assert indicator.availability.status == "available"
+
+
+def test_coal_futures_and_inventory_indicators_are_discoverable() -> None:
+    expected = {
+        "CN_COKING_COAL_FUTURES_CLOSE": ("akshare_china", "coal"),
+        "CN_COKING_COAL_FUTURES_SETTLE": ("akshare_china", "coal"),
+        "CN_COKE_FUTURES_CLOSE": ("akshare_china", "coal"),
+        "CN_COKE_FUTURES_SETTLE": ("akshare_china", "coal"),
+        "CN_COKING_COAL_99QH_INVENTORY": ("akshare_china", "coal"),
+        "CN_COKE_99QH_INVENTORY": ("akshare_china", "coal"),
+        "CN_METHANOL_99QH_INVENTORY": ("akshare_china", "coal"),
+    }
+
+    for code, (provider, domain) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.provider == provider
+        assert indicator.domain == domain
+        assert indicator.availability.status == "available"
+
+    thermal_coal = get_indicator("CN_THERMAL_COAL_FUTURES_CLOSE")
+    assert thermal_coal.provider == "unavailable"
+    assert thermal_coal.availability.status == "pending_source"
+    assert "2022" in thermal_coal.availability.reason
 
 
 def test_additional_macro_indicators_are_discoverable() -> None:

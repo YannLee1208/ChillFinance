@@ -471,6 +471,62 @@ AKSHARE_CHINA_SERIES = {
         "source": "AKShare/Eastmoney:macro_shipping_bpi",
         "period_type": "date",
     },
+    "CN_COKING_COAL_FUTURES_CLOSE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "JM0",
+        "date_column": "date",
+        "value_column": "close",
+        "source": "AKShare/Sina:futures_zh_daily_sina:JM0:close",
+        "period_type": "date",
+    },
+    "CN_COKING_COAL_FUTURES_SETTLE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "JM0",
+        "date_column": "date",
+        "value_column": "settle",
+        "source": "AKShare/Sina:futures_zh_daily_sina:JM0:settle",
+        "period_type": "date",
+    },
+    "CN_COKE_FUTURES_CLOSE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "J0",
+        "date_column": "date",
+        "value_column": "close",
+        "source": "AKShare/Sina:futures_zh_daily_sina:J0:close",
+        "period_type": "date",
+    },
+    "CN_COKE_FUTURES_SETTLE": {
+        "function": "futures_zh_daily_sina",
+        "symbol": "J0",
+        "date_column": "date",
+        "value_column": "settle",
+        "source": "AKShare/Sina:futures_zh_daily_sina:J0:settle",
+        "period_type": "date",
+    },
+    "CN_COKING_COAL_99QH_INVENTORY": {
+        "function": "futures_inventory_99",
+        "symbol": "焦煤",
+        "date_column": "日期",
+        "value_column": "库存",
+        "source": "AKShare/99qh:futures_inventory_99:焦煤:库存",
+        "period_type": "date",
+    },
+    "CN_COKE_99QH_INVENTORY": {
+        "function": "futures_inventory_99",
+        "symbol": "焦炭",
+        "date_column": "日期",
+        "value_column": "库存",
+        "source": "AKShare/99qh:futures_inventory_99:焦炭:库存",
+        "period_type": "date",
+    },
+    "CN_METHANOL_99QH_INVENTORY": {
+        "function": "futures_inventory_99",
+        "symbol": "甲醇",
+        "date_column": "日期",
+        "value_column": "库存",
+        "source": "AKShare/99qh:futures_inventory_99:甲醇:库存",
+        "period_type": "date",
+    },
     "CN_SOCIETY_ELECTRICITY": {
         "function": "macro_china_society_electricity",
         "date_column": "统计时间",
@@ -626,6 +682,11 @@ UNAVAILABLE_SERIES = {
         "reason": "尚未找到稳定返回红柳林洗中块历史价格的公开接口。",
         "next_step": "接入中国煤炭市场网数据库授权接口、矿方报价表或 Wind。",
     },
+    "CN_THERMAL_COAL_FUTURES_CLOSE": {
+        "status": "pending_source",
+        "reason": "郑商所动力煤主连公开行情停更在 2022-12，不能作为当前监控源。",
+        "next_step": "接入郑商所授权数据、Wind 或交易所可持续历史行情。",
+    },
     "US_API_CRUDE_STOCK_CHANGE": {
         "status": "pending_source",
         "reason": "AkShare/Jin10 美国 API 原油库存变动序列当前停更在 2025-09，不能作为当前监控源。",
@@ -636,49 +697,37 @@ UNAVAILABLE_SERIES = {
         "reason": "AkShare/Jin10 美国 EIA 原油库存变动序列当前停更在 2025-09，不能作为当前监控源。",
         "next_step": "配置 EIA_API_KEY 后接入官方 EIA weekly petroleum status 口径。",
     },
-    "TD3C_TANKER_FREIGHT": {
-        "status": "pending_source",
-        "reason": (
-            "TD3C（中东 Gulf 至中国 VLCC）属于 Baltic Exchange 航线级油轮运价，"
-            "未找到稳定免授权历史接口。"
-        ),
-        "next_step": (
-            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
-            "或可审计内部油运数据库。"
-        ),
-    },
-    "TD20_TANKER_FREIGHT": {
-        "status": "pending_source",
-        "reason": (
-            "TD20（西非至欧洲 VLCC/Suezmax）属于 Baltic Exchange 航线级油轮运价，"
-            "未找到稳定免授权历史接口。"
-        ),
-        "next_step": (
-            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
-            "或可审计内部油运数据库。"
-        ),
-    },
-    "TC2_TANKER_FREIGHT": {
-        "status": "pending_source",
-        "reason": (
-            "TC2（欧洲至美东成品油轮）属于 Baltic Exchange 航线级油轮运价，"
-            "未找到稳定免授权历史接口。"
-        ),
-        "next_step": (
-            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
-            "或可审计内部油运数据库。"
-        ),
-    },
-    "TC14_TANKER_FREIGHT": {
-        "status": "pending_source",
-        "reason": (
-            "TC14（美湾至欧洲成品油轮）属于 Baltic Exchange 航线级油轮运价，"
-            "未找到稳定免授权历史接口。"
-        ),
-        "next_step": (
-            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
-            "或可审计内部油运数据库。"
-        ),
+    **{
+        f"{route}_TANKER_FREIGHT": {
+            "status": "pending_source",
+            "reason": (
+                f"{route} 属于 Baltic Exchange 航线级油轮运价，"
+                "未找到稳定免授权历史接口。"
+            ),
+            "next_step": (
+                "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
+                "或可审计内部油运数据库。"
+            ),
+        }
+        for route in (
+            "TD3C",
+            "TD7",
+            "TD8",
+            "TD9",
+            "TD14",
+            "TD15",
+            "TD19",
+            "TD20",
+            "TD22",
+            "TD25",
+            "TC2",
+            "TC5",
+            "TC6",
+            "TC8",
+            "TC14",
+            "TC17",
+            "TC20",
+        )
     },
 }
 
