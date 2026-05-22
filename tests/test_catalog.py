@@ -220,6 +220,47 @@ def test_current_crude_and_tanker_indicators_are_discoverable() -> None:
         assert indicator.availability.status == "available"
 
 
+def test_route_level_tanker_indicators_are_documented() -> None:
+    expected = {
+        "TD3C_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
+        "TD20_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
+        "TC2_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
+        "TC14_TANKER_FREIGHT": ("unavailable", "oil_shipping"),
+    }
+
+    for code, (provider, domain) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.provider == provider
+        assert indicator.domain == domain
+        assert indicator.availability.status == "pending_source"
+        assert "Baltic" in indicator.availability.next_step
+
+
+def test_eia_public_petroleum_indicators_are_discoverable() -> None:
+    expected = {
+        "EIA_US_CRUDE_STOCKS_EX_SPR",
+        "EIA_US_TOTAL_CRUDE_STOCKS",
+        "EIA_CUSHING_CRUDE_STOCKS",
+        "EIA_US_SPR_CRUDE_STOCKS",
+        "EIA_US_CRUDE_PRODUCTION",
+        "EIA_LOWER48_CRUDE_PRODUCTION",
+        "EIA_US_CRUDE_IMPORTS",
+        "EIA_US_CRUDE_EXPORTS",
+        "EIA_US_REFINERY_CRUDE_INPUTS",
+        "EIA_US_REFINERY_UTILIZATION",
+        "EIA_US_TOTAL_GASOLINE_STOCKS",
+        "EIA_US_DISTILLATE_STOCKS",
+        "EIA_US_JET_FUEL_STOCKS",
+        "EIA_US_TOTAL_PETROLEUM_STOCKS",
+    }
+
+    for code in expected:
+        indicator = get_indicator(code)
+        assert indicator.provider == "eia_public"
+        assert indicator.domain == "crude_oil"
+        assert indicator.availability.status == "available"
+
+
 def test_additional_macro_indicators_are_discoverable() -> None:
     expected = {
         "CN_MANUFACTURING_PMI": ("akshare_china", "country_macro"),

@@ -9,6 +9,7 @@ from backend.domain.catalog import get_catalog
 from backend.ingest.akshare_china import AkShareChinaProvider
 from backend.ingest.china_data import ChinaDataProvider
 from backend.ingest.coal_public import CoalPublicProvider
+from backend.ingest.eia_public import EIAPublicProvider
 from backend.ingest.fred import FredSeriesProvider
 from backend.ingest.seed import SeedProvider
 from backend.ingest.service import IngestionService
@@ -22,6 +23,7 @@ _VALID_PROVIDERS = {
     "akshare_china",
     "china_data",
     "coal_public",
+    "eia_public",
     "fred",
     "seed",
     "unavailable",
@@ -75,6 +77,10 @@ def ingest(
                 timeout_seconds=settings.macro_http_timeout_seconds,
                 user_agent=settings.macro_user_agent,
             ),
+            EIAPublicProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
             FredSeriesProvider(
                 timeout_seconds=settings.macro_http_timeout_seconds,
                 user_agent=settings.macro_user_agent,
@@ -106,8 +112,8 @@ def _validate_provider_name(provider: str | None) -> str | None:
         return provider
 
     raise typer.BadParameter(
-        "Provider name must be one of: akshare_china, china_data, coal_public, fred, seed, "
-        "unavailable, us_treasury, world_bank"
+        "Provider name must be one of: akshare_china, china_data, coal_public, eia_public, "
+        "fred, seed, unavailable, us_treasury, world_bank"
     )
 
 

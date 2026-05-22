@@ -13,6 +13,7 @@ def test_ingest_rejects_unknown_provider() -> None:
     assert result.exit_code != 0
     assert "Provider name must be one of:" in result.output
     assert "china_data" in result.output
+    assert "eia_public" in result.output
 
 
 def test_parse_codes_splits_comma_separated_values() -> None:

@@ -153,6 +153,65 @@ COAL_PUBLIC_SERIES = {
     },
 }
 
+EIA_PUBLIC_SERIES = {
+    "EIA_US_CRUDE_STOCKS_EX_SPR": {
+        "series_id": "WCESTUS1",
+        "source": "EIA dnav:WCESTUS1",
+    },
+    "EIA_US_TOTAL_CRUDE_STOCKS": {
+        "series_id": "WCRSTUS1",
+        "source": "EIA dnav:WCRSTUS1",
+    },
+    "EIA_CUSHING_CRUDE_STOCKS": {
+        "series_id": "W_EPC0_SAX_YCUOK_MBBL",
+        "source": "EIA dnav:W_EPC0_SAX_YCUOK_MBBL",
+    },
+    "EIA_US_SPR_CRUDE_STOCKS": {
+        "series_id": "WCSSTUS1",
+        "source": "EIA dnav:WCSSTUS1",
+    },
+    "EIA_US_CRUDE_PRODUCTION": {
+        "series_id": "WCRFPUS2",
+        "source": "EIA dnav:WCRFPUS2",
+    },
+    "EIA_LOWER48_CRUDE_PRODUCTION": {
+        "series_id": "W_EPC0_FPF_R48_MBBLD",
+        "source": "EIA dnav:W_EPC0_FPF_R48_MBBLD",
+    },
+    "EIA_US_CRUDE_IMPORTS": {
+        "series_id": "WCRIMUS2",
+        "source": "EIA dnav:WCRIMUS2",
+    },
+    "EIA_US_CRUDE_EXPORTS": {
+        "series_id": "WCREXUS2",
+        "source": "EIA dnav:WCREXUS2",
+    },
+    "EIA_US_REFINERY_CRUDE_INPUTS": {
+        "series_id": "WCRRIUS2",
+        "source": "EIA dnav:WCRRIUS2",
+    },
+    "EIA_US_REFINERY_UTILIZATION": {
+        "series_id": "WPULEUS3",
+        "source": "EIA dnav:WPULEUS3",
+    },
+    "EIA_US_TOTAL_GASOLINE_STOCKS": {
+        "series_id": "WGTSTUS1",
+        "source": "EIA dnav:WGTSTUS1",
+    },
+    "EIA_US_DISTILLATE_STOCKS": {
+        "series_id": "WDISTUS1",
+        "source": "EIA dnav:WDISTUS1",
+    },
+    "EIA_US_JET_FUEL_STOCKS": {
+        "series_id": "WKJSTUS1",
+        "source": "EIA dnav:WKJSTUS1",
+    },
+    "EIA_US_TOTAL_PETROLEUM_STOCKS": {
+        "series_id": "WTTSTUS1",
+        "source": "EIA dnav:WTTSTUS1",
+    },
+}
+
 AKSHARE_CHINA_SERIES = {
     "CN_NOMINAL_GDP_QUARTERLY": {
         "function": "macro_china_gdp",
@@ -576,6 +635,50 @@ UNAVAILABLE_SERIES = {
         "status": "pending_source",
         "reason": "AkShare/Jin10 美国 EIA 原油库存变动序列当前停更在 2025-09，不能作为当前监控源。",
         "next_step": "配置 EIA_API_KEY 后接入官方 EIA weekly petroleum status 口径。",
+    },
+    "TD3C_TANKER_FREIGHT": {
+        "status": "pending_source",
+        "reason": (
+            "TD3C（中东 Gulf 至中国 VLCC）属于 Baltic Exchange 航线级油轮运价，"
+            "未找到稳定免授权历史接口。"
+        ),
+        "next_step": (
+            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
+            "或可审计内部油运数据库。"
+        ),
+    },
+    "TD20_TANKER_FREIGHT": {
+        "status": "pending_source",
+        "reason": (
+            "TD20（西非至欧洲 VLCC/Suezmax）属于 Baltic Exchange 航线级油轮运价，"
+            "未找到稳定免授权历史接口。"
+        ),
+        "next_step": (
+            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
+            "或可审计内部油运数据库。"
+        ),
+    },
+    "TC2_TANKER_FREIGHT": {
+        "status": "pending_source",
+        "reason": (
+            "TC2（欧洲至美东成品油轮）属于 Baltic Exchange 航线级油轮运价，"
+            "未找到稳定免授权历史接口。"
+        ),
+        "next_step": (
+            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
+            "或可审计内部油运数据库。"
+        ),
+    },
+    "TC14_TANKER_FREIGHT": {
+        "status": "pending_source",
+        "reason": (
+            "TC14（美湾至欧洲成品油轮）属于 Baltic Exchange 航线级油轮运价，"
+            "未找到稳定免授权历史接口。"
+        ),
+        "next_step": (
+            "接入 Baltic Exchange 授权数据、Clarksons/SSY/Braemar 授权源，"
+            "或可审计内部油运数据库。"
+        ),
     },
 }
 
