@@ -90,10 +90,11 @@ const INDICATOR_LABELS: Record<string, LocalizedIndicator> = {
   CN_CPI_INFLATION: { name: "中国年度 CPI 通胀率（World Bank）", description: "World Bank 年度 CPI 通胀率，和月度 CPI 环比不是同一口径。", unit: "%", sourceLabel: wb },
   CN_CPI_MONTHLY_YOY: { name: "中国 CPI 同比", description: "国家统计口径 CPI 月度同比，用于观察居民端通胀压力。", unit: "%", sourceLabel: akEastmoney },
   CN_PPI: { name: "中国 PPI 同比", description: "用于观察工业品出厂价格和企业盈利压力。", unit: "%", sourceLabel: akEastmoney },
-  CN_PPI_INDEX: { name: "中国 PPI 当月指数", description: "PPI 当月指数，用于补充观察工业品价格水平。", unit: "指数", sourceLabel: akEastmoney },
+  CN_PPI_INDEX: { name: "中国 PPI 指数", description: "PPI 当月指数，用于补充观察工业品价格水平。", unit: "指数", sourceLabel: akEastmoney },
   CN_PPI_MOM: { name: "中国 PPI 环比", description: "用 PPI 当月指数计算的环比变化。", unit: "%", sourceLabel: akEastmoney },
   CN_PPI_ACCUMULATED_INDEX: { name: "中国 PPI 累计指数", description: "PPI 累计指数，用于观察年内工业品价格累计变化。", unit: "指数", sourceLabel: akEastmoney },
-  CN_CPI_MONTHLY_INDEX: { name: "中国 CPI 当月指数", description: "CPI 当月指数，用于观察居民端价格水平。", unit: "指数", sourceLabel: akEastmoney },
+  CN_CPI_MONTHLY_INDEX: { name: "中国 CPI 指数", description: "CPI 当月指数，用于观察居民端价格水平。", unit: "指数", sourceLabel: akEastmoney },
+  CN_CPI_MONTHLY_MOM: { name: "中国 CPI 环比", description: "国家统计口径 CPI 月度环比，用于观察居民端价格短期动能。", unit: "%", sourceLabel: akEastmoney },
   CN_CORPORATE_GOODS_PRICE_INDEX: { name: "中国企业商品价格指数", description: "用于观察上游和企业端价格压力。", unit: "指数", sourceLabel: akEastmoney },
   CN_EXPORT_PRICE_INDEX: { name: "中国出口价格指数", description: "出口价格指数仍需海关总署稳定接口或 Wind。", unit: "指数", sourceLabel: pendingCustomsWind },
   CN_IMPORT_PRICE_INDEX: { name: "中国进口价格指数", description: "进口价格指数仍需海关总署稳定接口或 Wind。", unit: "指数", sourceLabel: pendingCustomsWind },
@@ -501,6 +502,7 @@ export function selectorSummary(definition: IndicatorDefinition): string {
   return (
     Object.entries(definition.selectors)
       .filter(([key]) => key !== "display_group" && key !== "compare_group")
+      .filter(([key]) => key !== "chart_style")
       .map(([, value]) => localizeSelectorValue(value))
       .join(" / ") || definition.region
   );

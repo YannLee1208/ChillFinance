@@ -17,6 +17,8 @@ type IndicatorCardProps = {
 
 const LINE_COLORS = ["#1f5eff", "#d92d20", "#039855", "#d97706", "#7c3aed", "#0e9384"];
 
+type ChartStyle = "default" | "price" | "trade";
+
 export type DisplayPoint = Observation & {
   numericValue: number;
   displayValue: number;
@@ -30,6 +32,21 @@ export type DisplayScale = {
 function colorForCode(code: string): string {
   const total = code.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return LINE_COLORS[total % LINE_COLORS.length];
+}
+
+function chartStyle(definition: IndicatorSnapshot["definition"]): ChartStyle {
+  const style = definition.selectors.chart_style;
+  return style === "price" || style === "trade" ? style : "default";
+}
+
+function styleColor(style: ChartStyle, fallback: string): string {
+  if (style === "price") {
+    return "#1f5eff";
+  }
+  if (style === "trade") {
+    return "#0e9384";
+  }
+  return fallback;
 }
 
 export function displayScale(definitionUnit: string, localizedUnit: string): DisplayScale {
@@ -98,7 +115,13 @@ function referenceValue(points: DisplayPoint[]): number | null {
   return points[points.length - 2].displayValue;
 }
 
-function shouldUseBars(frequency: string, pointCount: number): boolean {
+function shouldUseBars(frequency: string, pointCount: number, style: ChartStyle): boolean {
+  if (style === "price") {
+    return false;
+  }
+  if (style === "trade") {
+    return true;
+  }
   return frequency !== "daily" || pointCount <= 80;
 }
 
@@ -108,6 +131,7 @@ function buildSeries(
   latest: DisplayPoint | null,
   refValue: number | null,
   useBars: boolean,
+  style: ChartStyle,
 ) {
   const barSeries = useBars
     ? [
@@ -116,8 +140,8 @@ function buildSeries(
           data: points.map((point) => point.displayValue),
           barWidth: "58%",
           itemStyle: {
-            color: `${lineColor}18`,
-            borderRadius: [3, 3, 0, 0],
+            color: style === "trade" ? `${lineColor}30` : `${lineColor}18`,
+            borderRadius: [4, 4, 0, 0],
           },
           tooltip: { show: false },
           silent: true,
@@ -130,10 +154,10 @@ function buildSeries(
       type: "line",
       data: points.map((point) => point.displayValue),
       showSymbol: false,
-      smooth: false,
+      smooth: style === "price",
       emphasis: { focus: "series" },
-      lineStyle: { color: lineColor, width: 3 },
-      areaStyle: useBars ? undefined : { color: `${lineColor}14` },
+      lineStyle: { color: lineColor, width: style === "trade" ? 2.2 : 3 },
+      areaStyle: useBars ? undefined : { color: `${lineColor}12` },
       markLine:
         refValue === null
           ? undefined
@@ -184,9 +208,10 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const previous = previousRaw ? toDisplayPoint(previousRaw, scale) : null;
   const change = formatChange(latest?.displayValue, previous?.displayValue);
   const hasPoints = points.length > 0;
-  const lineColor = colorForCode(definition.code);
+  const style = chartStyle(definition);
+  const lineColor = styleColor(style, colorForCode(definition.code));
   const refValue = referenceValue(points);
-  const useBars = shouldUseBars(definition.frequency, points.length);
+  const useBars = shouldUseBars(definition.frequency, points.length, style);
 
   const chartOption = useMemo(
     () => ({
@@ -217,13 +242,13 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
         },
         splitLine: { lineStyle: { color: "#e7edf5" } },
       },
-      series: buildSeries(points, lineColor, latest, refValue, useBars),
+      series: buildSeries(points, lineColor, latest, refValue, useBars, style),
     }),
-    [latest, lineColor, points, refValue, scale.unit, useBars],
+    [latest, lineColor, points, refValue, scale.unit, style, useBars],
   );
 
   return (
-    <article className="indicator-card">
+    <article className={`indicator-card chart-style-${style}`}>
       <div className="card-topline">
         <div>
           <h3>{localized.name}</h3>
@@ -249,7 +274,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
         </div>
       ) : null}
 
-      <div className="chart-box professional">
+      <div className={`chart-box professional chart-style-${style}`}>
         {hasPoints ? (
           <ReactECharts
             notMerge
@@ -262,7 +287,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       </div>
 
       <p className="reading">
-        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，{useBars ? "柱形表示读数强弱，折线和散点强调变化节奏。" : "折线强调高频趋势，虚线为上一期参考。"}
+        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，{useBars ? "柱形表示读数强弱，折线和散点强调变化节奏。" : "折线强调趋势，虚线为上一期参考。"}
       </p>
     </article>
   );

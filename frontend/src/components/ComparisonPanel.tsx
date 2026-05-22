@@ -13,6 +13,10 @@ type ComparisonPanelProps = {
 };
 
 const SERIES_COLORS = ["#1457b8", "#b42318", "#04706b", "#b54708", "#5b35d5", "#0e7490"];
+const STYLE_COLORS: Record<string, string[]> = {
+  price: ["#1f5eff", "#d92d20", "#7c3aed", "#d97706"],
+  trade: ["#0e9384", "#b54708", "#1457b8", "#66758a"],
+};
 
 function commonUnit(snapshots: IndicatorSnapshot[]): string {
   const units = new Set(
@@ -26,6 +30,9 @@ function commonUnit(snapshots: IndicatorSnapshot[]): string {
 
 export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanelProps) {
   const unit = commonUnit(snapshots);
+  const panelStyle = snapshots.find((snapshot) => snapshot.definition.selectors.chart_style)
+    ?.definition.selectors.chart_style;
+  const palette = panelStyle ? STYLE_COLORS[panelStyle] ?? SERIES_COLORS : SERIES_COLORS;
   const seriesData = snapshots
     .map((snapshot, index) => {
       const localized = localizeIndicator(snapshot.definition);
@@ -35,7 +42,7 @@ export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanel
         .filter((point): point is NonNullable<typeof point> => Boolean(point));
       return {
         name: localized.name,
-        color: SERIES_COLORS[index % SERIES_COLORS.length],
+        color: palette[index % palette.length],
         points,
       };
     })
@@ -90,13 +97,13 @@ export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanel
           data: periods.map((period) => valuesByPeriod.get(period) ?? null),
           connectNulls: false,
           showSymbol: false,
-          smooth: false,
+          smooth: panelStyle === "price",
           lineStyle: { width: 2.5 },
           emphasis: { focus: "series" },
         };
       }),
     }),
-    [periods, seriesData, unit],
+    [panelStyle, periods, seriesData, unit],
   );
 
   if (seriesData.length < 2) {
@@ -104,7 +111,7 @@ export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanel
   }
 
   return (
-    <article className="comparison-panel">
+    <article className={`comparison-panel chart-style-${panelStyle ?? "default"}`}>
       <div className="comparison-head">
         <div>
           <span>综合比较</span>

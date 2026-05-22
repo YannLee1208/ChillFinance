@@ -217,6 +217,12 @@ def test_china_cpi_ppi_order_and_mom_comparison_group() -> None:
     )
     assert get_indicator("CN_CPI_MONTHLY_MOM").selectors.get("compare_group") == "CPI/PPI环比"
     assert get_indicator("CN_PPI_MOM").selectors.get("compare_group") == "CPI/PPI环比"
+    assert get_indicator("CN_CPI_MONTHLY_INDEX").selectors.get("metric") == "CPI指数"
+    assert get_indicator("CN_CPI_MONTHLY_MOM").selectors.get("metric") == "CPI环比"
+    assert get_indicator("CN_CPI_MONTHLY_MOM").selectors.get("display_group") == "CPI"
+    assert get_indicator("CN_PPI_INDEX").selectors.get("metric") == "PPI指数"
+    assert get_indicator("CN_PPI_ACCUMULATED_INDEX").selectors.get("metric") == "PPI累计指数"
+    assert get_indicator("CN_PPI_MOM").selectors.get("display_group") == "PPI"
 
 
 def test_annual_cpi_inflation_is_not_mixed_with_monthly_cpi_ppi() -> None:
@@ -225,7 +231,31 @@ def test_annual_cpi_inflation_is_not_mixed_with_monthly_cpi_ppi() -> None:
     assert indicator.frequency == "annual"
     assert indicator.provider == "world_bank"
     assert indicator.selectors.get("metric") == "年度CPI通胀率"
-    assert indicator.selectors.get("display_group") == "年度价格指标"
+    assert indicator.selectors.get("display_group") == "其他价格指标"
+
+
+def test_china_price_trade_topic_uses_row_groups_and_chart_styles() -> None:
+    expected = {
+        "CN_CPI_MONTHLY_INDEX": ("CPI", "price"),
+        "CN_CPI_MONTHLY_YOY": ("CPI", "price"),
+        "CN_CPI_MONTHLY_MOM": ("CPI", "price"),
+        "CN_PPI_INDEX": ("PPI", "price"),
+        "CN_PPI": ("PPI", "price"),
+        "CN_PPI_MOM": ("PPI", "price"),
+        "CN_PPI_ACCUMULATED_INDEX": ("PPI", "price"),
+        "CN_EXPORT_VALUE_USD": ("出口", "trade"),
+        "CN_EXPORT_YOY_USD": ("出口", "trade"),
+        "CN_EXPORTS_GOODS_SERVICES": ("出口", "trade"),
+        "CN_IMPORT_VALUE_USD": ("进口", "trade"),
+        "CN_IMPORT_YOY_USD": ("进口", "trade"),
+        "CN_IMPORTS_GOODS_SERVICES": ("进口", "trade"),
+    }
+
+    for code, (display_group, chart_style) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.selectors.get("category") == "价格与进出口"
+        assert indicator.selectors.get("display_group") == display_group
+        assert indicator.selectors.get("chart_style") == chart_style
 
 
 def test_customs_trade_indicators_use_public_customs_table() -> None:

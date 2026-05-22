@@ -21,7 +21,7 @@ function buildOptions(indicators: IndicatorDefinition[]): Record<string, string[
   const values: Record<string, Set<string>> = {};
   for (const indicator of indicators) {
     for (const [key, value] of Object.entries(indicator.selectors)) {
-      if (key === "display_group" || key === "compare_group") {
+      if (key === "display_group" || key === "compare_group" || key === "chart_style") {
         continue;
       }
       values[key] = values[key] ?? new Set<string>();

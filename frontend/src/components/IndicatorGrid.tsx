@@ -24,7 +24,11 @@ const GROUP_ORDER = [
   "经济总量",
   "就业与消费",
   "工业与投资",
-  "价格与进出口",
+  "CPI",
+  "PPI",
+  "出口",
+  "进口",
+  "其他价格指标",
   "汇率与金融",
   "用电量",
   "发电结构",
@@ -79,6 +83,13 @@ function groupSnapshots(snapshots: IndicatorSnapshot[]): [string, IndicatorSnaps
   });
 }
 
+function sectionClassName(group: string): string {
+  if (["CPI", "PPI", "出口", "进口"].includes(group)) {
+    return "indicator-grid grouped-row";
+  }
+  return "indicator-grid";
+}
+
 function comparisonGroups(snapshots: IndicatorSnapshot[]): [string, IndicatorSnapshot[]][] {
   const grouped = new Map<string, IndicatorSnapshot[]>();
   for (const snapshot of snapshots) {
@@ -89,18 +100,6 @@ function comparisonGroups(snapshots: IndicatorSnapshot[]): [string, IndicatorSna
     grouped.set(group, [...(grouped.get(group) ?? []), snapshot]);
   }
   return Array.from(grouped.entries()).filter(([, items]) => items.length >= 2);
-}
-
-function sectionComparisonGroups(
-  groupItems: IndicatorSnapshot[],
-  allComparisonGroups: [string, IndicatorSnapshot[]][],
-): [string, IndicatorSnapshot[]][] {
-  const sectionGroupNames = new Set(
-    groupItems
-      .map((snapshot) => snapshot.definition.selectors.compare_group)
-      .filter((group): group is string => Boolean(group)),
-  );
-  return allComparisonGroups.filter(([group]) => sectionGroupNames.has(group));
 }
 
 export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
@@ -133,31 +132,34 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   return (
     <>
       {availableSnapshots.length > 0 ? (
-        groupSnapshots(availableSnapshots).map(([group, groupItems]) => (
-          <section className="indicator-section" key={group}>
-            <div className="indicator-section-head">
-              <h2>{localizeSelectorValue(group)}</h2>
-              <span>{groupItems.length} 个指标</span>
-            </div>
-            {sectionComparisonGroups(groupItems, allComparisonGroups).map(([compareGroup, compareItems]) => (
+        <>
+          {allComparisonGroups.map(([compareGroup, compareItems]) => (
+            <section className="indicator-section" key={`comparison-${compareGroup}`}>
               <ComparisonPanel
                 group={compareGroup}
-                key={compareGroup}
                 snapshots={compareItems}
                 timeRange={timeRange}
               />
-            ))}
-            <div className="indicator-grid">
-              {groupItems.map((snapshot) => (
-                <IndicatorCard
-                  key={snapshot.definition.code}
-                  snapshot={snapshot}
-                  timeRange={timeRange}
-                />
-              ))}
-            </div>
-          </section>
-        ))
+            </section>
+          ))}
+          {groupSnapshots(availableSnapshots).map(([group, groupItems]) => (
+            <section className="indicator-section" key={group}>
+              <div className="indicator-section-head">
+                <h2>{localizeSelectorValue(group)}</h2>
+                <span>{groupItems.length} 个指标</span>
+              </div>
+              <div className={sectionClassName(group)}>
+                {groupItems.map((snapshot) => (
+                  <IndicatorCard
+                    key={snapshot.definition.code}
+                    snapshot={snapshot}
+                    timeRange={timeRange}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </>
       ) : (
         <section className="state-panel compact">当前筛选下暂无已入库的真实序列。</section>
       )}

@@ -141,6 +141,26 @@ def _pbc_indicator(
     )
 
 
+def _price_trade_selectors(
+    metric: str,
+    display_group: str,
+    chart_style: str,
+    compare_group: str | None = None,
+) -> dict[str, str]:
+    """生成中国价格与进出口专题的展示选择器。"""
+
+    selectors = {
+        "country": "China",
+        "category": "价格与进出口",
+        "metric": metric,
+        "display_group": display_group,
+        "chart_style": chart_style,
+    }
+    if compare_group is not None:
+        selectors["compare_group"] = compare_group
+    return selectors
+
+
 def _treasury_indicators() -> list[IndicatorDefinition]:
     """生成 FRED 美国国债收益率指标定义。"""
 
@@ -860,8 +880,8 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         provider="akshare_china",
         source=AKSHARE_CHINA_SERIES["CN_EXPORT_YOY_USD"]["source"],
         description="中国以美元计出口同比，用于观察外需变化。",
-        display_order=216,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "出口同比"},
+        display_order=231,
+        selectors=_price_trade_selectors("出口同比", "出口", "trade"),
     ),
     _indicator(
         code="CN_EXPORT_VALUE_USD",
@@ -873,8 +893,8 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         provider="akshare_china",
         source=AKSHARE_CHINA_SERIES["CN_EXPORT_VALUE_USD"]["source"],
         description="中国海关总署口径当月出口额，折算为亿美元，用于观察外需规模。",
-        display_order=216,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "出口额"},
+        display_order=230,
+        selectors=_price_trade_selectors("出口额", "出口", "trade"),
     ),
     _indicator(
         code="CN_IMPORT_YOY_USD",
@@ -886,8 +906,8 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         provider="akshare_china",
         source=AKSHARE_CHINA_SERIES["CN_IMPORT_YOY_USD"]["source"],
         description="中国以美元计进口同比，用于观察内需与补库变化。",
-        display_order=217,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "进口同比"},
+        display_order=241,
+        selectors=_price_trade_selectors("进口同比", "进口", "trade"),
     ),
     _indicator(
         code="CN_IMPORT_VALUE_USD",
@@ -899,8 +919,8 @@ _CHINA_AKSHARE_EXTRA_INDICATORS = [
         provider="akshare_china",
         source=AKSHARE_CHINA_SERIES["CN_IMPORT_VALUE_USD"]["source"],
         description="中国海关总署口径当月进口额，折算为亿美元，用于观察内需和补库规模。",
-        display_order=217,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "进口额"},
+        display_order=240,
+        selectors=_price_trade_selectors("进口额", "进口", "trade"),
     ),
 ]
 
@@ -967,8 +987,8 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         provider="world_bank",
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_EXPORTS_GOODS_SERVICES'][1]}",
         description="中国货物和服务出口额，用于观察外需变化。",
-        display_order=210,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "出口额"},
+        display_order=232,
+        selectors=_price_trade_selectors("货物和服务出口额", "出口", "trade"),
     ),
     _indicator(
         code="CN_IMPORTS_GOODS_SERVICES",
@@ -980,8 +1000,8 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         provider="world_bank",
         source=f"WorldBank:{WORLD_BANK_SERIES['CN_IMPORTS_GOODS_SERVICES'][1]}",
         description="中国货物和服务进口额，用于观察内需和补库变化。",
-        display_order=211,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "进口额"},
+        display_order=242,
+        selectors=_price_trade_selectors("货物和服务进口额", "进口", "trade"),
     ),
     _indicator(
         code="CN_CPI_INFLATION",
@@ -998,7 +1018,8 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
             "country": "China",
             "category": "价格与进出口",
             "metric": "年度CPI通胀率",
-            "display_group": "年度价格指标",
+            "display_group": "其他价格指标",
+            "chart_style": "price",
         },
     ),
     _indicator(
@@ -2241,7 +2262,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CORPORATE_GOODS_PRICE_INDEX"]["source"],
         description="中国企业商品价格指数用于观察上游和企业端价格压力。",
         display_order=214,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "企业商品价格"},
+        selectors=_price_trade_selectors("企业商品价格", "其他价格指标", "price"),
     ),
     _indicator(
         code="US_ISM_MANUFACTURING_PMI",
@@ -2686,7 +2707,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI_INDEX"]["source"],
         description="中国 PPI 当月指数用于补充同比之外的工业品价格水平观察。",
         display_order=213,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "PPI当月"},
+        selectors=_price_trade_selectors("PPI指数", "PPI", "price"),
     ),
     _indicator(
         code="CN_PPI",
@@ -2699,7 +2720,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI"]["source"],
         description="中国 PPI 同比用于观察工业品出厂价格和企业盈利压力。",
         display_order=214,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "PPI同比"},
+        selectors=_price_trade_selectors("PPI同比", "PPI", "price"),
     ),
     _indicator(
         code="CN_PPI_MOM",
@@ -2712,12 +2733,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI_MOM"]["source"],
         description="用 PPI 当月指数计算的环比变化，用于观察工业品价格短期动能。",
         display_order=215,
-        selectors={
-            "country": "China",
-            "category": "价格与进出口",
-            "metric": "PPI环比",
-            "compare_group": "CPI/PPI环比",
-        },
+        selectors=_price_trade_selectors("PPI环比", "PPI", "price", "CPI/PPI环比"),
     ),
     _indicator(
         code="CN_PPI_ACCUMULATED_INDEX",
@@ -2730,7 +2746,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_PPI_ACCUMULATED_INDEX"]["source"],
         description="中国 PPI 累计指数用于观察年内工业品价格累计变化。",
         display_order=216,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "PPI累计"},
+        selectors=_price_trade_selectors("PPI累计指数", "PPI", "price"),
     ),
     _indicator(
         code="CN_CPI_MONTHLY_INDEX",
@@ -2743,7 +2759,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_INDEX"]["source"],
         description="国家统计口径 CPI 当月指数，用于观察居民端价格水平。",
         display_order=210,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "CPI当月"},
+        selectors=_price_trade_selectors("CPI指数", "CPI", "price"),
     ),
     _indicator(
         code="CN_CPI_MONTHLY_YOY",
@@ -2756,7 +2772,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_YOY"]["source"],
         description="国家统计口径 CPI 月度同比，用于观察居民端通胀压力。",
         display_order=211,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "CPI同比"},
+        selectors=_price_trade_selectors("CPI同比", "CPI", "price"),
     ),
     _indicator(
         code="CN_CPI_MONTHLY_MOM",
@@ -2769,12 +2785,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_CPI_MONTHLY_MOM"]["source"],
         description="国家统计口径 CPI 月度环比，用于观察居民端价格短期动能。",
         display_order=212,
-        selectors={
-            "country": "China",
-            "category": "价格与进出口",
-            "metric": "CPI环比",
-            "compare_group": "CPI/PPI环比",
-        },
+        selectors=_price_trade_selectors("CPI环比", "CPI", "price", "CPI/PPI环比"),
     ),
     _indicator(
         code="CN_EXPORT_PRICE_INDEX",
@@ -2787,7 +2798,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source="Pending:Customs/Wind",
         description="出口价格指数用于拆分出口量价。",
         display_order=218,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "出口价格"},
+        selectors=_price_trade_selectors("出口价格", "出口", "trade"),
         availability=_availability_for("CN_EXPORT_PRICE_INDEX"),
     ),
     _indicator(
@@ -2801,7 +2812,7 @@ _CHINA_DOMESTIC_UNAVAILABLE_INDICATORS = [
         source="Pending:Customs/Wind",
         description="进口价格指数用于观察输入性价格变化。",
         display_order=219,
-        selectors={"country": "China", "category": "价格与进出口", "metric": "进口价格"},
+        selectors=_price_trade_selectors("进口价格", "进口", "trade"),
         availability=_availability_for("CN_IMPORT_PRICE_INDEX"),
     ),
     _indicator(
