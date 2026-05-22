@@ -11,6 +11,7 @@ from backend.domain.models import (
     IngestionRunRecord,
     Observation,
 )
+from backend.ingest.akshare_china import AkShareChinaProvider
 from backend.ingest.china_data import ChinaDataProvider
 from backend.ingest.fred import FredSeriesProvider
 from backend.ingest.seed import SeedProvider
@@ -42,6 +43,7 @@ def create_ingestion_service(store: DuckDBMacroStore) -> IngestionService:
     return IngestionService(
         store=store,
         providers=[
+            AkShareChinaProvider(),
             USTreasuryProvider(
                 timeout_seconds=settings.macro_http_timeout_seconds,
                 user_agent=settings.macro_user_agent,

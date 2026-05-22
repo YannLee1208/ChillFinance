@@ -70,6 +70,109 @@ CHINA_DATA_SERIES = {
     "CN_M2": "china-m2-money-supply",
 }
 
+AKSHARE_CHINA_SERIES = {
+    "CN_NOMINAL_GDP_QUARTERLY": {
+        "function": "macro_china_gdp",
+        "date_column": "季度",
+        "value_column": "国内生产总值-绝对值",
+        "source": "AKShare/Eastmoney:macro_china_gdp",
+        "period_type": "quarter",
+    },
+    "CN_REAL_GDP_QUARTERLY_YOY": {
+        "function": "macro_china_gdp",
+        "date_column": "季度",
+        "value_column": "国内生产总值-同比增长",
+        "source": "AKShare/Eastmoney:macro_china_gdp",
+        "period_type": "quarter",
+    },
+    "CN_RETAIL_SALES": {
+        "function": "macro_china_consumer_goods_retail",
+        "date_column": "月份",
+        "value_column": "同比增长",
+        "source": "AKShare/Eastmoney:macro_china_consumer_goods_retail",
+        "period_type": "month",
+    },
+    "CN_INDUSTRIAL_PRODUCTION_YOY": {
+        "function": "macro_china_gyzjz",
+        "date_column": "月份",
+        "value_column": "同比增长",
+        "source": "AKShare/Eastmoney:macro_china_gyzjz",
+        "period_type": "month",
+    },
+    "CN_FIXED_ASSET_INVESTMENT": {
+        "function": "macro_china_gdzctz",
+        "date_column": "月份",
+        "value_column": "同比增长",
+        "source": "AKShare/Eastmoney:macro_china_gdzctz",
+        "period_type": "month",
+    },
+    "CN_RMB_LOANS": {
+        "function": "macro_china_new_financial_credit",
+        "date_column": "月份",
+        "value_column": "当月",
+        "source": "AKShare/Eastmoney:macro_china_new_financial_credit",
+        "period_type": "month",
+    },
+    "CN_M2": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "value_column": "货币和准货币(M2)-数量(亿元)",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+    },
+    "CN_M1": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "value_column": "货币(M1)-数量(亿元)",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+    },
+    "CN_M1_M2_SCISSORS": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+        "computed": "m1_yoy_minus_m2_yoy",
+    },
+    "CN_NEW_HOME_PRICE_INDEX": {
+        "function": "macro_china_new_house_price",
+        "date_column": "日期",
+        "value_column": "新建商品住宅价格指数-同比",
+        "source": "AKShare/Eastmoney:macro_china_new_house_price",
+        "period_type": "date",
+        "aggregate": "mean_by_date",
+    },
+    "CN_PPI": {
+        "function": "macro_china_ppi",
+        "date_column": "月份",
+        "value_column": "当月同比增长",
+        "source": "AKShare/Eastmoney:macro_china_ppi",
+        "period_type": "month",
+    },
+    "CN_EXPORT_YOY_USD": {
+        "function": "macro_china_exports_yoy",
+        "date_column": "日期",
+        "value_column": "今值",
+        "source": "AKShare/Jin10:macro_china_exports_yoy",
+        "period_type": "date",
+    },
+    "CN_IMPORT_YOY_USD": {
+        "function": "macro_china_imports_yoy",
+        "date_column": "日期",
+        "value_column": "今值",
+        "source": "AKShare/Jin10:macro_china_imports_yoy",
+        "period_type": "date",
+    },
+    "CN_SHCOMP": {
+        "function": "stock_zh_index_daily",
+        "date_column": "date",
+        "value_column": "close",
+        "source": "AKShare/Sina:stock_zh_index_daily:sh000001",
+        "period_type": "date",
+        "symbol": "sh000001",
+    },
+}
+
 UNAVAILABLE_SERIES = {
     "CN_REAL_GDP": (
         "已尝试国家统计局 data.stats.gov.cn，当前环境返回 403；"
@@ -79,22 +182,10 @@ UNAVAILABLE_SERIES = {
         "需要接入人民银行社会融资规模月度表或 Wind 宏观数据库；"
         "当前没有稳定官方 JSON 接口。"
     ),
-    "CN_RMB_LOANS": (
-        "需要接入人民银行人民币贷款月度表或 Wind 宏观数据库；"
-        "当前没有稳定官方 JSON 接口。"
-    ),
-    "CN_M1": "需要接入人民银行 M1 月度表或 Wind 宏观数据库；当前没有稳定官方 JSON 接口。",
-    "CN_M1_M2_SCISSORS": "需要先接入真实 M1 和 M2 后计算 M1-M2 剪刀差；当前不会用模拟值替代。",
-    "CN_RETAIL_SALES": "需要接入国家统计局社会消费品零售总额月度序列或 Wind。",
-    "CN_INDUSTRIAL_PRODUCTION_YOY": "需要接入国家统计局规模以上工业增加值月度同比或 Wind。",
-    "CN_FIXED_ASSET_INVESTMENT": "需要接入国家统计局固定资产投资累计同比或 Wind。",
     "CN_MANUFACTURING_INVESTMENT": "需要接入制造业投资累计同比或 Wind。",
     "CN_INFRASTRUCTURE_INVESTMENT": "需要接入基础设施投资累计同比或 Wind。",
     "CN_REAL_ESTATE_INVESTMENT": "需要接入国家统计局房地产开发投资累计同比或 Wind。",
     "CN_PROPERTY_SALES_AREA": "需要接入商品房销售面积累计同比或 Wind。",
-    "CN_NEW_HOME_PRICE_INDEX": "需要接入70城新建商品住宅价格指数或 Wind。",
-    "CN_PPI": "需要接入国家统计局工业生产者出厂价格指数 PPI 或 Wind。",
     "CN_EXPORT_PRICE_INDEX": "需要接入海关总署出口价格指数或 Wind。",
     "CN_IMPORT_PRICE_INDEX": "需要接入海关总署进口价格指数或 Wind。",
-    "CN_SHCOMP": "需要接入交易所/行情源的上证综指或 Wind。",
 }

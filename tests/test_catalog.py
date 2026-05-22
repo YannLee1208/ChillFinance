@@ -40,7 +40,9 @@ def test_catalog_replaces_seed_with_public_providers() -> None:
     providers = {indicator.provider for indicator in catalog}
 
     assert "seed" not in providers
-    assert {"china_data", "fred", "unavailable", "us_treasury", "world_bank"}.issubset(providers)
+    assert {"akshare_china", "fred", "unavailable", "us_treasury", "world_bank"}.issubset(
+        providers
+    )
 
 
 def test_catalog_has_filterable_dimensions() -> None:
@@ -56,9 +58,13 @@ def test_catalog_has_filterable_dimensions() -> None:
         for indicator in catalog
     )
     assert any(indicator.code == "CN_M2" for indicator in catalog)
-    assert any(indicator.code == "CN_M1_M2_SCISSORS" for indicator in catalog)
+    assert any(
+        indicator.code == "CN_M1_M2_SCISSORS" and indicator.provider == "akshare_china"
+        for indicator in catalog
+    )
     assert any(
         indicator.code == "CN_RETAIL_SALES"
+        and indicator.provider == "akshare_china"
         and indicator.selectors.get("category") == "消费"
         for indicator in catalog
     )
