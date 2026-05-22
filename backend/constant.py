@@ -50,3 +50,15 @@ WORLD_BANK_SERIES = {
     "JP_FISCAL_BALANCE_TO_GDP": ("JPN", "GC.NLD.TOTL.GD.ZS"),
     "EU_FISCAL_BALANCE_TO_GDP": ("EMU", "GC.NLD.TOTL.GD.ZS"),
 }
+
+CHINA_DATA_SERIES = {
+    "CN_M2": "china-m2-money-supply",
+}
+
+UNAVAILABLE_SERIES = {
+    "CN_REAL_GDP": "需要接入国家统计局不变价 GDP 或 Wind 宏观数据库。",
+    "CN_TOTAL_SOCIAL_FINANCING": "需要接入人民银行社会融资规模月度表或 Wind 宏观数据库。",
+    "CN_RMB_LOANS": "需要接入人民银行人民币贷款月度表或 Wind 宏观数据库。",
+    "CN_M1": "需要接入人民银行 M1 月度表或 Wind 宏观数据库。",
+    "CN_M1_M2_SCISSORS": "需要先接入真实 M1 和 M2 后计算 M1-M2 剪刀差。",
+}

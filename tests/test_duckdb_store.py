@@ -6,7 +6,12 @@ from decimal import Decimal
 import pytest
 from duckdb import ConversionException
 
-from backend.domain.models import IndicatorDefinition, Observation
+from backend.domain.models import (
+    IndicatorDefinition,
+    IngestionAttemptRecord,
+    IngestionRunRecord,
+    Observation,
+)
 from backend.storage.duckdb_store import DuckDBMacroStore
 
 
@@ -129,3 +134,44 @@ def test_store_normalizes_aware_timestamps_to_naive_utc(temp_db_path) -> None:
 
     assert loaded is not None
     assert loaded.ingested_at == datetime(2026, 1, 2, 0, 30)
+
+
+def test_store_persists_latest_ingestion_run(temp_db_path) -> None:
+    store = DuckDBMacroStore(temp_db_path)
+    store.initialize()
+    started_at = datetime(2026, 1, 2, 8, 30, tzinfo=UTC)
+    finished_at = datetime(2026, 1, 2, 8, 31, tzinfo=UTC)
+    run = IngestionRunRecord(
+        run_id="run-1",
+        domain="rates",
+        status="partial",
+        message="更新完成：成功 1 个指标，失败 1 个指标，写入 10 条数据。",
+        observation_count=10,
+        success_count=1,
+        failure_count=1,
+        started_at=started_at,
+        finished_at=finished_at,
+        attempts=[
+            IngestionAttemptRecord(
+                run_id="run-1",
+                domain="rates",
+                indicator_code="US_DGS10",
+                provider="fred",
+                status="success",
+                message="U.S. Treasury 10Y yield 已更新，写入 10 条数据。",
+                observation_count=10,
+                started_at=started_at,
+                finished_at=finished_at,
+            )
+        ],
+    )
+
+    store.insert_ingestion_run(run)
+
+    loaded = store.get_latest_ingestion_run("rates")
+
+    assert loaded is not None
+    assert loaded.run_id == "run-1"
+    assert loaded.status == "partial"
+    assert loaded.attempts[0].indicator_code == "US_DGS10"
+    assert loaded.attempts[0].observation_count == 10

@@ -29,3 +29,28 @@ export type IndicatorSnapshot = {
   previous: Observation | null;
   points: Observation[];
 };
+
+export type IngestionAttemptRecord = {
+  run_id: string;
+  domain: string;
+  indicator_code: string;
+  provider: string;
+  status: "success" | "failed";
+  message: string;
+  observation_count: number;
+  started_at: string;
+  finished_at: string;
+};
+
+export type IngestionRunRecord = {
+  run_id: string;
+  domain: string;
+  status: "success" | "partial" | "failed";
+  message: string;
+  observation_count: number;
+  success_count: number;
+  failure_count: number;
+  started_at: string;
+  finished_at: string;
+  attempts: IngestionAttemptRecord[];
+};

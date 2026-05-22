@@ -11,7 +11,8 @@ def test_ingest_rejects_unknown_provider() -> None:
     result = runner.invoke(app, ["ingest", "--provider", "invalid"])
 
     assert result.exit_code != 0
-    assert "Provider name must be one of: fred, seed, world_bank" in result.output
+    assert "Provider name must be one of:" in result.output
+    assert "china_data" in result.output
 
 
 def test_parse_codes_splits_comma_separated_values() -> None:

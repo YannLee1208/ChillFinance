@@ -6,14 +6,16 @@ import typer
 
 from backend.config import get_settings
 from backend.domain.catalog import get_catalog
+from backend.ingest.china_data import ChinaDataProvider
 from backend.ingest.fred import FredSeriesProvider
 from backend.ingest.seed import SeedProvider
 from backend.ingest.service import IngestionService
+from backend.ingest.unavailable import UnavailableProvider
 from backend.ingest.world_bank import WorldBankProvider
 from backend.storage.duckdb_store import DuckDBMacroStore
 
 app = typer.Typer(help="Local macro monitor commands.")
-_VALID_PROVIDERS = {"seed", "fred", "world_bank"}
+_VALID_PROVIDERS = {"china_data", "fred", "seed", "unavailable", "world_bank"}
 
 
 @app.command("init-db")
@@ -48,6 +50,10 @@ def ingest(
     service = IngestionService(
         store=store,
         providers=[
+            ChinaDataProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
             FredSeriesProvider(
                 timeout_seconds=settings.macro_http_timeout_seconds,
                 user_agent=settings.macro_user_agent,
@@ -56,6 +62,7 @@ def ingest(
                 timeout_seconds=settings.macro_http_timeout_seconds,
                 user_agent=settings.macro_user_agent,
             ),
+            UnavailableProvider(),
             SeedProvider(),
         ],
     )
@@ -77,7 +84,9 @@ def _validate_provider_name(provider: str | None) -> str | None:
     if provider is None or provider in _VALID_PROVIDERS:
         return provider
 
-    raise typer.BadParameter("Provider name must be one of: fred, seed, world_bank")
+    raise typer.BadParameter(
+        "Provider name must be one of: china_data, fred, seed, unavailable, world_bank"
+    )
 
 
 def _parse_codes(codes: str | None) -> set[str] | None:

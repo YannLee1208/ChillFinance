@@ -43,3 +43,32 @@ class IndicatorSnapshot(BaseModel):
     latest: Observation | None
     previous: Observation | None
     points: list[Observation] = Field(default_factory=list)
+
+
+class IngestionAttemptRecord(BaseModel):
+    """单个指标采集尝试记录。"""
+
+    run_id: str
+    domain: str
+    indicator_code: str
+    provider: str
+    status: str
+    message: str
+    observation_count: int
+    started_at: datetime
+    finished_at: datetime
+
+
+class IngestionRunRecord(BaseModel):
+    """一次板块采集运行记录。"""
+
+    run_id: str
+    domain: str
+    status: str
+    message: str
+    observation_count: int
+    success_count: int
+    failure_count: int
+    started_at: datetime
+    finished_at: datetime
+    attempts: list[IngestionAttemptRecord] = Field(default_factory=list)

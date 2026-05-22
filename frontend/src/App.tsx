@@ -1,11 +1,13 @@
-import { useIsFetching, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useIsFetching, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import { fetchCatalog } from "./api";
+import { fetchCatalog, fetchLatestIngestionRun, ingestDomain } from "./api";
 import { DashboardHeader } from "./components/DashboardHeader";
+import { DomainUpdatePanel } from "./components/DomainUpdatePanel";
 import { DomainSidebar } from "./components/DomainSidebar";
 import { IndicatorGrid } from "./components/IndicatorGrid";
 import { OverviewPanel } from "./components/OverviewPanel";
+import { RatesCurvePanel } from "./components/RatesCurvePanel";
 import { SelectorBar } from "./components/SelectorBar";
 
 const DEFAULT_DOMAIN = "rates";
@@ -29,6 +31,20 @@ export default function App() {
     () => catalog.filter((indicator) => indicator.domain === activeDomain),
     [activeDomain, catalog],
   );
+  const { data: latestRun, isLoading: isRunLoading } = useQuery({
+    queryKey: ["ingest-run", activeDomain],
+    queryFn: () => fetchLatestIngestionRun(activeDomain),
+  });
+  const ingestMutation = useMutation({
+    mutationFn: () => ingestDomain(activeDomain),
+    onSuccess: (run) => {
+      queryClient.setQueryData(["ingest-run", activeDomain], run);
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["catalog"] }),
+        queryClient.invalidateQueries({ queryKey: ["indicator"] }),
+      ]);
+    },
+  });
   const filteredIndicators = useMemo(
     () =>
       selectedIndicators.filter((indicator) =>
@@ -73,11 +89,19 @@ export default function App() {
         />
         <main className="content">
           <OverviewPanel activeDomain={activeDomain} indicators={filteredIndicators} />
+          <DomainUpdatePanel
+            activeDomain={activeDomain}
+            isLoading={isRunLoading}
+            isUpdating={ingestMutation.isPending}
+            latestRun={ingestMutation.data ?? latestRun}
+            onUpdate={() => ingestMutation.mutate()}
+          />
           <SelectorBar
             indicators={selectedIndicators}
             onChange={setSelectedFilters}
             selected={selectedFilters}
           />
+          {activeDomain === "rates" ? <RatesCurvePanel indicators={selectedIndicators} /> : null}
           <IndicatorGrid indicators={filteredIndicators} />
         </main>
       </div>

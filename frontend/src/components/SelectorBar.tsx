@@ -73,7 +73,12 @@ export function SelectorBar({ indicators, selected, onChange }: SelectorBarProps
           </label>
         ))}
       </div>
-      <button className="clear-filter-button" disabled={!hasActiveSelector} onClick={clearAll} type="button">
+      <button
+        className="clear-filter-button"
+        disabled={!hasActiveSelector}
+        onClick={clearAll}
+        type="button"
+      >
         清空
       </button>
     </section>

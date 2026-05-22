@@ -5,7 +5,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
 from backend.domain.catalog import get_catalog, get_indicator
-from backend.domain.models import IndicatorDefinition, IndicatorSnapshot, Observation
+from backend.domain.models import (
+    IndicatorDefinition,
+    IndicatorSnapshot,
+    IngestionRunRecord,
+    Observation,
+)
+from backend.ingest.china_data import ChinaDataProvider
+from backend.ingest.fred import FredSeriesProvider
+from backend.ingest.seed import SeedProvider
+from backend.ingest.service import IngestionService
+from backend.ingest.unavailable import UnavailableProvider
+from backend.ingest.world_bank import WorldBankProvider
 from backend.storage.duckdb_store import DuckDBMacroStore
 
 _ALLOWED_ORIGINS = [
@@ -21,6 +32,31 @@ def create_macro_store() -> DuckDBMacroStore:
     store = DuckDBMacroStore(settings.macro_db_path)
     store.initialize()
     return store
+
+
+def create_ingestion_service(store: DuckDBMacroStore) -> IngestionService:
+    """创建页面触发采集使用的数据源服务。"""
+
+    settings = get_settings()
+    return IngestionService(
+        store=store,
+        providers=[
+            ChinaDataProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
+            FredSeriesProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
+            WorldBankProvider(
+                timeout_seconds=settings.macro_http_timeout_seconds,
+                user_agent=settings.macro_user_agent,
+            ),
+            UnavailableProvider(),
+            SeedProvider(),
+        ],
+    )
 
 
 def _get_indicator_or_404(indicator_code: str) -> IndicatorDefinition:
@@ -77,5 +113,20 @@ def create_app() -> FastAPI:
         _get_indicator_or_404(indicator_code)
         store = create_macro_store()
         return store.get_series(indicator_code)
+
+    @api.get("/api/ingest/domains/{domain}/latest", response_model=IngestionRunRecord | None)
+    def latest_ingestion_run(domain: str) -> IngestionRunRecord | None:
+        """返回板块最近一次更新结果。"""
+
+        store = create_macro_store()
+        return store.get_latest_ingestion_run(domain)
+
+    @api.post("/api/ingest/domains/{domain}", response_model=IngestionRunRecord)
+    async def ingest_domain(domain: str) -> IngestionRunRecord:
+        """从页面触发某个板块的数据更新。"""
+
+        store = create_macro_store()
+        service = create_ingestion_service(store)
+        return await service.ingest_domain(domain, get_catalog())
 
     return api

@@ -82,3 +82,16 @@ def test_indicator_snapshot_returns_latest_and_previous(
     assert payload["previous"]["period"] == "2025-09-30"
     assert payload["previous"]["value"] == "4.800000"
     assert len(payload["points"]) == 2
+
+
+def test_latest_ingestion_run_returns_none_before_update(
+    temp_db_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MACRO_DB_PATH", str(temp_db_path))
+    client = TestClient(create_app())
+
+    response = client.get("/api/ingest/domains/rates/latest")
+
+    assert response.status_code == 200
+    assert response.json() is None

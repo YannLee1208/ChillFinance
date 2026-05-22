@@ -9,7 +9,12 @@ from typing import Any
 
 import duckdb
 
-from backend.domain.models import IndicatorDefinition, Observation
+from backend.domain.models import (
+    IndicatorDefinition,
+    IngestionAttemptRecord,
+    IngestionRunRecord,
+    Observation,
+)
 
 
 class DuckDBMacroStore:
@@ -57,6 +62,36 @@ class DuckDBMacroStore:
                     source varchar not null,
                     ingested_at timestamp not null,
                     primary key (indicator_code, period)
+                )
+                """
+            )
+            connection.execute(
+                """
+                create table if not exists ingestion_runs (
+                    run_id varchar primary key,
+                    domain varchar not null,
+                    status varchar not null,
+                    message varchar not null,
+                    observation_count integer not null,
+                    success_count integer not null,
+                    failure_count integer not null,
+                    started_at timestamp not null,
+                    finished_at timestamp not null
+                )
+                """
+            )
+            connection.execute(
+                """
+                create table if not exists ingestion_attempts (
+                    run_id varchar not null,
+                    domain varchar not null,
+                    indicator_code varchar not null,
+                    provider varchar not null,
+                    status varchar not null,
+                    message varchar not null,
+                    observation_count integer not null,
+                    started_at timestamp not null,
+                    finished_at timestamp not null
                 )
                 """
             )
@@ -177,6 +212,89 @@ class DuckDBMacroStore:
             return None
         return self._row_to_observation(row)
 
+    def insert_ingestion_run(self, run: IngestionRunRecord) -> None:
+        """写入一次采集运行及其指标尝试记录。"""
+
+        with self._connect() as connection:
+            connection.execute("begin transaction")
+            try:
+                connection.execute(
+                    """
+                    insert or replace into ingestion_runs
+                    values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    [
+                        run.run_id,
+                        run.domain,
+                        run.status,
+                        run.message,
+                        run.observation_count,
+                        run.success_count,
+                        run.failure_count,
+                        self._to_naive_utc(run.started_at),
+                        self._to_naive_utc(run.finished_at),
+                    ],
+                )
+                connection.execute(
+                    "delete from ingestion_attempts where run_id = ?",
+                    [run.run_id],
+                )
+                if run.attempts:
+                    connection.executemany(
+                        """
+                        insert into ingestion_attempts
+                        values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        [
+                            (
+                                attempt.run_id,
+                                attempt.domain,
+                                attempt.indicator_code,
+                                attempt.provider,
+                                attempt.status,
+                                attempt.message,
+                                attempt.observation_count,
+                                self._to_naive_utc(attempt.started_at),
+                                self._to_naive_utc(attempt.finished_at),
+                            )
+                            for attempt in run.attempts
+                        ],
+                    )
+                connection.execute("commit")
+            except Exception:
+                connection.execute("rollback")
+                raise
+
+    def get_latest_ingestion_run(self, domain: str) -> IngestionRunRecord | None:
+        """读取指定板块最近一次采集运行。"""
+
+        with self._connect() as connection:
+            run_row = connection.execute(
+                """
+                select run_id, domain, status, message, observation_count, success_count,
+                       failure_count, started_at, finished_at
+                from ingestion_runs
+                where domain = ?
+                order by finished_at desc
+                limit 1
+                """,
+                [domain],
+            ).fetchone()
+            if run_row is None:
+                return None
+            attempt_rows = connection.execute(
+                """
+                select run_id, domain, indicator_code, provider, status, message,
+                       observation_count, started_at, finished_at
+                from ingestion_attempts
+                where run_id = ?
+                order by indicator_code
+                """,
+                [run_row[0]],
+            ).fetchall()
+
+        return self._row_to_ingestion_run(run_row, attempt_rows)
+
     def _connect(self) -> duckdb.DuckDBPyConnection:
         return duckdb.connect(str(self.db_path))
 
@@ -212,4 +330,35 @@ class DuckDBMacroStore:
                 if isinstance(ingested_at, datetime)
                 else datetime.fromisoformat(ingested_at)
             ),
+        )
+
+    def _row_to_ingestion_run(
+        self,
+        run_row: tuple[Any, ...],
+        attempt_rows: list[tuple[Any, ...]],
+    ) -> IngestionRunRecord:
+        return IngestionRunRecord(
+            run_id=run_row[0],
+            domain=run_row[1],
+            status=run_row[2],
+            message=run_row[3],
+            observation_count=run_row[4],
+            success_count=run_row[5],
+            failure_count=run_row[6],
+            started_at=run_row[7],
+            finished_at=run_row[8],
+            attempts=[
+                IngestionAttemptRecord(
+                    run_id=row[0],
+                    domain=row[1],
+                    indicator_code=row[2],
+                    provider=row[3],
+                    status=row[4],
+                    message=row[5],
+                    observation_count=row[6],
+                    started_at=row[7],
+                    finished_at=row[8],
+                )
+                for row in attempt_rows
+            ],
         )

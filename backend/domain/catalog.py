@@ -1,6 +1,11 @@
 """宏观指标目录。"""
 
-from backend.constant import FRED_SERIES, FRED_TREASURY_SERIES, WORLD_BANK_SERIES
+from backend.constant import (
+    CHINA_DATA_SERIES,
+    FRED_SERIES,
+    FRED_TREASURY_SERIES,
+    WORLD_BANK_SERIES,
+)
 from backend.domain.models import Frequency, IndicatorDefinition
 
 _TREASURY_NAMES = {
@@ -435,12 +440,102 @@ _WORLD_BANK_INDICATORS = [
     ),
 ]
 
+_CHINA_DATA_INDICATORS = [
+    _indicator(
+        code="CN_M2",
+        name="China M2 money supply",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="china_data",
+        source=f"ChinaData.live:{CHINA_DATA_SERIES['CN_M2']}",
+        description="中国 M2 广义货币供应量，页面会按真实公开序列展示月度变化。",
+        display_order=142,
+        selectors={"country": "China", "metric": "M2"},
+    ),
+]
+
+_UNAVAILABLE_INDICATORS = [
+    _indicator(
+        code="CN_REAL_GDP",
+        name="China real GDP",
+        domain="country_macro",
+        region="China",
+        unit="index / CNY",
+        frequency="quarterly",
+        provider="unavailable",
+        source="Pending:NBS/Wind",
+        description="中国实际 GDP 需要国家统计局不变价序列或 Wind 宏观数据，尚未写入模拟值。",
+        display_order=110,
+        selectors={"country": "China", "metric": "Real GDP"},
+    ),
+    _indicator(
+        code="CN_TOTAL_SOCIAL_FINANCING",
+        name="China total social financing",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="unavailable",
+        source="Pending:PBOC/Wind",
+        description="社会融资规模需要人民银行月度表或 Wind 宏观数据，尚未写入模拟值。",
+        display_order=140,
+        selectors={"country": "China", "metric": "Social financing"},
+    ),
+    _indicator(
+        code="CN_RMB_LOANS",
+        name="China RMB loans",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="unavailable",
+        source="Pending:PBOC/Wind",
+        description="人民币贷款需要人民银行月度表或 Wind 宏观数据，尚未写入模拟值。",
+        display_order=141,
+        selectors={"country": "China", "metric": "RMB loans"},
+    ),
+    _indicator(
+        code="CN_M1",
+        name="China M1 money supply",
+        domain="country_macro",
+        region="China",
+        unit="100 million CNY",
+        frequency="monthly",
+        provider="unavailable",
+        source="Pending:PBOC/Wind",
+        description="中国 M1 需要人民银行月度表或 Wind 宏观数据，尚未写入模拟值。",
+        display_order=143,
+        selectors={"country": "China", "metric": "M1"},
+    ),
+    _indicator(
+        code="CN_M1_M2_SCISSORS",
+        name="China M1-M2 scissors",
+        domain="country_macro",
+        region="China",
+        unit="percentage points",
+        frequency="monthly",
+        provider="unavailable",
+        source="Pending:PBOC/Wind",
+        description="M1-M2 剪刀差需要真实 M1 与 M2 同频序列后计算，尚未写入模拟值。",
+        display_order=144,
+        selectors={"country": "China", "metric": "M1-M2 scissors"},
+    ),
+]
+
 
 def get_catalog() -> list[IndicatorDefinition]:
     """返回按展示顺序排序的指标目录。"""
 
     return sorted(
-        [*_treasury_indicators(), *_FRED_INDICATORS, *_WORLD_BANK_INDICATORS],
+        [
+            *_treasury_indicators(),
+            *_FRED_INDICATORS,
+            *_UNAVAILABLE_INDICATORS,
+            *_CHINA_DATA_INDICATORS,
+            *_WORLD_BANK_INDICATORS,
+        ],
         key=lambda item: item.display_order,
     )
 
