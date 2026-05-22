@@ -178,8 +178,8 @@ def test_china_macro_credit_indicators_define_comparison_groups() -> None:
 
     for code in expected:
         indicator = get_indicator(code)
-        assert indicator.selectors.get("compare_group") == "贷款增量"
-    assert get_indicator("CN_RMB_LOANS").selectors.get("compare_group") == "信用增量总览"
+        assert indicator.selectors.get("compare_group") == "信贷增量"
+    assert get_indicator("CN_RMB_LOANS").selectors.get("compare_group") == "信贷增量"
 
 
 def test_pboc_public_table_subitems_are_discoverable() -> None:
@@ -188,10 +188,10 @@ def test_pboc_public_table_subitems_are_discoverable() -> None:
         "CN_SF_GOVERNMENT_BOND_FLOW": "社融增量结构",
         "CN_SF_RMB_LOAN_STOCK": "社融存量结构",
         "CN_SF_GOVERNMENT_BOND_STOCK": "社融存量结构",
-        "CN_RMB_DEPOSIT_BALANCE": "存贷款余额",
+        "CN_RMB_DEPOSIT_BALANCE": "存款余额结构",
         "CN_HOUSEHOLD_LOAN_BALANCE": "贷款余额结构",
-        "CN_ENTERPRISE_LOAN_INCREMENT": "贷款增量",
-        "CN_ENTERPRISE_SHORT_TERM_LOAN_INCREMENT": "企业贷款增量结构",
+        "CN_ENTERPRISE_LOAN_INCREMENT": "信贷增量",
+        "CN_ENTERPRISE_SHORT_TERM_LOAN_INCREMENT": "信贷增量",
     }
 
     for code, compare_group in expected.items():
@@ -200,6 +200,64 @@ def test_pboc_public_table_subitems_are_discoverable() -> None:
         assert indicator.provider == "pbc_public"
         assert indicator.availability.status == "available"
         assert indicator.selectors.get("compare_group") == compare_group
+
+
+def test_china_finance_indicators_are_grouped_by_unit_and_style() -> None:
+    expected = {
+        "CN_TOTAL_SOCIAL_FINANCING": ("社融总览", "finance_flow", "信用增量总览"),
+        "CN_TOTAL_SOCIAL_FINANCING_STOCK": ("社融总览", "finance_stock", None),
+        "CN_SF_RMB_LOAN_FLOW": ("社融增量结构", "finance_flow", "社融增量结构"),
+        "CN_SF_RMB_LOAN_STOCK": ("社融存量结构", "finance_stock", "社融存量结构"),
+        "CN_RMB_LOANS": ("信贷增量", "finance_flow", "信贷增量"),
+        "CN_RMB_LOAN_BALANCE": ("贷款余额结构", "finance_stock", "贷款余额结构"),
+        "CN_RMB_DEPOSIT_BALANCE": ("存款余额结构", "finance_stock", "存款余额结构"),
+        "CN_M2": ("货币供应量", "finance_stock", "货币供应量"),
+        "CN_M2_YOY": ("货币同比", "finance_rate", "货币同比"),
+        "CN_OFFICIAL_EXCHANGE_RATE": ("汇率", "market", None),
+        "CN_SHCOMP": ("市场指数", "market", None),
+    }
+
+    for code, (display_group, chart_style, compare_group) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.selectors.get("category") == "汇率与金融"
+        assert indicator.selectors.get("display_group") == display_group
+        assert indicator.selectors.get("chart_style") == chart_style
+        assert indicator.selectors.get("compare_group") == compare_group
+
+
+def test_china_finance_metrics_do_not_expose_english_abbreviations() -> None:
+    expected_metrics = {
+        "CN_SF_ABS_FLOW": "资产支持证券",
+        "CN_SF_ABS_STOCK": "资产支持证券存量",
+        "CN_M2": "广义货币供应量",
+        "CN_M2_YOY": "广义货币同比",
+        "CN_M1": "狭义货币供应量",
+        "CN_M1_YOY": "狭义货币同比",
+        "CN_M0": "流通中现金",
+        "CN_M0_YOY": "流通中现金同比",
+        "CN_M1_M2_SCISSORS": "货币活化剪刀差",
+    }
+
+    for code, metric in expected_metrics.items():
+        indicator = get_indicator(code)
+        assert indicator.selectors.get("metric") == metric
+
+
+def test_china_finance_comparison_groups_do_not_mix_units() -> None:
+    finance_indicators = [
+        indicator
+        for indicator in get_catalog()
+        if indicator.domain == "china_macro" and indicator.selectors.get("category") == "汇率与金融"
+    ]
+    grouped: dict[str, set[str]] = {}
+    for indicator in finance_indicators:
+        compare_group = indicator.selectors.get("compare_group")
+        if compare_group is None:
+            continue
+        grouped.setdefault(compare_group, set()).add(indicator.unit)
+
+    assert grouped
+    assert all(len(units) == 1 for units in grouped.values())
 
 
 def test_china_cpi_ppi_order_and_mom_comparison_group() -> None:

@@ -529,6 +529,26 @@ h1 {
   background: linear-gradient(180deg, #ffffff, #faf8ff);
 }
 
+.comparison-panel.chart-style-finance_flow {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg, #ffffff, #fff8f1);
+}
+
+.comparison-panel.chart-style-finance_stock {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #ffffff, #f5faff);
+}
+
+.comparison-panel.chart-style-finance_rate {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #ffffff, #fff7f7);
+}
+
+.comparison-panel.chart-style-market {
+  border-color: #cbd5e1;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
 .comparison-head {
   display: flex;
   align-items: flex-start;
@@ -755,6 +775,22 @@ h1 {
   border-color: #ddd6fe;
 }
 
+.indicator-card.chart-style-finance_flow {
+  border-color: #fed7aa;
+}
+
+.indicator-card.chart-style-finance_stock {
+  border-color: #bfdbfe;
+}
+
+.indicator-card.chart-style-finance_rate {
+  border-color: #fecaca;
+}
+
+.indicator-card.chart-style-market {
+  border-color: #cbd5e1;
+}
+
 .chart-box.chart-style-price {
   background: linear-gradient(180deg, #fbfdff, #f5f8ff);
   border-color: #d8e2ff;
@@ -768,6 +804,26 @@ h1 {
 .chart-box.chart-style-pmi {
   background: linear-gradient(180deg, #fffbff, #f8f5ff);
   border-color: #ddd6fe;
+}
+
+.chart-box.chart-style-finance_flow {
+  background: linear-gradient(180deg, #fffdf9, #fff7ed);
+  border-color: #fed7aa;
+}
+
+.chart-box.chart-style-finance_stock {
+  background: linear-gradient(180deg, #fbfdff, #f4f9ff);
+  border-color: #bfdbfe;
+}
+
+.chart-box.chart-style-finance_rate {
+  background: linear-gradient(180deg, #fffafa, #fff5f5);
+  border-color: #fecaca;
+}
+
+.chart-box.chart-style-market {
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border-color: #cbd5e1;
 }
 
 .empty-chart {

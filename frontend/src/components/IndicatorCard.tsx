@@ -17,7 +17,15 @@ type IndicatorCardProps = {
 
 const LINE_COLORS = ["#1f5eff", "#d92d20", "#039855", "#d97706", "#7c3aed", "#0e9384"];
 
-type ChartStyle = "default" | "price" | "trade" | "pmi";
+type ChartStyle =
+  | "default"
+  | "price"
+  | "trade"
+  | "pmi"
+  | "finance_flow"
+  | "finance_stock"
+  | "finance_rate"
+  | "market";
 
 export type DisplayPoint = Observation & {
   numericValue: number;
@@ -36,7 +44,17 @@ function colorForCode(code: string): string {
 
 function chartStyle(definition: IndicatorSnapshot["definition"]): ChartStyle {
   const style = definition.selectors.chart_style;
-  return style === "price" || style === "trade" || style === "pmi" ? style : "default";
+  return [
+    "price",
+    "trade",
+    "pmi",
+    "finance_flow",
+    "finance_stock",
+    "finance_rate",
+    "market",
+  ].includes(style)
+    ? (style as ChartStyle)
+    : "default";
 }
 
 function styleColor(style: ChartStyle, fallback: string): string {
@@ -49,19 +67,37 @@ function styleColor(style: ChartStyle, fallback: string): string {
   if (style === "pmi") {
     return "#7c3aed";
   }
+  if (style === "finance_flow") {
+    return "#b54708";
+  }
+  if (style === "finance_stock") {
+    return "#1457b8";
+  }
+  if (style === "finance_rate") {
+    return "#d92d20";
+  }
+  if (style === "market") {
+    return "#475569";
+  }
   return fallback;
 }
 
 function lineType(style: ChartStyle): "solid" | "dashed" | "dotted" {
-  if (style === "pmi") {
+  if (style === "pmi" || style === "finance_rate") {
     return "dashed";
+  }
+  if (style === "market") {
+    return "dotted";
   }
   return "solid";
 }
 
 function symbolForStyle(style: ChartStyle): string {
-  if (style === "pmi") {
+  if (style === "pmi" || style === "finance_rate") {
     return "diamond";
+  }
+  if (style === "market") {
+    return "triangle";
   }
   return "circle";
 }
@@ -133,13 +169,13 @@ function referenceValue(points: DisplayPoint[]): number | null {
 }
 
 function shouldUseBars(frequency: string, pointCount: number, style: ChartStyle): boolean {
-  if (style === "price") {
+  if (style === "price" || style === "finance_stock" || style === "finance_rate" || style === "market") {
     return false;
   }
   if (style === "pmi") {
     return false;
   }
-  if (style === "trade") {
+  if (style === "trade" || style === "finance_flow") {
     return true;
   }
   return frequency !== "daily" || pointCount <= 80;
@@ -177,13 +213,17 @@ function buildSeries(
       symbol: symbolForStyle(style),
       symbolSize: style === "pmi" ? 5 : 4,
       smooth: style === "price",
+      step: style === "finance_stock" ? "end" : false,
       emphasis: { focus: "series" },
       lineStyle: {
         color: lineColor,
         type: lineType(style),
         width: style === "trade" ? 2.2 : 3,
       },
-      areaStyle: style === "price" && !useBars ? { color: `${lineColor}12` } : undefined,
+      areaStyle:
+        (style === "price" || style === "finance_stock") && !useBars
+          ? { color: `${lineColor}12` }
+          : undefined,
       markLine:
         refValue === null
           ? undefined

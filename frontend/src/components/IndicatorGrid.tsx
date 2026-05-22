@@ -33,7 +33,15 @@ const GROUP_ORDER = [
   "出口",
   "进口",
   "顺逆差",
-  "汇率与金融",
+  "社融总览",
+  "社融增量结构",
+  "社融存量结构",
+  "信贷增量",
+  "贷款余额结构",
+  "存款余额结构",
+  "货币供应量",
+  "货币同比",
+  "汇率",
   "用电量",
   "发电结构",
   "碳价",
@@ -88,7 +96,26 @@ function groupSnapshots(snapshots: IndicatorSnapshot[]): [string, IndicatorSnaps
 }
 
 function sectionClassName(group: string): string {
-  if (["CPI", "PPI", "制造业PMI", "非制造业PMI", "出口", "进口", "顺逆差"].includes(group)) {
+  if (
+    [
+      "CPI",
+      "PPI",
+      "制造业PMI",
+      "非制造业PMI",
+      "出口",
+      "进口",
+      "顺逆差",
+      "社融总览",
+      "社融增量结构",
+      "社融存量结构",
+      "信贷增量",
+      "贷款余额结构",
+      "存款余额结构",
+      "货币供应量",
+      "货币同比",
+      "汇率",
+    ].includes(group)
+  ) {
     return "indicator-grid grouped-row";
   }
   return "indicator-grid";

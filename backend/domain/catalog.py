@@ -111,6 +111,103 @@ def _with_china_macro_domain(indicator: IndicatorDefinition) -> IndicatorDefinit
     return indicator
 
 
+def _with_finance_layout(indicator: IndicatorDefinition) -> IndicatorDefinition:
+    """整理汇率与金融板块展示分组，避免不同量纲混画。"""
+
+    if indicator.region != "China" or indicator.selectors.get("category") != "汇率与金融":
+        return indicator
+
+    selectors = dict(indicator.selectors)
+    code = indicator.code
+    flow_codes = {
+        "CN_TOTAL_SOCIAL_FINANCING",
+        "CN_RMB_LOANS",
+        "CN_HOUSEHOLD_LOAN_INCREMENT",
+        "CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT",
+        "CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT",
+        "CN_ENTERPRISE_LOAN_INCREMENT",
+        "CN_ENTERPRISE_SHORT_TERM_LOAN_INCREMENT",
+        "CN_ENTERPRISE_MEDIUM_LONG_TERM_LOAN_INCREMENT",
+        "CN_ENTERPRISE_BILL_FINANCING_INCREMENT",
+    }
+    deposit_codes = {
+        "CN_RMB_DEPOSIT_BALANCE",
+        "CN_HOUSEHOLD_DEPOSIT_BALANCE",
+        "CN_NONFINANCIAL_ENTERPRISE_DEPOSIT_BALANCE",
+    }
+    loan_balance_codes = {
+        "CN_RMB_LOAN_BALANCE",
+        "CN_HOUSEHOLD_LOAN_BALANCE",
+        "CN_HOUSEHOLD_SHORT_TERM_LOAN_BALANCE",
+        "CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_BALANCE",
+        "CN_ENTERPRISE_LOAN_BALANCE",
+    }
+    money_level_codes = {"CN_M2", "CN_M1", "CN_M0"}
+    money_yoy_codes = {"CN_M2_YOY", "CN_M1_YOY", "CN_M0_YOY"}
+
+    selectors["chart_style"] = "finance_flow"
+    if code == "CN_TOTAL_SOCIAL_FINANCING":
+        selectors["display_group"] = "社融总览"
+        selectors["compare_group"] = "信用增量总览"
+    elif code == "CN_TOTAL_SOCIAL_FINANCING_STOCK":
+        selectors["display_group"] = "社融总览"
+        selectors["chart_style"] = "finance_stock"
+        selectors.pop("compare_group", None)
+    elif code.startswith("CN_SF_") and code.endswith("_FLOW"):
+        selectors["display_group"] = "社融增量结构"
+        selectors["compare_group"] = "社融增量结构"
+    elif code.startswith("CN_SF_") and code.endswith("_STOCK"):
+        selectors["display_group"] = "社融存量结构"
+        selectors["chart_style"] = "finance_stock"
+        selectors["compare_group"] = "社融存量结构"
+    elif code in flow_codes:
+        selectors["display_group"] = "信贷增量"
+        selectors["compare_group"] = "信贷增量"
+    elif code in deposit_codes:
+        selectors["display_group"] = "存款余额结构"
+        selectors["chart_style"] = "finance_stock"
+        selectors["compare_group"] = "存款余额结构"
+    elif code in loan_balance_codes:
+        selectors["display_group"] = "贷款余额结构"
+        selectors["chart_style"] = "finance_stock"
+        selectors["compare_group"] = "贷款余额结构"
+    elif code in money_level_codes:
+        selectors["display_group"] = "货币供应量"
+        selectors["chart_style"] = "finance_stock"
+        selectors["compare_group"] = "货币供应量"
+    elif code in money_yoy_codes:
+        selectors["display_group"] = "货币同比"
+        selectors["chart_style"] = "finance_rate"
+        selectors["compare_group"] = "货币同比"
+    elif code == "CN_M1_M2_SCISSORS":
+        selectors["display_group"] = "货币同比"
+        selectors["chart_style"] = "finance_rate"
+        selectors.pop("compare_group", None)
+    elif code == "CN_OFFICIAL_EXCHANGE_RATE":
+        selectors["display_group"] = "汇率"
+        selectors["chart_style"] = "market"
+        selectors.pop("compare_group", None)
+    elif code == "CN_SHCOMP":
+        selectors["display_group"] = "市场指数"
+        selectors["chart_style"] = "market"
+        selectors.pop("compare_group", None)
+
+    metric_labels = {
+        "ABS": "资产支持证券",
+        "ABS存量": "资产支持证券存量",
+        "M2": "广义货币供应量",
+        "M2同比": "广义货币同比",
+        "M1": "狭义货币供应量",
+        "M1同比": "狭义货币同比",
+        "M0": "流通中现金",
+        "M0同比": "流通中现金同比",
+        "M1-M2剪刀差": "货币活化剪刀差",
+    }
+    metric = selectors.get("metric", "")
+    selectors["metric"] = metric_labels.get(metric, metric)
+    return indicator.model_copy(update={"selectors": selectors})
+
+
 def _pbc_indicator(
     code: str,
     *,
@@ -120,12 +217,10 @@ def _pbc_indicator(
     display_order: int,
     metric: str,
     compare_group: str | None = None,
-    display_group: str = "汇率与金融",
+    display_group: str = "信用与社融",
+    chart_style: str = "finance_flow",
 ) -> IndicatorDefinition:
-    selectors = {"country": "China", "category": "汇率与金融", "metric": metric}
-    if compare_group is not None:
-        selectors["compare_group"] = compare_group
-    selectors["display_group"] = display_group
+    selectors = _finance_selectors(metric, display_group, chart_style, compare_group)
     return _indicator(
         code=code,
         name=name,
@@ -172,6 +267,26 @@ def _cycle_selectors(
     selectors = {
         "country": "China",
         "category": "CPI/PPI/PMI",
+        "metric": metric,
+        "display_group": display_group,
+        "chart_style": chart_style,
+    }
+    if compare_group is not None:
+        selectors["compare_group"] = compare_group
+    return selectors
+
+
+def _finance_selectors(
+    metric: str,
+    display_group: str,
+    chart_style: str,
+    compare_group: str | None = None,
+) -> dict[str, str]:
+    """生成汇率与金融专题的展示选择器。"""
+
+    selectors = {
+        "country": "China",
+        "category": "汇率与金融",
         "metric": metric,
         "display_group": display_group,
         "chart_style": chart_style,
@@ -3003,7 +3118,10 @@ def get_catalog() -> list[IndicatorDefinition]:
         ],
         key=lambda item: item.display_order,
     )
-    return [_with_display_group(_with_china_macro_domain(indicator)) for indicator in catalog]
+    return [
+        _with_finance_layout(_with_display_group(_with_china_macro_domain(indicator)))
+        for indicator in catalog
+    ]
 
 
 def get_indicator(code: str) -> IndicatorDefinition:

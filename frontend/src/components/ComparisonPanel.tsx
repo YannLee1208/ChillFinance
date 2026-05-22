@@ -17,18 +17,28 @@ const STYLE_COLORS: Record<string, string[]> = {
   price: ["#1f5eff", "#d92d20", "#7c3aed", "#d97706"],
   trade: ["#0e9384", "#b54708", "#1457b8", "#66758a"],
   pmi: ["#7c3aed", "#0e7490", "#b54708", "#475569"],
+  finance_flow: ["#b54708", "#d97706", "#92400e", "#ef6820", "#854d0e"],
+  finance_stock: ["#1457b8", "#0e7490", "#5b35d5", "#0369a1", "#475569"],
+  finance_rate: ["#d92d20", "#b42318", "#7c2d12", "#9f1239"],
+  market: ["#475569", "#1457b8", "#0e9384"],
 };
 
 function lineType(panelStyle: string | undefined): "solid" | "dashed" | "dotted" {
-  if (panelStyle === "pmi") {
+  if (panelStyle === "pmi" || panelStyle === "finance_rate") {
     return "dashed";
+  }
+  if (panelStyle === "market") {
+    return "dotted";
   }
   return "solid";
 }
 
 function symbolForStyle(panelStyle: string | undefined): string {
-  if (panelStyle === "pmi") {
+  if (panelStyle === "pmi" || panelStyle === "finance_rate") {
     return "diamond";
+  }
+  if (panelStyle === "market") {
+    return "triangle";
   }
   return "circle";
 }
@@ -115,11 +125,15 @@ export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanel
           symbol: symbolForStyle(panelStyle),
           symbolSize: panelStyle === "pmi" ? 5 : 4,
           smooth: panelStyle === "price",
+          step: panelStyle === "finance_stock" ? "end" : false,
           lineStyle: {
             type: lineType(panelStyle),
-            width: panelStyle === "trade" ? 2 : 2.8,
+            width: panelStyle === "trade" || panelStyle === "finance_flow" ? 2 : 2.8,
           },
-          areaStyle: panelStyle === "price" ? { opacity: 0.08 } : undefined,
+          areaStyle:
+            panelStyle === "price" || panelStyle === "finance_stock"
+              ? { opacity: 0.08 }
+              : undefined,
           emphasis: { focus: "series" },
         };
       }),
