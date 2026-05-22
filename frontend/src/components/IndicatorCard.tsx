@@ -93,18 +93,6 @@ function referenceValue(points: DisplayPoint[]): number | null {
   return points[points.length - 2].displayValue;
 }
 
-function extremePoint(points: DisplayPoint[], direction: "max" | "min"): DisplayPoint | null {
-  if (points.length === 0) {
-    return null;
-  }
-  return points.reduce((selected, point) => {
-    if (direction === "max") {
-      return point.displayValue > selected.displayValue ? point : selected;
-    }
-    return point.displayValue < selected.displayValue ? point : selected;
-  }, points[0]);
-}
-
 export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const { definition } = snapshot;
   const localized = localizeIndicator(definition);
@@ -121,8 +109,6 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const hasPoints = points.length > 0;
   const lineColor = colorForCode(definition.code);
   const refValue = referenceValue(points);
-  const highPoint = extremePoint(points, "max");
-  const lowPoint = extremePoint(points, "min");
 
   const chartOption = useMemo(
     () => ({
@@ -154,6 +140,17 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
         splitLine: { lineStyle: { color: "#e7edf5" } },
       },
       series: [
+        {
+          type: "bar",
+          data: points.map((point) => point.displayValue),
+          barWidth: "58%",
+          itemStyle: {
+            color: `${lineColor}16`,
+            borderRadius: [3, 3, 0, 0],
+          },
+          tooltip: { show: false },
+          silent: true,
+        },
         {
           type: "line",
           data: points.map((point) => point.displayValue),
@@ -190,40 +187,12 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
                   },
                   data: [
                     { coord: [latest.period, latest.displayValue] },
-                    ...(highPoint && highPoint.period !== latest.period
-                      ? [
-                          {
-                            coord: [highPoint.period, highPoint.displayValue],
-                            itemStyle: { color: "#b42318" },
-                            label: {
-                              formatter: "高点",
-                              color: "#b42318",
-                              position: "top",
-                              fontWeight: 800,
-                            },
-                          },
-                        ]
-                      : []),
-                    ...(lowPoint && lowPoint.period !== latest.period
-                      ? [
-                          {
-                            coord: [lowPoint.period, lowPoint.displayValue],
-                            itemStyle: { color: "#04706b" },
-                            label: {
-                              formatter: "低点",
-                              color: "#04706b",
-                              position: "bottom",
-                              fontWeight: 800,
-                            },
-                          },
-                        ]
-                      : []),
                   ],
                 },
         },
       ],
     }),
-    [highPoint, latest, lineColor, lowPoint, points, refValue, scale.unit],
+    [latest, lineColor, points, refValue, scale.unit],
   );
 
   return (
@@ -247,8 +216,8 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       {hasPoints ? (
         <div className="focus-strip">
           <span>最新 {latest?.period ?? "--"}</span>
-          <b>高 {formatValue(highPoint?.displayValue)}</b>
-          <b>低 {formatValue(lowPoint?.displayValue)}</b>
+          <b>上期 {formatValue(previous?.displayValue)}</b>
+          <b>{changeText(change, scale.unit)}</b>
         </div>
       ) : null}
 
@@ -265,7 +234,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       </div>
 
       <p className="reading">
-        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，图中已标出最新值与区间高低点。
+        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，柱形表示读数强弱，折线强调趋势，虚线为上一期参考。
       </p>
     </article>
   );

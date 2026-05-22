@@ -31,7 +31,7 @@ class AkShareChinaProvider:
             return _parse_m1_m2_scissors(frame, indicator)
         if config.get("aggregate") == "mean_by_date":
             return _parse_mean_by_date(frame, indicator, config)
-        return _parse_series_frame(frame, indicator, config)
+        return parse_akshare_series_frame(frame, indicator, config)
 
 
 def _call_akshare(config: dict[str, str]) -> pd.DataFrame:
@@ -48,14 +48,17 @@ def _call_akshare(config: dict[str, str]) -> pd.DataFrame:
     return frame
 
 
-def _parse_series_frame(
+def parse_akshare_series_frame(
     frame: pd.DataFrame,
     indicator: IndicatorDefinition,
     config: dict[str, str],
 ) -> list[Observation]:
+    """将 AkShare DataFrame 转换为统一观察值。"""
+
     date_column = config["date_column"]
     value_column = config["value_column"]
     _ensure_columns(frame, [date_column, value_column])
+    multiplier = Decimal(config.get("multiplier", "1"))
 
     ingested_at = datetime.now(UTC)
     observations: list[Observation] = []
@@ -68,7 +71,7 @@ def _parse_series_frame(
             _build_observation(
                 indicator=indicator,
                 period=_parse_period(period_value, config["period_type"]),
-                value=_to_decimal(raw_value),
+                value=_to_decimal(raw_value) * multiplier,
                 source=config["source"],
                 ingested_at=ingested_at,
             )
@@ -91,7 +94,7 @@ def _parse_mean_by_date(
         return []
     grouped = valid_frame.groupby(date_column, as_index=False)[value_column].mean(numeric_only=True)
 
-    return _parse_series_frame(grouped, indicator, config)
+    return parse_akshare_series_frame(grouped, indicator, config)
 
 
 def _parse_m1_m2_scissors(
@@ -175,7 +178,15 @@ def _parse_period(value: Any, period_type: str) -> date:
         return _parse_chinese_quarter(text)
     if period_type == "date":
         return datetime.strptime(text[:10], "%Y-%m-%d").date()
+    if period_type == "decimal_month":
+        return _parse_decimal_month(text)
     raise ValueError(f"Unsupported AkShare period type: {period_type}")
+
+
+def _parse_decimal_month(text: str) -> date:
+    year_text, month_text = text.split(".", maxsplit=1)
+    month = int(month_text.rstrip("0") or "0")
+    return date(int(year_text), month, 1)
 
 
 def _parse_chinese_quarter(text: str) -> date:

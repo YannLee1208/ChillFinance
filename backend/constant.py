@@ -120,10 +120,38 @@ AKSHARE_CHINA_SERIES = {
         "source": "AKShare/Eastmoney:macro_china_money_supply",
         "period_type": "month",
     },
+    "CN_M2_YOY": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "value_column": "货币和准货币(M2)-同比增长",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+    },
     "CN_M1": {
         "function": "macro_china_money_supply",
         "date_column": "月份",
         "value_column": "货币(M1)-数量(亿元)",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+    },
+    "CN_M1_YOY": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "value_column": "货币(M1)-同比增长",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+    },
+    "CN_M0": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "value_column": "流通中的现金(M0)-数量(亿元)",
+        "source": "AKShare/Eastmoney:macro_china_money_supply",
+        "period_type": "month",
+    },
+    "CN_M0_YOY": {
+        "function": "macro_china_money_supply",
+        "date_column": "月份",
+        "value_column": "流通中的现金(M0)-同比增长",
         "source": "AKShare/Eastmoney:macro_china_money_supply",
         "period_type": "month",
     },
@@ -171,6 +199,13 @@ AKSHARE_CHINA_SERIES = {
         "period_type": "date",
         "symbol": "sh000001",
     },
+    "CN_TOTAL_SOCIAL_FINANCING": {
+        "function": "macro_china_bank_financing",
+        "date_column": "日期",
+        "value_column": "最新值",
+        "source": "AKShare/Eastmoney:macro_china_bank_financing",
+        "period_type": "date",
+    },
 }
 
 UNAVAILABLE_SERIES = {
@@ -178,11 +213,6 @@ UNAVAILABLE_SERIES = {
         "status": "blocked",
         "reason": "已尝试国家统计局 data.stats.gov.cn，当前环境返回 403。",
         "next_step": "配置 Wind，或改用可访问的国家统计局官方接口。",
-    },
-    "CN_TOTAL_SOCIAL_FINANCING": {
-        "status": "pending_source",
-        "reason": "当前没有稳定官方 JSON 接口可直接拉取人民银行社会融资规模月度表。",
-        "next_step": "接入人民银行表格解析或 Wind 宏观数据库。",
     },
     "CN_MANUFACTURING_INVESTMENT": {
         "status": "pending_source",

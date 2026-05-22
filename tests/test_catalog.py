@@ -123,3 +123,23 @@ def test_key_gated_and_exchange_indicators_are_discoverable() -> None:
     assert lme_indicator.availability.status == "pending_source"
     assert shfe_indicator.domain == "nonferrous"
     assert shfe_indicator.availability.status == "pending_source"
+
+
+def test_pboc_financing_and_money_indicators_use_public_data_provider() -> None:
+    expected_codes = {
+        "CN_TOTAL_SOCIAL_FINANCING",
+        "CN_RMB_LOANS",
+        "CN_M2",
+        "CN_M2_YOY",
+        "CN_M1",
+        "CN_M1_YOY",
+        "CN_M0",
+        "CN_M0_YOY",
+        "CN_M1_M2_SCISSORS",
+    }
+
+    for code in expected_codes:
+        indicator = get_indicator(code)
+        assert indicator.provider == "akshare_china"
+        assert indicator.availability.status == "available"
+        assert indicator.selectors.get("category") == "汇率与金融"
