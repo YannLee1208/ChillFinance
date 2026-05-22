@@ -84,6 +84,83 @@ def test_indicator_snapshot_returns_latest_and_previous(
     assert len(payload["points"]) == 2
 
 
+def test_indicator_snapshot_backfills_trade_derived_series_from_local_values(
+    temp_db_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MACRO_DB_PATH", str(temp_db_path))
+    store = DuckDBMacroStore(temp_db_path)
+    store.initialize()
+    ingested_at = datetime(2026, 5, 21, tzinfo=UTC)
+    store.upsert_observations(
+        [
+            Observation(
+                indicator_code="CN_EXPORT_VALUE_USD",
+                period=date(2026, 3, 1),
+                value=Decimal("3200"),
+                provider="akshare_china",
+                source=get_indicator("CN_EXPORT_VALUE_USD").source,
+                ingested_at=ingested_at,
+            ),
+            Observation(
+                indicator_code="CN_EXPORT_VALUE_USD",
+                period=date(2026, 4, 1),
+                value=Decimal("3520"),
+                provider="akshare_china",
+                source=get_indicator("CN_EXPORT_VALUE_USD").source,
+                ingested_at=ingested_at,
+            ),
+        ]
+    )
+    client = TestClient(create_app())
+
+    response = client.get("/api/indicators/CN_EXPORT_MOM_USD")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["latest"]["period"] == "2026-04-01"
+    assert Decimal(payload["latest"]["value"]) == Decimal("10.0")
+    assert len(payload["points"]) == 1
+
+
+def test_observations_backfills_trade_balance_from_local_values(
+    temp_db_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MACRO_DB_PATH", str(temp_db_path))
+    store = DuckDBMacroStore(temp_db_path)
+    store.initialize()
+    ingested_at = datetime(2026, 5, 21, tzinfo=UTC)
+    store.upsert_observations(
+        [
+            Observation(
+                indicator_code="CN_EXPORT_VALUE_USD",
+                period=date(2026, 4, 1),
+                value=Decimal("3520"),
+                provider="akshare_china",
+                source=get_indicator("CN_EXPORT_VALUE_USD").source,
+                ingested_at=ingested_at,
+            ),
+            Observation(
+                indicator_code="CN_IMPORT_VALUE_USD",
+                period=date(2026, 4, 1),
+                value=Decimal("2740"),
+                provider="akshare_china",
+                source=get_indicator("CN_IMPORT_VALUE_USD").source,
+                ingested_at=ingested_at,
+            ),
+        ]
+    )
+    client = TestClient(create_app())
+
+    response = client.get("/api/observations/CN_TRADE_BALANCE_USD")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload[0]["period"] == "2026-04-01"
+    assert Decimal(payload[0]["value"]) == Decimal("780.0")
+
+
 def test_latest_ingestion_run_returns_none_before_update(
     temp_db_path: Path,
     monkeypatch: pytest.MonkeyPatch,

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
 from backend.domain.catalog import get_catalog, get_indicator
+from backend.domain.derived_series import build_local_derived_series, required_source_codes
 from backend.domain.models import (
     IndicatorDefinition,
     IndicatorSnapshot,
@@ -98,6 +99,21 @@ def _get_indicator_or_404(indicator_code: str) -> IndicatorDefinition:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+def _series_or_local_derived(
+    store: DuckDBMacroStore,
+    definition: IndicatorDefinition,
+) -> list[Observation]:
+    points = store.get_series(definition.code)
+    if points:
+        return points
+
+    source_codes = required_source_codes(definition.code)
+    if not source_codes:
+        return []
+    source_series = {code: store.get_series(code) for code in source_codes}
+    return build_local_derived_series(definition, source_series)
+
+
 def create_app() -> FastAPI:
     """创建本地宏观监控 API 应用。"""
 
@@ -127,7 +143,7 @@ def create_app() -> FastAPI:
 
         definition = _get_indicator_or_404(indicator_code)
         store = create_macro_store()
-        points = store.get_series(indicator_code)
+        points = _series_or_local_derived(store, definition)
         latest = points[-1] if points else None
         previous = points[-2] if len(points) >= 2 else None
 
@@ -142,9 +158,9 @@ def create_app() -> FastAPI:
     def observations(indicator_code: str) -> list[Observation]:
         """返回单个指标的观测序列。"""
 
-        _get_indicator_or_404(indicator_code)
+        definition = _get_indicator_or_404(indicator_code)
         store = create_macro_store()
-        return store.get_series(indicator_code)
+        return _series_or_local_derived(store, definition)
 
     @api.get("/api/ingest/domains/{domain}/latest", response_model=IngestionRunRecord | None)
     def latest_ingestion_run(domain: str) -> IngestionRunRecord | None:
