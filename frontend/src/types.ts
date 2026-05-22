@@ -1,0 +1,64 @@
+export type Frequency = "daily" | "weekly" | "monthly" | "quarterly" | "annual";
+export type AvailabilityStatus = "available" | "pending_source" | "needs_key" | "blocked" | "no_data";
+
+export type IndicatorAvailability = {
+  status: AvailabilityStatus;
+  reason: string;
+  next_step: string;
+};
+
+export type IndicatorDefinition = {
+  code: string;
+  name: string;
+  domain: string;
+  region: string;
+  unit: string;
+  frequency: Frequency;
+  provider: string;
+  source: string;
+  description: string;
+  display_order: number;
+  selectors: Record<string, string>;
+  availability: IndicatorAvailability;
+};
+
+export type Observation = {
+  indicator_code: string;
+  period: string;
+  value: string;
+  provider: string;
+  source: string;
+  ingested_at: string;
+};
+
+export type IndicatorSnapshot = {
+  definition: IndicatorDefinition;
+  latest: Observation | null;
+  previous: Observation | null;
+  points: Observation[];
+};
+
+export type IngestionAttemptRecord = {
+  run_id: string;
+  domain: string;
+  indicator_code: string;
+  provider: string;
+  status: "success" | "failed";
+  message: string;
+  observation_count: number;
+  started_at: string;
+  finished_at: string;
+};
+
+export type IngestionRunRecord = {
+  run_id: string;
+  domain: string;
+  status: "success" | "partial" | "failed";
+  message: string;
+  observation_count: number;
+  success_count: number;
+  failure_count: number;
+  started_at: string;
+  finished_at: string;
+  attempts: IngestionAttemptRecord[];
+};
