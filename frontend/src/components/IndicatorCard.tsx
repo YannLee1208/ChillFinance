@@ -52,6 +52,20 @@ function styleColor(style: ChartStyle, fallback: string): string {
   return fallback;
 }
 
+function lineType(style: ChartStyle): "solid" | "dashed" | "dotted" {
+  if (style === "pmi") {
+    return "dashed";
+  }
+  return "solid";
+}
+
+function symbolForStyle(style: ChartStyle): string {
+  if (style === "pmi") {
+    return "diamond";
+  }
+  return "circle";
+}
+
 export function displayScale(definitionUnit: string, localizedUnit: string): DisplayScale {
   const normalizedUnit = localizedUnit || definitionUnit;
   if (normalizedUnit === "美元") {
@@ -159,11 +173,17 @@ function buildSeries(
     {
       type: "line",
       data: points.map((point) => point.displayValue),
-      showSymbol: false,
-      smooth: style === "price" || style === "pmi",
+      showSymbol: style === "pmi",
+      symbol: symbolForStyle(style),
+      symbolSize: style === "pmi" ? 5 : 4,
+      smooth: style === "price",
       emphasis: { focus: "series" },
-      lineStyle: { color: lineColor, width: style === "trade" ? 2.2 : 3 },
-      areaStyle: useBars ? undefined : { color: `${lineColor}12` },
+      lineStyle: {
+        color: lineColor,
+        type: lineType(style),
+        width: style === "trade" ? 2.2 : 3,
+      },
+      areaStyle: style === "price" && !useBars ? { color: `${lineColor}12` } : undefined,
       markLine:
         refValue === null
           ? undefined

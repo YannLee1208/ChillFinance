@@ -19,6 +19,20 @@ const STYLE_COLORS: Record<string, string[]> = {
   pmi: ["#7c3aed", "#0e7490", "#b54708", "#475569"],
 };
 
+function lineType(panelStyle: string | undefined): "solid" | "dashed" | "dotted" {
+  if (panelStyle === "pmi") {
+    return "dashed";
+  }
+  return "solid";
+}
+
+function symbolForStyle(panelStyle: string | undefined): string {
+  if (panelStyle === "pmi") {
+    return "diamond";
+  }
+  return "circle";
+}
+
 function commonUnit(snapshots: IndicatorSnapshot[]): string {
   const units = new Set(
     snapshots.map((snapshot) => {
@@ -97,9 +111,15 @@ export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanel
           type: "line",
           data: periods.map((period) => valuesByPeriod.get(period) ?? null),
           connectNulls: false,
-          showSymbol: false,
-          smooth: panelStyle === "price" || panelStyle === "pmi",
-          lineStyle: { width: 2.5 },
+          showSymbol: panelStyle === "pmi",
+          symbol: symbolForStyle(panelStyle),
+          symbolSize: panelStyle === "pmi" ? 5 : 4,
+          smooth: panelStyle === "price",
+          lineStyle: {
+            type: lineType(panelStyle),
+            width: panelStyle === "trade" ? 2 : 2.8,
+          },
+          areaStyle: panelStyle === "price" ? { opacity: 0.08 } : undefined,
           emphasis: { focus: "series" },
         };
       }),

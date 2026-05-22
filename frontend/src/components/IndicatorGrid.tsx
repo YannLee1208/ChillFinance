@@ -106,7 +106,30 @@ function comparisonGroups(snapshots: IndicatorSnapshot[]): [string, IndicatorSna
   return Array.from(grouped.entries()).filter(([, items]) => items.length >= 2);
 }
 
-function sectionComparisonGroups(
+function comparisonAnchorGroup(items: IndicatorSnapshot[]): string {
+  const groups = Array.from(new Set(items.map((snapshot) => displayGroup(snapshot))));
+  if (groups.includes("CPI") && groups.includes("PPI")) {
+    return "CPI";
+  }
+  const pmiGroups = groups.filter((group) => group.includes("PMI"));
+  if (pmiGroups.length > 0) {
+    return pmiGroups[0];
+  }
+  return groups[0] ?? "其他";
+}
+
+function comparisonGroupsByAnchor(
+  allComparisonGroups: [string, IndicatorSnapshot[]][],
+): Map<string, [string, IndicatorSnapshot[]][]> {
+  const grouped = new Map<string, [string, IndicatorSnapshot[]][]>();
+  for (const [compareGroup, items] of allComparisonGroups) {
+    const anchor = comparisonAnchorGroup(items);
+    grouped.set(anchor, [...(grouped.get(anchor) ?? []), [compareGroup, items]]);
+  }
+  return grouped;
+}
+
+function localComparisonGroups(
   groupItems: IndicatorSnapshot[],
   allComparisonGroups: [string, IndicatorSnapshot[]][],
 ): [string, IndicatorSnapshot[]][] {
@@ -147,6 +170,7 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   const availableSnapshots = snapshots.filter((snapshot) => snapshot.points.length > 0);
   const unavailableSnapshots = snapshots.filter((snapshot) => snapshot.points.length === 0);
   const allComparisonGroups = comparisonGroups(availableSnapshots);
+  const anchoredComparisonGroups = comparisonGroupsByAnchor(allComparisonGroups);
 
   return (
     <>
@@ -158,7 +182,7 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
                 <h2>{localizeSelectorValue(group)}</h2>
                 <span>{groupItems.length} 个指标</span>
               </div>
-              {sectionComparisonGroups(groupItems, allComparisonGroups).map(([compareGroup, compareItems]) => (
+              {(anchoredComparisonGroups.get(group) ?? localComparisonGroups(groupItems, allComparisonGroups)).map(([compareGroup, compareItems]) => (
                 <ComparisonPanel
                   group={compareGroup}
                   key={compareGroup}
