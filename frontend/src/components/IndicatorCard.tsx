@@ -12,34 +12,68 @@ type IndicatorCardProps = {
 
 const LINE_COLORS = ["#1f5eff", "#d92d20", "#039855", "#d97706", "#7c3aed", "#0e9384"];
 
+type DisplayPoint = Observation & {
+  numericValue: number;
+  displayValue: number;
+};
+
+type DisplayScale = {
+  unit: string;
+  divisor: number;
+};
+
 function colorForCode(code: string): string {
   const total = code.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return LINE_COLORS[total % LINE_COLORS.length];
 }
 
-function formatValue(value: string | undefined): string {
+function displayScale(definitionUnit: string, localizedUnit: string): DisplayScale {
+  const normalizedUnit = localizedUnit || definitionUnit;
+  if (normalizedUnit === "美元") {
+    return { unit: "亿美元", divisor: 100_000_000 };
+  }
+  if (normalizedUnit === "百万美元") {
+    return { unit: "十亿美元", divisor: 1_000 };
+  }
+  if (definitionUnit === "100 million CNY") {
+    return { unit: "亿元", divisor: 1 };
+  }
+  return { unit: normalizedUnit, divisor: 1 };
+}
+
+function toDisplayPoint(point: Observation, scale: DisplayScale): DisplayPoint | null {
+  const numericValue = Number(point.value);
+  if (!Number.isFinite(numericValue)) {
+    return null;
+  }
+  return {
+    ...point,
+    numericValue,
+    displayValue: numericValue / scale.divisor,
+  };
+}
+
+function formatValue(value: number | string | undefined): string {
   if (value === undefined) {
     return "--";
   }
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) {
-    return value;
+    return String(value);
   }
   return new Intl.NumberFormat("zh-CN", {
     maximumFractionDigits: Math.abs(numericValue) >= 1000 ? 0 : 2,
   }).format(numericValue);
 }
 
-function formatChange(latestValue: string | undefined, previousValue: string | undefined): number | null {
+function formatChange(latestValue: number | undefined, previousValue: number | undefined): number | null {
   if (latestValue === undefined || previousValue === undefined) {
     return null;
   }
-  const latest = Number(latestValue);
-  const previous = Number(previousValue);
-  if (!Number.isFinite(latest) || !Number.isFinite(previous)) {
+  if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) {
     return null;
   }
-  return latest - previous;
+  return latestValue - previousValue;
 }
 
 function changeText(change: number | null, unit: string): string {
@@ -52,35 +86,54 @@ function changeText(change: number | null, unit: string): string {
   return `${change >= 0 ? "+" : ""}${formatValue(String(change))}`;
 }
 
-function referenceValue(points: Observation[]): number | null {
+function referenceValue(points: DisplayPoint[]): number | null {
   if (points.length < 2) {
     return null;
   }
-  const previous = Number(points[points.length - 2].value);
-  return Number.isFinite(previous) ? previous : null;
+  return points[points.length - 2].displayValue;
+}
+
+function extremePoint(points: DisplayPoint[], direction: "max" | "min"): DisplayPoint | null {
+  if (points.length === 0) {
+    return null;
+  }
+  return points.reduce((selected, point) => {
+    if (direction === "max") {
+      return point.displayValue > selected.displayValue ? point : selected;
+    }
+    return point.displayValue < selected.displayValue ? point : selected;
+  }, points[0]);
 }
 
 export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const { definition } = snapshot;
   const localized = localizeIndicator(definition);
-  const points = filterPointsByRange(snapshot.points, timeRange);
-  const latest = latestInRange(points) ?? snapshot.latest;
-  const previous = points.length >= 2 ? points[points.length - 2] : snapshot.previous;
-  const change = formatChange(latest?.value, previous?.value);
+  const scale = displayScale(definition.unit, localized.unit);
+  const rawPoints = filterPointsByRange(snapshot.points, timeRange);
+  const points = rawPoints
+    .map((point) => toDisplayPoint(point, scale))
+    .filter((point): point is DisplayPoint => Boolean(point));
+  const latestRaw = latestInRange(rawPoints) ?? snapshot.latest;
+  const previousRaw = rawPoints.length >= 2 ? rawPoints.at(-2) : snapshot.previous;
+  const latest = latestRaw ? toDisplayPoint(latestRaw, scale) : null;
+  const previous = previousRaw ? toDisplayPoint(previousRaw, scale) : null;
+  const change = formatChange(latest?.displayValue, previous?.displayValue);
   const hasPoints = points.length > 0;
   const lineColor = colorForCode(definition.code);
   const refValue = referenceValue(points);
+  const highPoint = extremePoint(points, "max");
+  const lowPoint = extremePoint(points, "min");
 
   const chartOption = useMemo(
     () => ({
       animation: false,
-      grid: { bottom: 30, left: 46, right: 18, top: 24 },
+      grid: { bottom: 34, left: 54, right: 18, top: 34 },
       tooltip: {
         trigger: "axis",
         backgroundColor: "rgba(23, 32, 51, 0.92)",
         borderWidth: 0,
         textStyle: { color: "#fff" },
-        valueFormatter: (value: number) => `${formatValue(String(value))}${localized.unit}`,
+        valueFormatter: (value: number) => `${formatValue(value)}${scale.unit}`,
       },
       xAxis: {
         type: "category",
@@ -93,24 +146,29 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       yAxis: {
         type: "value",
         scale: true,
-        axisLabel: { color: "#64738a", fontSize: 10 },
+        axisLabel: {
+          color: "#64738a",
+          fontSize: 10,
+          formatter: (value: number) => formatValue(value),
+        },
         splitLine: { lineStyle: { color: "#e7edf5" } },
       },
       series: [
         {
           type: "line",
-          data: points.map((point) => Number(point.value)),
+          data: points.map((point) => point.displayValue),
           showSymbol: false,
           smooth: false,
-          lineStyle: { color: lineColor, width: 2.4 },
-          areaStyle: { color: `${lineColor}14` },
+          emphasis: { focus: "series" },
+          lineStyle: { color: lineColor, width: 3 },
+          areaStyle: { color: `${lineColor}18` },
           markLine:
             refValue === null
               ? undefined
               : {
                   symbol: "none",
                   label: {
-                    formatter: "上一期 {c}",
+                    formatter: (params: { value: number }) => `上一期 ${formatValue(params.value)}`,
                     color: "#334155",
                     fontWeight: 700,
                   },
@@ -121,21 +179,51 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
             latest === null
               ? undefined
               : {
-                  symbol: "circle",
-                  symbolSize: 8,
-                  itemStyle: { color: lineColor },
+                  symbolSize: [56, 28],
+                  itemStyle: { color: lineColor, borderColor: "#ffffff", borderWidth: 2 },
                   label: {
-                    formatter: `最新 ${latest.period} · ${formatValue(latest.value)}`,
-                    color: "#334155",
+                    formatter: `最新\n${formatValue(latest.displayValue)}`,
+                    color: "#ffffff",
                     fontWeight: 800,
-                    position: "left",
+                    fontSize: 10,
+                    lineHeight: 13,
                   },
-                  data: [{ coord: [latest.period, Number(latest.value)] }],
+                  data: [
+                    { coord: [latest.period, latest.displayValue] },
+                    ...(highPoint && highPoint.period !== latest.period
+                      ? [
+                          {
+                            coord: [highPoint.period, highPoint.displayValue],
+                            itemStyle: { color: "#b42318" },
+                            label: {
+                              formatter: "高点",
+                              color: "#b42318",
+                              position: "top",
+                              fontWeight: 800,
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(lowPoint && lowPoint.period !== latest.period
+                      ? [
+                          {
+                            coord: [lowPoint.period, lowPoint.displayValue],
+                            itemStyle: { color: "#04706b" },
+                            label: {
+                              formatter: "低点",
+                              color: "#04706b",
+                              position: "bottom",
+                              fontWeight: 800,
+                            },
+                          },
+                        ]
+                      : []),
+                  ],
                 },
         },
       ],
     }),
-    [latest, lineColor, localized.unit, points, refValue],
+    [highPoint, latest, lineColor, lowPoint, points, refValue, scale.unit],
   );
 
   return (
@@ -149,12 +237,20 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       </div>
 
       <div className="metric-row">
-        <strong>{formatValue(latest?.value)}</strong>
-        <span>{localized.unit}</span>
+        <strong>{formatValue(latest?.displayValue)}</strong>
+        <span>{scale.unit}</span>
         <em className={change === null ? "change muted" : change >= 0 ? "change up" : "change down"}>
-          {changeText(change, localized.unit)}
+          {changeText(change, scale.unit)}
         </em>
       </div>
+
+      {hasPoints ? (
+        <div className="focus-strip">
+          <span>最新 {latest?.period ?? "--"}</span>
+          <b>高 {formatValue(highPoint?.displayValue)}</b>
+          <b>低 {formatValue(lowPoint?.displayValue)}</b>
+        </div>
+      ) : null}
 
       <div className="chart-box professional">
         {hasPoints ? (
@@ -169,7 +265,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       </div>
 
       <p className="reading">
-        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点。
+        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，图中已标出最新值与区间高低点。
       </p>
     </article>
   );
