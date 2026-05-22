@@ -191,6 +191,34 @@ def test_cross_sector_public_indicators_are_discoverable() -> None:
         assert indicator.availability.status == "available"
 
 
+def test_nonferrous_exchange_indicators_are_discoverable() -> None:
+    expected = {
+        "SHFE_COPPER_FUTURES_CLOSE",
+        "SHFE_COPPER_FUTURES_SETTLE",
+        "SHFE_ALUMINUM_FUTURES_CLOSE",
+        "SHFE_ZINC_FUTURES_CLOSE",
+        "SHFE_LEAD_FUTURES_CLOSE",
+        "SHFE_NICKEL_FUTURES_CLOSE",
+        "SHFE_TIN_FUTURES_CLOSE",
+        "SHFE_ALUMINA_FUTURES_CLOSE",
+        "GFEX_INDUSTRIAL_SILICON_FUTURES_CLOSE",
+        "INE_BONDED_COPPER_FUTURES_CLOSE",
+        "SHFE_COPPER_INVENTORY_DAILY",
+        "SHFE_COPPER_99QH_INVENTORY",
+        "SHFE_ALUMINUM_99QH_INVENTORY",
+        "SHFE_ZINC_99QH_INVENTORY",
+        "SHFE_NICKEL_99QH_INVENTORY",
+        "SHFE_LEAD_99QH_INVENTORY",
+        "CN_COMMODITY_PRICE_INDEX",
+    }
+
+    for code in expected:
+        indicator = get_indicator(code)
+        assert indicator.provider == "akshare_china"
+        assert indicator.domain == "nonferrous"
+        assert indicator.availability.status == "available"
+
+
 def test_stale_crude_inventory_event_sources_are_not_marked_available() -> None:
     for code in {"US_API_CRUDE_STOCK_CHANGE", "US_EIA_CRUDE_STOCK_CHANGE"}:
         indicator = get_indicator(code)
@@ -247,6 +275,7 @@ def test_route_level_tanker_indicators_are_documented() -> None:
         assert indicator.domain == "oil_shipping"
         assert indicator.availability.status == "pending_source"
         assert "Baltic" in indicator.availability.next_step
+        assert "中远海能" in indicator.availability.next_step
 
 
 def test_eia_public_petroleum_indicators_are_discoverable() -> None:
