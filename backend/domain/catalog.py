@@ -3,7 +3,7 @@
 from backend.constant import (
     AKSHARE_CHINA_SERIES,
     FRED_SERIES,
-    UNAVAILABLE_SERIES,
+    INDICATOR_AVAILABILITY,
     US_TREASURY_SERIES,
     WORLD_BANK_SERIES,
 )
@@ -50,7 +50,7 @@ def _indicator(
 
 
 def _availability_for(code: str) -> dict[str, str] | None:
-    metadata = UNAVAILABLE_SERIES.get(code)
+    metadata = INDICATOR_AVAILABILITY.get(code)
     if metadata is None:
         return None
     return {
@@ -386,6 +386,7 @@ _WORLD_BANK_INDICATORS = [
         description="中国中央政府债务占 GDP 比重，用于观察财政杠杆。",
         display_order=121,
         selectors={"country": "China", "metric": "Debt/GDP"},
+        availability=_availability_for("CN_DEBT_TO_GDP"),
     ),
     _indicator(
         code="JP_DEBT_TO_GDP",
@@ -425,6 +426,7 @@ _WORLD_BANK_INDICATORS = [
         description="中国财政余额占 GDP 比重，负值代表财政赤字。",
         display_order=131,
         selectors={"country": "China", "metric": "Fiscal balance"},
+        availability=_availability_for("CN_FISCAL_BALANCE_TO_GDP"),
     ),
     _indicator(
         code="JP_FISCAL_BALANCE_TO_GDP",
@@ -629,6 +631,54 @@ _CHINA_WORLD_BANK_EXTRA_INDICATORS = [
         description="人民币兑美元官方平均汇率，用于观察汇率与外部金融条件。",
         display_order=232,
         selectors={"country": "China", "category": "汇率与金融", "metric": "人民币汇率"},
+    ),
+]
+
+_KEY_GATED_INDICATORS = [
+    _indicator(
+        code="US_EIA_CRUDE_STOCKS",
+        name="U.S. commercial crude oil stocks",
+        domain="crude_oil",
+        region="United States",
+        unit="thousand barrels",
+        frequency="weekly",
+        provider="unavailable",
+        source="Pending:EIA API",
+        description="美国商业原油库存用于观察原油供需平衡和炼厂补库节奏。",
+        display_order=405,
+        selectors={"country": "United States", "commodity": "Crude oil", "metric": "Inventory"},
+        availability=_availability_for("US_EIA_CRUDE_STOCKS"),
+    ),
+]
+
+_EXCHANGE_PENDING_INDICATORS = [
+    _indicator(
+        code="LME_COPPER_INVENTORY",
+        name="LME copper inventory",
+        domain="nonferrous",
+        region="Global",
+        unit="tonne",
+        frequency="daily",
+        provider="unavailable",
+        source="Pending:LME/Wind",
+        description="LME 铜库存用于观察海外有色金属显性库存变化。",
+        display_order=307,
+        selectors={"commodity": "Copper", "market": "LME", "metric": "Inventory"},
+        availability=_availability_for("LME_COPPER_INVENTORY"),
+    ),
+    _indicator(
+        code="SHFE_COPPER_INVENTORY",
+        name="SHFE copper inventory",
+        domain="nonferrous",
+        region="China",
+        unit="tonne",
+        frequency="weekly",
+        provider="unavailable",
+        source="Pending:SHFE/Wind",
+        description="上期所铜库存用于观察国内有色金属显性库存变化。",
+        display_order=308,
+        selectors={"commodity": "Copper", "market": "SHFE", "metric": "Inventory"},
+        availability=_availability_for("SHFE_COPPER_INVENTORY"),
     ),
 ]
 
@@ -880,6 +930,8 @@ def get_catalog() -> list[IndicatorDefinition]:
             *_CHINA_DATA_INDICATORS,
             *_CHINA_AKSHARE_EXTRA_INDICATORS,
             *_CHINA_WORLD_BANK_EXTRA_INDICATORS,
+            *_KEY_GATED_INDICATORS,
+            *_EXCHANGE_PENDING_INDICATORS,
             *_WORLD_BANK_INDICATORS,
         ],
         key=lambda item: item.display_order,

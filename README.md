@@ -15,6 +15,8 @@
 | --- | --- | --- |
 | `MACRO_DB_PATH` | 本地 DuckDB 数据库路径 | `data/macro.duckdb` |
 | `FRED_API_KEY` | FRED API Key，后续 JSON API 可用 | 空 |
+| `EIA_API_KEY` | EIA API Key，用于后续接入原油库存、炼厂和成品油数据 | 空 |
+| `WIND_API_KEY` | Wind API Key，用于后续替换中国宏观、LME/SHFE 等待接入指标 | 空 |
 | `MACRO_HTTP_TIMEOUT_SECONDS` | HTTP 请求超时时间 | `60` |
 | `MACRO_USER_AGENT` | 公共数据下载 User-Agent | `local-macro-monitor/0.1` |
 | `VITE_API_BASE_URL` | 前端访问的后端地址 | `http://127.0.0.1:8000` |

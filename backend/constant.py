@@ -214,4 +214,33 @@ UNAVAILABLE_SERIES = {
         "reason": "尚未找到稳定返回海关进口价格指数的公开接口。",
         "next_step": "接入海关总署价格指数表或 Wind。",
     },
+    "US_EIA_CRUDE_STOCKS": {
+        "status": "needs_key",
+        "reason": "EIA 官方 API 需要 api_key，当前项目尚未配置可用密钥。",
+        "next_step": "在 .env 中配置 EIA_API_KEY 后接入 EIA petroleum stocks 接口。",
+    },
+    "LME_COPPER_INVENTORY": {
+        "status": "pending_source",
+        "reason": "LME 库存数据需要稳定公开接口、授权数据源或 Wind。",
+        "next_step": "确认 LME 授权接口、Wind 字段或可稳定下载的数据表。",
+    },
+    "SHFE_COPPER_INVENTORY": {
+        "status": "pending_source",
+        "reason": "上期所铜库存需要稳定解析交易所仓单或周库存表。",
+        "next_step": "确认 SHFE 官方表格结构后接入解析器。",
+    },
+}
+
+INDICATOR_AVAILABILITY = {
+    **UNAVAILABLE_SERIES,
+    "CN_DEBT_TO_GDP": {
+        "status": "no_data",
+        "reason": "World Bank 对中国中央政府债务占 GDP 指标当前可访问但无可写入观测值。",
+        "next_step": "接入财政部、IMF、BIS 或 Wind 的政府债务口径。",
+    },
+    "CN_FISCAL_BALANCE_TO_GDP": {
+        "status": "no_data",
+        "reason": "World Bank 对中国财政余额占 GDP 指标当前可访问但无可写入观测值。",
+        "next_step": "接入财政部财政收支口径、IMF 或 Wind。",
+    },
 }

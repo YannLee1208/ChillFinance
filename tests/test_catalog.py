@@ -97,3 +97,29 @@ def test_available_indicators_default_to_available_status() -> None:
     assert indicator.provider == "akshare_china"
     assert indicator.availability.status == "available"
     assert indicator.availability.reason == ""
+
+
+def test_china_fiscal_indicators_mark_world_bank_no_data() -> None:
+    debt_indicator = get_indicator("CN_DEBT_TO_GDP")
+    fiscal_indicator = get_indicator("CN_FISCAL_BALANCE_TO_GDP")
+
+    assert debt_indicator.provider == "world_bank"
+    assert debt_indicator.availability.status == "no_data"
+    assert "World Bank" in debt_indicator.availability.reason
+    assert fiscal_indicator.availability.status == "no_data"
+    assert "财政部" in fiscal_indicator.availability.next_step
+
+
+def test_key_gated_and_exchange_indicators_are_discoverable() -> None:
+    eia_indicator = get_indicator("US_EIA_CRUDE_STOCKS")
+    lme_indicator = get_indicator("LME_COPPER_INVENTORY")
+    shfe_indicator = get_indicator("SHFE_COPPER_INVENTORY")
+
+    assert eia_indicator.domain == "crude_oil"
+    assert eia_indicator.provider == "unavailable"
+    assert eia_indicator.availability.status == "needs_key"
+    assert "EIA_API_KEY" in eia_indicator.availability.next_step
+    assert lme_indicator.domain == "nonferrous"
+    assert lme_indicator.availability.status == "pending_source"
+    assert shfe_indicator.domain == "nonferrous"
+    assert shfe_indicator.availability.status == "pending_source"
