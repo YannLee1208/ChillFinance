@@ -80,7 +80,7 @@ def ingest(
     if result.failed_indicators:
         typer.echo(f"Failed indicators: {len(result.failed_indicators)}")
         for code, reason in result.failed_indicators.items():
-            typer.echo(f"- {code}: {reason}")
+            typer.echo(_console_text(f"- {code}: {reason}"))
 
 
 @app.command("ingest-domain")
@@ -98,7 +98,7 @@ def ingest_domain(domain: str) -> None:
         typer.echo(f"Failed indicators: {result.failure_count}")
         for attempt in result.attempts:
             if attempt.status == "failed":
-                typer.echo(f"- {attempt.indicator_code}: {attempt.message}")
+                typer.echo(_console_text(f"- {attempt.indicator_code}: {attempt.message}"))
 
 
 def _create_providers(settings: Settings) -> list[MacroDataProvider]:
@@ -160,6 +160,12 @@ def _parse_codes(codes: str | None) -> set[str] | None:
         return None
     parsed = {code.strip() for code in codes.split(",") if code.strip()}
     return parsed or None
+
+
+def _console_text(text: str) -> str:
+    """清理网页不换行空格，避免 Windows 控制台编码失败。"""
+
+    return text.replace("\xa0", " ")
 
 
 if __name__ == "__main__":

@@ -12,15 +12,22 @@ from urllib.parse import urljoin
 import httpx
 import pandas as pd
 
-from backend.constant import PBC_PUBLIC_SERIES, PBC_STATS_YEAR_START
+from backend.constant import PBC_PUBLIC_SERIES, PBC_STATS_YEAR_INDEX_PATHS, PBC_STATS_YEAR_START
 from backend.domain.models import IndicatorDefinition, Observation
 
 _PBC_BASE_URL = "https://www.pbc.gov.cn"
 _PBC_STATS_URL = _PBC_BASE_URL + "/diaochatongjisi/116219/116319/{year}ntjsj/{slug}/index.html"
+_PBC_LEGACY_STATS_URL = (
+    _PBC_BASE_URL + "/diaochatongjisi/116219/116319/{path}/{legacy_slug}/index.html"
+)
 _TABLE_SLUGS = {
     "social_financing_flow": "shrzgm",
     "social_financing_stock": "shrzgm",
     "rmb_credit": "jrjgxdsztj",
+}
+_LEGACY_TABLE_SLUGS = {
+    "shrzgm": "4780804",
+    "jrjgxdsztj": "4780810",
 }
 _TABLE_TITLES = {
     "social_financing_flow": "社会融资规模增量统计表",
@@ -53,28 +60,36 @@ class PBCPublicProvider:
 
         config = PBC_PUBLIC_SERIES[indicator.code]
         table = config["table"]
-        current_year = datetime.now(UTC).year
+        current_year = _current_beijing_year()
         frames = [
-            await self._fetch_table_frame(table, year)
+            frame
             for year in range(PBC_STATS_YEAR_START, current_year + 1)
+            if (frame := await self._fetch_table_frame_or_none(table, year)) is not None
         ]
-        frame = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
-        if frame.empty:
+        if not frames:
             return []
-        return parse_pbc_public_table(frame=frame, indicator=indicator, config=config)
 
-    async def _fetch_table_frame(self, table: str, year: int) -> pd.DataFrame:
+        observations: list[Observation] = []
+        for frame in frames:
+            observations.extend(
+                parse_pbc_public_table(frame=frame, indicator=indicator, config=config)
+            )
+        return sorted(observations, key=lambda observation: observation.period)
+
+    async def _fetch_table_frame_or_none(self, table: str, year: int) -> pd.DataFrame | None:
         cache_key = (table, year)
         if cache_key in self._frame_cache:
             return self._frame_cache[cache_key]
 
-        page_url = _PBC_STATS_URL.format(year=year, slug=_TABLE_SLUGS[table])
+        page_url = _pbc_stats_page_url(table, year)
         async with httpx.AsyncClient(
             timeout=self.timeout_seconds,
             headers={"User-Agent": self.user_agent},
             follow_redirects=True,
         ) as client:
             page_response = await client.get(page_url)
+            if page_response.status_code == 404:
+                return None
             page_response.raise_for_status()
             xlsx_url = _select_xlsx_url(page_response.text, page_url, _TABLE_TITLES[table])
             xlsx_response = await client.get(xlsx_url)
@@ -132,6 +147,20 @@ def _select_xlsx_url(page_html: str, page_url: str, table_title: str) -> str:
     return urljoin(page_url, match.group(1))
 
 
+def _pbc_stats_page_url(table: str, year: int) -> str:
+    slug = _TABLE_SLUGS[table]
+    if year in PBC_STATS_YEAR_INDEX_PATHS:
+        legacy_slug = _LEGACY_TABLE_SLUGS[slug]
+        if slug == "jrjgxdsztj":
+            # 2023 归档页的信贷收支统计仅暴露了子表，无法稳定定位全表。
+            return _PBC_STATS_URL.format(year=year, slug=slug)
+        return _PBC_LEGACY_STATS_URL.format(
+            path=PBC_STATS_YEAR_INDEX_PATHS[year],
+            legacy_slug=legacy_slug,
+        )
+    return _PBC_STATS_URL.format(year=year, slug=slug)
+
+
 def _parse_vertical_month_table(
     frame: pd.DataFrame,
     value_column_name: str,
@@ -143,7 +172,10 @@ def _parse_vertical_month_table(
     points: list[tuple[date, Decimal]] = []
     for row_index in range(header_row + 1, len(frame)):
         period = _parse_year_month(frame.iat[row_index, period_column])
-        value = _decimal_or_none(frame.iat[row_index, value_column])
+        try:
+            value = _decimal_or_none(frame.iat[row_index, value_column])
+        except ValueError:
+            continue
         if period is not None and value is not None:
             points.append((period, value))
     return sorted(points, key=lambda item: item[0])
@@ -161,7 +193,10 @@ def _parse_social_financing_stock_table(
         period = _parse_year_month(frame.iat[month_row, column_index])
         if period is None:
             continue
-        value = _decimal_or_none(frame.iat[value_row, column_index])
+        try:
+            value = _decimal_or_none(frame.iat[value_row, column_index])
+        except ValueError:
+            continue
         if value is not None:
             points.append((period, value))
     return sorted(points, key=lambda item: item[0])
@@ -178,7 +213,10 @@ def _parse_rmb_credit_table(
     points: list[tuple[date, Decimal]] = []
     for column_index in range(1, frame.shape[1]):
         period = _parse_year_month(frame.iat[header_row, column_index])
-        value = _decimal_or_none(frame.iat[value_row, column_index])
+        try:
+            value = _decimal_or_none(frame.iat[value_row, column_index])
+        except ValueError:
+            continue
         if period is not None and value is not None:
             points.append((period, value))
     return sorted(points, key=lambda item: item[0])
@@ -249,6 +287,12 @@ def _parse_year_month(value: Any) -> date | None:
     if match is None:
         return None
     return date(int(match.group("year")), int(match.group("month")), 1)
+
+
+def _current_beijing_year() -> int:
+    """按北京时间判断当前统计年份，避免 UTC 年末跨日影响。"""
+
+    return datetime.now().year
 
 
 def _decimal_or_none(value: Any) -> Decimal | None:

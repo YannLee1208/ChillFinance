@@ -170,7 +170,6 @@ def test_pboc_financing_and_money_indicators_use_public_data_provider() -> None:
 
 def test_china_macro_credit_indicators_define_comparison_groups() -> None:
     expected = {
-        "CN_RMB_LOANS",
         "CN_HOUSEHOLD_LOAN_INCREMENT",
         "CN_HOUSEHOLD_SHORT_TERM_LOAN_INCREMENT",
         "CN_HOUSEHOLD_MEDIUM_LONG_TERM_LOAN_INCREMENT",
@@ -179,6 +178,45 @@ def test_china_macro_credit_indicators_define_comparison_groups() -> None:
     for code in expected:
         indicator = get_indicator(code)
         assert indicator.selectors.get("compare_group") == "贷款增量"
+    assert get_indicator("CN_RMB_LOANS").selectors.get("compare_group") == "信用增量总览"
+
+
+def test_pboc_public_table_subitems_are_discoverable() -> None:
+    expected = {
+        "CN_SF_RMB_LOAN_FLOW": "社融增量结构",
+        "CN_SF_GOVERNMENT_BOND_FLOW": "社融增量结构",
+        "CN_SF_RMB_LOAN_STOCK": "社融存量结构",
+        "CN_SF_GOVERNMENT_BOND_STOCK": "社融存量结构",
+        "CN_RMB_DEPOSIT_BALANCE": "存贷款余额",
+        "CN_HOUSEHOLD_LOAN_BALANCE": "贷款余额结构",
+        "CN_ENTERPRISE_LOAN_INCREMENT": "贷款增量",
+        "CN_ENTERPRISE_SHORT_TERM_LOAN_INCREMENT": "企业贷款增量结构",
+    }
+
+    for code, compare_group in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.domain == "china_macro"
+        assert indicator.provider == "pbc_public"
+        assert indicator.availability.status == "available"
+        assert indicator.selectors.get("compare_group") == compare_group
+
+
+def test_china_cpi_ppi_order_and_mom_comparison_group() -> None:
+    expected_order = [
+        "CN_CPI_MONTHLY_INDEX",
+        "CN_CPI_MONTHLY_YOY",
+        "CN_CPI_MONTHLY_MOM",
+        "CN_PPI_INDEX",
+        "CN_PPI",
+        "CN_PPI_MOM",
+    ]
+
+    indicators = [get_indicator(code) for code in expected_order]
+    assert [indicator.display_order for indicator in indicators] == sorted(
+        indicator.display_order for indicator in indicators
+    )
+    assert get_indicator("CN_CPI_MONTHLY_MOM").selectors.get("compare_group") == "CPI/PPI环比"
+    assert get_indicator("CN_PPI_MOM").selectors.get("compare_group") == "CPI/PPI环比"
 
 
 def test_customs_trade_indicators_use_public_customs_table() -> None:

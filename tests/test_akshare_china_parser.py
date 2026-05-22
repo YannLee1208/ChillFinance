@@ -266,3 +266,21 @@ async def test_provider_retries_empty_json_response(monkeypatch) -> None:
 
     assert call_count == 3
     assert observations[0].value == Decimal("7721.00000")
+
+
+async def test_provider_computes_ppi_mom_from_index(monkeypatch) -> None:
+    def fake_call_akshare(config: dict[str, str]) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                config["date_column"]: ["2026年03月份", "2026年04月份"],
+                "当月": [99.8, 100.1],
+            }
+        )
+
+    monkeypatch.setattr("backend.ingest.akshare_china._call_akshare", fake_call_akshare)
+    provider = AkShareChinaProvider()
+
+    observations = await provider.fetch(get_indicator("CN_PPI_MOM"))
+
+    assert observations[0].period.isoformat() == "2026-04-01"
+    assert observations[0].value.quantize(Decimal("0.000001")) == Decimal("0.300601")

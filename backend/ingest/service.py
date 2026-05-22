@@ -85,7 +85,7 @@ class IngestionService:
                     )
                 )
                 continue
-            self.store.upsert_observations(observations)
+            self.store.replace_observations(indicator.code, observations)
             total += len(observations)
             attempts.append(
                 IngestionAttemptRecord(

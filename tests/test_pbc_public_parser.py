@@ -84,3 +84,23 @@ def test_parse_rmb_credit_table_balance_and_monthly_change() -> None:
     assert new_loans[-1].period.isoformat() == "2026-04-01"
     assert new_loans[-1].value == Decimal("-114.98")
     assert household_short[-1].value == Decimal("-4461.39")
+
+
+def test_parse_social_financing_flow_subitem() -> None:
+    frame = pd.DataFrame(
+        [
+            ["社会融资规模增量统计表", None, None, None],
+            ["月份", "社会融资规模增量", "政府债券", "企业债券"],
+            ["2026.03", 52240, 11658, 3910],
+            ["2026.04", 6245, 9041, 4520],
+        ]
+    )
+
+    observations = parse_pbc_public_table(
+        frame=frame,
+        indicator=get_indicator("CN_SF_GOVERNMENT_BOND_FLOW"),
+        config=PBC_PUBLIC_SERIES["CN_SF_GOVERNMENT_BOND_FLOW"],
+    )
+
+    assert observations[-1].period.isoformat() == "2026-04-01"
+    assert observations[-1].value == Decimal("9041")

@@ -174,6 +174,53 @@ class DuckDBMacroStore:
                 rows,
             )
 
+    def replace_observations(
+        self,
+        indicator_code: str,
+        observations: Iterable[Observation],
+    ) -> None:
+        """用同一指标的新口径全量替换旧观测值。"""
+
+        rows: list[tuple[Any, ...]] = [
+            (
+                observation.indicator_code,
+                observation.period,
+                observation.value,
+                observation.provider,
+                observation.source,
+                self._to_naive_utc(observation.ingested_at),
+            )
+            for observation in observations
+        ]
+        if not rows:
+            return
+
+        with self._connect() as connection:
+            connection.execute("begin transaction")
+            try:
+                connection.execute(
+                    "delete from observations where indicator_code = ?",
+                    [indicator_code],
+                )
+                connection.executemany(
+                    """
+                    insert into observations (
+                        indicator_code,
+                        period,
+                        value,
+                        provider,
+                        source,
+                        ingested_at
+                    )
+                    values (?, ?, ?, ?, ?, ?)
+                    """,
+                    rows,
+                )
+                connection.execute("commit")
+            except Exception:
+                connection.execute("rollback")
+                raise
+
     def get_series(self, indicator_code: str, limit: int | None = None) -> list[Observation]:
         """按日期升序读取指定指标的观测序列。"""
 

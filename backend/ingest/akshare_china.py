@@ -36,6 +36,8 @@ class AkShareChinaProvider:
             return _parse_m1_m2_scissors(frame, indicator)
         if config.get("computed") == "nominal_gdp_current_quarter_qoq":
             return _parse_nominal_gdp_current_quarter_qoq(frame, indicator)
+        if config.get("computed") == "index_mom_change":
+            return _parse_index_mom_change(frame, indicator, config)
         if config.get("aggregate") == "mean_by_date":
             return _parse_mean_by_date(frame, indicator, config)
         return parse_akshare_series_frame(frame, indicator, config)
@@ -167,13 +169,18 @@ def _parse_nominal_gdp_current_quarter_qoq(
 
     quarterly_values: list[tuple[date, int, int, Decimal]] = []
     previous_cumulative_by_year: dict[int, Decimal] = {}
+    parsed_rows: list[tuple[date, int, int, Decimal]] = []
     for _, row in frame.iterrows():
         if _is_missing(row[date_column]) or _is_missing(row[value_column]):
             continue
         period, year, quarter = _parse_chinese_quarter_detail(str(row[date_column]).strip())
-        cumulative_value = _to_decimal(row[value_column])
+        parsed_rows.append((period, year, quarter, _to_decimal(row[value_column])))
+
+    for period, year, quarter, cumulative_value in sorted(parsed_rows, key=lambda item: item[0]):
         previous_cumulative = previous_cumulative_by_year.get(year, Decimal("0"))
         current_quarter_value = cumulative_value - previous_cumulative
+        if current_quarter_value <= 0:
+            continue
         previous_cumulative_by_year[year] = cumulative_value
         quarterly_values.append((period, year, quarter, current_quarter_value))
 
@@ -197,6 +204,47 @@ def _parse_nominal_gdp_current_quarter_qoq(
             )
         )
         previous_quarter_value = current_quarter_value
+
+    return observations
+
+
+def _parse_index_mom_change(
+    frame: pd.DataFrame,
+    indicator: IndicatorDefinition,
+    config: dict[str, str],
+) -> list[Observation]:
+    """用月度指数计算环比百分比，补足只有指数没有环比的表。"""
+
+    date_column = config["date_column"]
+    value_column = config["value_column"]
+    _ensure_columns(frame, [date_column, value_column])
+
+    points: list[tuple[date, Decimal]] = []
+    for _, row in frame.iterrows():
+        if _is_missing(row[date_column]) or _is_missing(row[value_column]):
+            continue
+        points.append(
+            (
+                _parse_period(row[date_column], config["period_type"]),
+                _to_decimal(row[value_column]),
+            )
+        )
+
+    observations: list[Observation] = []
+    ingested_at = datetime.now(UTC)
+    previous_value: Decimal | None = None
+    for period, value in sorted(points, key=lambda item: item[0]):
+        if previous_value is not None and previous_value != 0:
+            observations.append(
+                _build_observation(
+                    indicator=indicator,
+                    period=period,
+                    value=(value - previous_value) / previous_value * Decimal("100"),
+                    source=AKSHARE_CHINA_SERIES[indicator.code]["source"],
+                    ingested_at=ingested_at,
+                )
+            )
+        previous_value = value
 
     return observations
 

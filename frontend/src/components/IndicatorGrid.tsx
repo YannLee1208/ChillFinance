@@ -91,6 +91,18 @@ function comparisonGroups(snapshots: IndicatorSnapshot[]): [string, IndicatorSna
   return Array.from(grouped.entries()).filter(([, items]) => items.length >= 2);
 }
 
+function sectionComparisonGroups(
+  groupItems: IndicatorSnapshot[],
+  allComparisonGroups: [string, IndicatorSnapshot[]][],
+): [string, IndicatorSnapshot[]][] {
+  const sectionGroupNames = new Set(
+    groupItems
+      .map((snapshot) => snapshot.definition.selectors.compare_group)
+      .filter((group): group is string => Boolean(group)),
+  );
+  return allComparisonGroups.filter(([group]) => sectionGroupNames.has(group));
+}
+
 export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
   const results = useQueries({
     queries: indicators.map((indicator) => ({
@@ -116,6 +128,7 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
     .filter((snapshot): snapshot is IndicatorSnapshot => Boolean(snapshot));
   const availableSnapshots = snapshots.filter((snapshot) => snapshot.points.length > 0);
   const unavailableSnapshots = snapshots.filter((snapshot) => snapshot.points.length === 0);
+  const allComparisonGroups = comparisonGroups(availableSnapshots);
 
   return (
     <>
@@ -126,7 +139,7 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
               <h2>{localizeSelectorValue(group)}</h2>
               <span>{groupItems.length} 个指标</span>
             </div>
-            {comparisonGroups(groupItems).map(([compareGroup, compareItems]) => (
+            {sectionComparisonGroups(groupItems, allComparisonGroups).map(([compareGroup, compareItems]) => (
               <ComparisonPanel
                 group={compareGroup}
                 key={compareGroup}
