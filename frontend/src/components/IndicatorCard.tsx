@@ -176,15 +176,10 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
             latest === null
               ? undefined
               : {
-                  symbolSize: [56, 28],
+                  symbol: "circle",
+                  symbolSize: 8,
                   itemStyle: { color: lineColor, borderColor: "#ffffff", borderWidth: 2 },
-                  label: {
-                    formatter: `最新\n${formatValue(latest.displayValue)}`,
-                    color: "#ffffff",
-                    fontWeight: 800,
-                    fontSize: 10,
-                    lineHeight: 13,
-                  },
+                  label: { show: false },
                   data: [
                     { coord: [latest.period, latest.displayValue] },
                   ],
