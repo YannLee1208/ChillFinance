@@ -179,11 +179,38 @@ def test_cross_sector_public_indicators_are_discoverable() -> None:
         "LME_NICKEL_INVENTORY": ("akshare_china", "nonferrous"),
         "COMEX_GOLD_INVENTORY": ("akshare_china", "nonferrous"),
         "SHFE_COPPER_INVENTORY": ("akshare_china", "nonferrous"),
-        "US_API_CRUDE_STOCK_CHANGE": ("akshare_china", "crude_oil"),
-        "US_EIA_CRUDE_STOCK_CHANGE": ("akshare_china", "crude_oil"),
         "CN_SOCIETY_ELECTRICITY": ("akshare_china", "power"),
         "CN_SOCIETY_ELECTRICITY_YOY": ("akshare_china", "power"),
         "CN_ENERGY_INDEX": ("akshare_china", "power"),
+    }
+
+    for code, (provider, domain) in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.provider == provider
+        assert indicator.domain == domain
+        assert indicator.availability.status == "available"
+
+
+def test_stale_crude_inventory_event_sources_are_not_marked_available() -> None:
+    for code in {"US_API_CRUDE_STOCK_CHANGE", "US_EIA_CRUDE_STOCK_CHANGE"}:
+        indicator = get_indicator(code)
+        assert indicator.domain == "crude_oil"
+        assert indicator.provider == "unavailable"
+        assert indicator.availability.status == "pending_source"
+        assert "停更" in indicator.availability.reason
+
+
+def test_current_crude_and_tanker_indicators_are_discoverable() -> None:
+    expected = {
+        "US_CRUDE_OIL_PRODUCTION": ("akshare_china", "crude_oil"),
+        "US_CRUDE_OIL_PRODUCTION_CHANGE": ("akshare_china", "crude_oil"),
+        "CN_GASOLINE_RETAIL_PRICE": ("akshare_china", "crude_oil"),
+        "CN_DIESEL_RETAIL_PRICE": ("akshare_china", "crude_oil"),
+        "BDTI_INDEX": ("akshare_china", "oil_shipping"),
+        "BCTI_INDEX": ("akshare_china", "oil_shipping"),
+        "BDI_INDEX": ("akshare_china", "oil_shipping"),
+        "BCI_INDEX": ("akshare_china", "oil_shipping"),
+        "BPI_INDEX": ("akshare_china", "oil_shipping"),
     }
 
     for code, (provider, domain) in expected.items():

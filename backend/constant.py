@@ -349,18 +349,67 @@ AKSHARE_CHINA_SERIES = {
         "period_type": "date",
         "symbol": "黄金",
     },
-    "US_API_CRUDE_STOCK_CHANGE": {
-        "function": "macro_usa_api_crude_stock",
+    "US_CRUDE_OIL_PRODUCTION": {
+        "function": "macro_usa_crude_inner",
         "date_column": "日期",
-        "value_column": "今值",
-        "source": "AKShare/Jin10:macro_usa_api_crude_stock",
+        "value_column": "美国国内原油总量-产量",
+        "source": "AKShare/Jin10:macro_usa_crude_inner",
         "period_type": "date",
     },
-    "US_EIA_CRUDE_STOCK_CHANGE": {
-        "function": "macro_usa_eia_crude_rate",
+    "US_CRUDE_OIL_PRODUCTION_CHANGE": {
+        "function": "macro_usa_crude_inner",
         "date_column": "日期",
-        "value_column": "今值",
-        "source": "AKShare/Jin10:macro_usa_eia_crude_rate",
+        "value_column": "美国国内原油总量-变化",
+        "source": "AKShare/Jin10:macro_usa_crude_inner",
+        "period_type": "date",
+    },
+    "CN_GASOLINE_RETAIL_PRICE": {
+        "function": "energy_oil_hist",
+        "date_column": "调整日期",
+        "value_column": "汽油价格",
+        "source": "AKShare/Eastmoney:energy_oil_hist",
+        "period_type": "date",
+    },
+    "CN_DIESEL_RETAIL_PRICE": {
+        "function": "energy_oil_hist",
+        "date_column": "调整日期",
+        "value_column": "柴油价格",
+        "source": "AKShare/Eastmoney:energy_oil_hist",
+        "period_type": "date",
+    },
+    "BDTI_INDEX": {
+        "function": "macro_china_bdti_index",
+        "date_column": "日期",
+        "value_column": "最新值",
+        "source": "AKShare/Eastmoney:macro_china_bdti_index",
+        "period_type": "date",
+    },
+    "BCTI_INDEX": {
+        "function": "macro_shipping_bcti",
+        "date_column": "日期",
+        "value_column": "最新值",
+        "source": "AKShare/Eastmoney:macro_shipping_bcti",
+        "period_type": "date",
+    },
+    "BDI_INDEX": {
+        "function": "macro_shipping_bdi",
+        "date_column": "日期",
+        "value_column": "最新值",
+        "source": "AKShare/Eastmoney:macro_shipping_bdi",
+        "period_type": "date",
+    },
+    "BCI_INDEX": {
+        "function": "macro_shipping_bci",
+        "date_column": "日期",
+        "value_column": "最新值",
+        "source": "AKShare/Eastmoney:macro_shipping_bci",
+        "period_type": "date",
+    },
+    "BPI_INDEX": {
+        "function": "macro_shipping_bpi",
+        "date_column": "日期",
+        "value_column": "最新值",
+        "source": "AKShare/Eastmoney:macro_shipping_bpi",
         "period_type": "date",
     },
     "CN_SOCIETY_ELECTRICITY": {
@@ -517,6 +566,16 @@ UNAVAILABLE_SERIES = {
         "status": "pending_source",
         "reason": "尚未找到稳定返回红柳林洗中块历史价格的公开接口。",
         "next_step": "接入中国煤炭市场网数据库授权接口、矿方报价表或 Wind。",
+    },
+    "US_API_CRUDE_STOCK_CHANGE": {
+        "status": "pending_source",
+        "reason": "AkShare/Jin10 美国 API 原油库存变动序列当前停更在 2025-09，不能作为当前监控源。",
+        "next_step": "接入 API 官方授权源，或改用可持续更新的 EIA/FRED 口径。",
+    },
+    "US_EIA_CRUDE_STOCK_CHANGE": {
+        "status": "pending_source",
+        "reason": "AkShare/Jin10 美国 EIA 原油库存变动序列当前停更在 2025-09，不能作为当前监控源。",
+        "next_step": "配置 EIA_API_KEY 后接入官方 EIA weekly petroleum status 口径。",
     },
 }
 
