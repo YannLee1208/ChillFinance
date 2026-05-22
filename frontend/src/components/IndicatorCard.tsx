@@ -93,6 +93,76 @@ function referenceValue(points: DisplayPoint[]): number | null {
   return points[points.length - 2].displayValue;
 }
 
+function shouldUseBars(frequency: string, pointCount: number): boolean {
+  return frequency !== "daily" || pointCount <= 80;
+}
+
+function buildSeries(
+  points: DisplayPoint[],
+  lineColor: string,
+  latest: DisplayPoint | null,
+  refValue: number | null,
+  useBars: boolean,
+) {
+  const barSeries = useBars
+    ? [
+        {
+          type: "bar",
+          data: points.map((point) => point.displayValue),
+          barWidth: "58%",
+          itemStyle: {
+            color: `${lineColor}18`,
+            borderRadius: [3, 3, 0, 0],
+          },
+          tooltip: { show: false },
+          silent: true,
+        },
+      ]
+    : [];
+  return [
+    ...barSeries,
+    {
+      type: "line",
+      data: points.map((point) => point.displayValue),
+      showSymbol: false,
+      smooth: false,
+      emphasis: { focus: "series" },
+      lineStyle: { color: lineColor, width: 3 },
+      areaStyle: useBars ? undefined : { color: `${lineColor}14` },
+      markLine:
+        refValue === null
+          ? undefined
+          : {
+              symbol: "none",
+              label: { show: false },
+              lineStyle: { color: "#718198", type: "dashed", width: 2 },
+              data: [{ yAxis: refValue }],
+            },
+      markPoint:
+        latest === null
+          ? undefined
+          : {
+              symbol: "circle",
+              symbolSize: 8,
+              itemStyle: { color: lineColor, borderColor: "#ffffff", borderWidth: 2 },
+              label: { show: false },
+              data: [{ coord: [latest.period, latest.displayValue] }],
+            },
+    },
+    ...(useBars
+      ? [
+          {
+            type: "scatter",
+            data: points.map((point) => [point.period, point.displayValue]),
+            symbolSize: 4,
+            itemStyle: { color: lineColor, opacity: 0.72 },
+            tooltip: { show: false },
+          },
+        ]
+      : []),
+  ];
+}
+
 export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const { definition } = snapshot;
   const localized = localizeIndicator(definition);
@@ -109,6 +179,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
   const hasPoints = points.length > 0;
   const lineColor = colorForCode(definition.code);
   const refValue = referenceValue(points);
+  const useBars = shouldUseBars(definition.frequency, points.length);
 
   const chartOption = useMemo(
     () => ({
@@ -139,55 +210,9 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
         },
         splitLine: { lineStyle: { color: "#e7edf5" } },
       },
-      series: [
-        {
-          type: "bar",
-          data: points.map((point) => point.displayValue),
-          barWidth: "58%",
-          itemStyle: {
-            color: `${lineColor}16`,
-            borderRadius: [3, 3, 0, 0],
-          },
-          tooltip: { show: false },
-          silent: true,
-        },
-        {
-          type: "line",
-          data: points.map((point) => point.displayValue),
-          showSymbol: false,
-          smooth: false,
-          emphasis: { focus: "series" },
-          lineStyle: { color: lineColor, width: 3 },
-          areaStyle: { color: `${lineColor}18` },
-          markLine:
-            refValue === null
-              ? undefined
-              : {
-                  symbol: "none",
-                  label: {
-                    formatter: (params: { value: number }) => `上一期 ${formatValue(params.value)}`,
-                    color: "#334155",
-                    fontWeight: 700,
-                  },
-                  lineStyle: { color: "#718198", type: "dashed", width: 2 },
-                  data: [{ yAxis: refValue }],
-                },
-          markPoint:
-            latest === null
-              ? undefined
-              : {
-                  symbol: "circle",
-                  symbolSize: 8,
-                  itemStyle: { color: lineColor, borderColor: "#ffffff", borderWidth: 2 },
-                  label: { show: false },
-                  data: [
-                    { coord: [latest.period, latest.displayValue] },
-                  ],
-                },
-        },
-      ],
+      series: buildSeries(points, lineColor, latest, refValue, useBars),
     }),
-    [latest, lineColor, points, refValue, scale.unit],
+    [latest, lineColor, points, refValue, scale.unit, useBars],
   );
 
   return (
@@ -229,7 +254,7 @@ export function IndicatorCard({ snapshot, timeRange }: IndicatorCardProps) {
       </div>
 
       <p className="reading">
-        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，柱形表示读数强弱，折线强调趋势，虚线为上一期参考。
+        <b>读图</b> {localized.description} 来源：{localized.sourceLabel}；当前窗口 {points.length} 个观测点，{useBars ? "柱形表示读数强弱，折线和散点强调变化节奏。" : "折线强调高频趋势，虚线为上一期参考。"}
       </p>
     </article>
   );
