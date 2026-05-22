@@ -23,22 +23,43 @@
 
 ## 本地开发
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"
-python -m backend.cli init-db
-python -m backend.cli ingest
-uvicorn backend.app:create_app --factory --reload
-```
-
-前端开发：
+### Windows PowerShell
 
 ```powershell
-cd frontend
-npm install
-npm run dev
+.\scripts\bootstrap.ps1 -Dev
+.\scripts\download-data.ps1
+.\scripts\start-dev.ps1
 ```
+
+按板块下载数据：
+
+```powershell
+.\scripts\download-data.ps1 -Domain nonferrous
+.\scripts\download-data.ps1 -Codes US_DGS10,CN_PPI
+```
+
+### macOS / Linux
+
+```bash
+chmod +x scripts/*.sh
+./scripts/bootstrap.sh --dev
+./scripts/download-data.sh
+./scripts/start-dev.sh
+```
+
+按板块下载数据：
+
+```bash
+./scripts/download-data.sh --domain nonferrous
+./scripts/download-data.sh --codes US_DGS10,CN_PPI
+```
+
+启动后默认地址：
+
+- 后端 API：`http://127.0.0.1:8000`
+- 前端页面：`http://127.0.0.1:5173`
+
+前端页面“更新本板块数据”会调用 `/api/ingest/domains/{domain}`，对当前板块所有指标逐个调用对应 provider。当前没有统一的日期范围参数；每个数据源返回其可访问范围后由本地 DuckDB upsert 去重，例如美债从 2020-01 起回填、FRED/World Bank 通常拉全历史、部分 CCTD/曹妃甸接口只返回滚动窗口或最新值。
 
 ## 测试
 

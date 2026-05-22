@@ -273,16 +273,20 @@ def test_gold_indicators_are_expanded() -> None:
         assert indicator.provider == "akshare_china"
         assert indicator.domain == "nonferrous"
         assert indicator.availability.status == "available"
-        assert indicator.selectors.get("commodity") == "Gold"
+        if "SILVER" in code or code == "SGE_AG9999_CLOSE":
+            assert indicator.selectors.get("commodity") == "Silver"
+        else:
+            assert indicator.selectors.get("commodity") == "Gold"
 
 
-def test_nonferrous_does_not_split_silver_as_commodity() -> None:
-    catalog = get_catalog()
+def test_nonferrous_splits_gold_and_silver_commodities() -> None:
+    commodities = {
+        indicator.selectors.get("commodity")
+        for indicator in get_catalog()
+        if indicator.domain == "nonferrous"
+    }
 
-    assert not any(
-        indicator.domain == "nonferrous" and indicator.selectors.get("commodity") == "Silver"
-        for indicator in catalog
-    )
+    assert {"Gold", "Silver"}.issubset(commodities)
 
 
 def test_stale_crude_inventory_event_sources_are_not_marked_available() -> None:
