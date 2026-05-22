@@ -2334,7 +2334,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_MANUFACTURING_PMI"]["source"],
         description="中国制造业 PMI 用于观察制造业景气和订单变化。",
         display_order=176,
-        selectors=_cycle_selectors("制造业PMI", "PMI", "price", "PMI"),
+        selectors=_cycle_selectors("制造业PMI", "制造业PMI", "pmi", "PMI"),
     ),
     _indicator(
         code="CN_MANUFACTURING_PMI_YOY",
@@ -2347,7 +2347,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_MANUFACTURING_PMI_YOY"]["source"],
         description="用制造业 PMI 指数计算的同比变化，用于观察景气相对去年同期的改善幅度。",
         display_order=177,
-        selectors=_cycle_selectors("制造业PMI同比", "PMI", "price", "PMI变化"),
+        selectors=_cycle_selectors("制造业PMI同比", "制造业PMI", "pmi", "PMI变化"),
     ),
     _indicator(
         code="CN_MANUFACTURING_PMI_MOM",
@@ -2360,7 +2360,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_MANUFACTURING_PMI_MOM"]["source"],
         description="用制造业 PMI 指数计算的环比变化，用于观察景气短期动能。",
         display_order=178,
-        selectors=_cycle_selectors("制造业PMI环比", "PMI", "price", "PMI变化"),
+        selectors=_cycle_selectors("制造业PMI环比", "制造业PMI", "pmi", "PMI变化"),
     ),
     _indicator(
         code="CN_NON_MANUFACTURING_PMI",
@@ -2373,7 +2373,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_NON_MANUFACTURING_PMI"]["source"],
         description="中国非制造业 PMI 用于观察服务业和建筑业景气。",
         display_order=179,
-        selectors=_cycle_selectors("非制造业PMI", "PMI", "price", "PMI"),
+        selectors=_cycle_selectors("非制造业PMI", "非制造业PMI", "pmi", "PMI"),
     ),
     _indicator(
         code="CN_NON_MANUFACTURING_PMI_YOY",
@@ -2388,7 +2388,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
             "用非制造业 PMI 指数计算的同比变化，用于观察服务业和建筑业景气相对去年同期变化。"
         ),
         display_order=180,
-        selectors=_cycle_selectors("非制造业PMI同比", "PMI", "price", "PMI变化"),
+        selectors=_cycle_selectors("非制造业PMI同比", "非制造业PMI", "pmi", "PMI变化"),
     ),
     _indicator(
         code="CN_NON_MANUFACTURING_PMI_MOM",
@@ -2401,7 +2401,7 @@ _ADDITIONAL_MACRO_AKSHARE_INDICATORS = [
         source=AKSHARE_CHINA_SERIES["CN_NON_MANUFACTURING_PMI_MOM"]["source"],
         description="用非制造业 PMI 指数计算的环比变化，用于观察服务业和建筑业短期动能。",
         display_order=181,
-        selectors=_cycle_selectors("非制造业PMI环比", "PMI", "price", "PMI变化"),
+        selectors=_cycle_selectors("非制造业PMI环比", "非制造业PMI", "pmi", "PMI变化"),
     ),
     _indicator(
         code="CN_CORPORATE_GOODS_PRICE_INDEX",

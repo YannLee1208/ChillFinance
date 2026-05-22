@@ -335,6 +335,8 @@ const SELECTOR_VALUE_LABELS: Record<string, string> = {
   企业贷款增量结构: "企业贷款增量结构",
   "CPI/PPI环比": "CPI / PPI 环比",
   PMI: "PMI",
+  制造业PMI: "制造业 PMI",
+  非制造业PMI: "非制造业 PMI",
   PMI变化: "PMI 变化",
   社融增量: "社融增量",
   社融存量: "社融存量",

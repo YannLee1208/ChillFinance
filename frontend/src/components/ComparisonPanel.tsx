@@ -16,6 +16,7 @@ const SERIES_COLORS = ["#1457b8", "#b42318", "#04706b", "#b54708", "#5b35d5", "#
 const STYLE_COLORS: Record<string, string[]> = {
   price: ["#1f5eff", "#d92d20", "#7c3aed", "#d97706"],
   trade: ["#0e9384", "#b54708", "#1457b8", "#66758a"],
+  pmi: ["#7c3aed", "#0e7490", "#b54708", "#475569"],
 };
 
 function commonUnit(snapshots: IndicatorSnapshot[]): string {
@@ -97,7 +98,7 @@ export function ComparisonPanel({ group, snapshots, timeRange }: ComparisonPanel
           data: periods.map((period) => valuesByPeriod.get(period) ?? null),
           connectNulls: false,
           showSymbol: false,
-          smooth: panelStyle === "price",
+          smooth: panelStyle === "price" || panelStyle === "pmi",
           lineStyle: { width: 2.5 },
           emphasis: { focus: "series" },
         };

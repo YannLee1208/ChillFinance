@@ -10,3 +10,5 @@
 - 数据源适配器要实现 `backend.domain.providers.MacroDataProvider`。
 - 有测试时先写 pytest，再实现。
 - 进展、教训、提交记录、后续事项写入 `PREGRESS.md`。
+- 图表布局必须按用户指定的业务行对齐；同类指标放在同一行，不同子类不要混排。
+- 不同类型图表必须使用不同绘制风格，通过 `chart_style` 等显式字段区分，避免只靠频率自动猜。

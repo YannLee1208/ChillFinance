@@ -266,12 +266,12 @@ def test_china_cycle_topic_contains_cpi_ppi_pmi_consumption_and_industry() -> No
         "CN_PPI_INDEX": "PPI",
         "CN_PPI": "PPI",
         "CN_PPI_MOM": "PPI",
-        "CN_MANUFACTURING_PMI": "PMI",
-        "CN_MANUFACTURING_PMI_YOY": "PMI",
-        "CN_MANUFACTURING_PMI_MOM": "PMI",
-        "CN_NON_MANUFACTURING_PMI": "PMI",
-        "CN_NON_MANUFACTURING_PMI_YOY": "PMI",
-        "CN_NON_MANUFACTURING_PMI_MOM": "PMI",
+        "CN_MANUFACTURING_PMI": "制造业PMI",
+        "CN_MANUFACTURING_PMI_YOY": "制造业PMI",
+        "CN_MANUFACTURING_PMI_MOM": "制造业PMI",
+        "CN_NON_MANUFACTURING_PMI": "非制造业PMI",
+        "CN_NON_MANUFACTURING_PMI_YOY": "非制造业PMI",
+        "CN_NON_MANUFACTURING_PMI_MOM": "非制造业PMI",
         "CN_RETAIL_SALES": "消费",
         "CN_INDUSTRIAL_PRODUCTION_YOY": "工业与投资",
         "CN_FIXED_ASSET_INVESTMENT": "工业与投资",
@@ -281,6 +281,22 @@ def test_china_cycle_topic_contains_cpi_ppi_pmi_consumption_and_industry() -> No
         indicator = get_indicator(code)
         assert indicator.selectors.get("category") == "CPI/PPI/PMI"
         assert indicator.selectors.get("display_group") == display_group
+
+
+def test_pmi_indicators_use_distinct_chart_style_and_aligned_rows() -> None:
+    expected = {
+        "CN_MANUFACTURING_PMI": "制造业PMI",
+        "CN_MANUFACTURING_PMI_YOY": "制造业PMI",
+        "CN_MANUFACTURING_PMI_MOM": "制造业PMI",
+        "CN_NON_MANUFACTURING_PMI": "非制造业PMI",
+        "CN_NON_MANUFACTURING_PMI_YOY": "非制造业PMI",
+        "CN_NON_MANUFACTURING_PMI_MOM": "非制造业PMI",
+    }
+
+    for code, display_group in expected.items():
+        indicator = get_indicator(code)
+        assert indicator.selectors.get("display_group") == display_group
+        assert indicator.selectors.get("chart_style") == "pmi"
 
 
 def test_goods_services_trade_balance_is_local_derived() -> None:

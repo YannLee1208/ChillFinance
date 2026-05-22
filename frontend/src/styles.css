@@ -524,6 +524,11 @@ h1 {
   background: linear-gradient(180deg, #ffffff, #f6fcfa);
 }
 
+.comparison-panel.chart-style-pmi {
+  border-color: #ddd6fe;
+  background: linear-gradient(180deg, #ffffff, #faf8ff);
+}
+
 .comparison-head {
   display: flex;
   align-items: flex-start;
@@ -746,6 +751,10 @@ h1 {
   border-color: #c8eadf;
 }
 
+.indicator-card.chart-style-pmi {
+  border-color: #ddd6fe;
+}
+
 .chart-box.chart-style-price {
   background: linear-gradient(180deg, #fbfdff, #f5f8ff);
   border-color: #d8e2ff;
@@ -754,6 +763,11 @@ h1 {
 .chart-box.chart-style-trade {
   background: linear-gradient(180deg, #fbfffd, #f3fbf8);
   border-color: #c8eadf;
+}
+
+.chart-box.chart-style-pmi {
+  background: linear-gradient(180deg, #fffbff, #f8f5ff);
+  border-color: #ddd6fe;
 }
 
 .empty-chart {

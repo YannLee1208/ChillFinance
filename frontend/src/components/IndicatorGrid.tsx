@@ -24,7 +24,8 @@ const GROUP_ORDER = [
   "经济总量",
   "CPI",
   "PPI",
-  "PMI",
+  "制造业PMI",
+  "非制造业PMI",
   "消费",
   "工业与投资",
   "其他价格指标",
@@ -87,7 +88,7 @@ function groupSnapshots(snapshots: IndicatorSnapshot[]): [string, IndicatorSnaps
 }
 
 function sectionClassName(group: string): string {
-  if (["CPI", "PPI", "出口", "进口", "顺逆差"].includes(group)) {
+  if (["CPI", "PPI", "制造业PMI", "非制造业PMI", "出口", "进口", "顺逆差"].includes(group)) {
     return "indicator-grid grouped-row";
   }
   return "indicator-grid";
@@ -103,6 +104,21 @@ function comparisonGroups(snapshots: IndicatorSnapshot[]): [string, IndicatorSna
     grouped.set(group, [...(grouped.get(group) ?? []), snapshot]);
   }
   return Array.from(grouped.entries()).filter(([, items]) => items.length >= 2);
+}
+
+function sectionComparisonGroups(
+  groupItems: IndicatorSnapshot[],
+  allComparisonGroups: [string, IndicatorSnapshot[]][],
+): [string, IndicatorSnapshot[]][] {
+  const sectionCodes = new Set(groupItems.map((snapshot) => snapshot.definition.code));
+  return allComparisonGroups
+    .map(
+      ([group, items]): [string, IndicatorSnapshot[]] => [
+        group,
+        items.filter((item) => sectionCodes.has(item.definition.code)),
+      ],
+    )
+    .filter(([, items]) => items.length >= 2);
 }
 
 export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
@@ -136,21 +152,20 @@ export function IndicatorGrid({ indicators, timeRange }: IndicatorGridProps) {
     <>
       {availableSnapshots.length > 0 ? (
         <>
-          {allComparisonGroups.map(([compareGroup, compareItems]) => (
-            <section className="indicator-section" key={`comparison-${compareGroup}`}>
-              <ComparisonPanel
-                group={compareGroup}
-                snapshots={compareItems}
-                timeRange={timeRange}
-              />
-            </section>
-          ))}
           {groupSnapshots(availableSnapshots).map(([group, groupItems]) => (
             <section className="indicator-section" key={group}>
               <div className="indicator-section-head">
                 <h2>{localizeSelectorValue(group)}</h2>
                 <span>{groupItems.length} 个指标</span>
               </div>
+              {sectionComparisonGroups(groupItems, allComparisonGroups).map(([compareGroup, compareItems]) => (
+                <ComparisonPanel
+                  group={compareGroup}
+                  key={compareGroup}
+                  snapshots={compareItems}
+                  timeRange={timeRange}
+                />
+              ))}
               <div className={sectionClassName(group)}>
                 {groupItems.map((snapshot) => (
                   <IndicatorCard

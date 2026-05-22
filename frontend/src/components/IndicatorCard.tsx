@@ -17,7 +17,7 @@ type IndicatorCardProps = {
 
 const LINE_COLORS = ["#1f5eff", "#d92d20", "#039855", "#d97706", "#7c3aed", "#0e9384"];
 
-type ChartStyle = "default" | "price" | "trade";
+type ChartStyle = "default" | "price" | "trade" | "pmi";
 
 export type DisplayPoint = Observation & {
   numericValue: number;
@@ -36,7 +36,7 @@ function colorForCode(code: string): string {
 
 function chartStyle(definition: IndicatorSnapshot["definition"]): ChartStyle {
   const style = definition.selectors.chart_style;
-  return style === "price" || style === "trade" ? style : "default";
+  return style === "price" || style === "trade" || style === "pmi" ? style : "default";
 }
 
 function styleColor(style: ChartStyle, fallback: string): string {
@@ -45,6 +45,9 @@ function styleColor(style: ChartStyle, fallback: string): string {
   }
   if (style === "trade") {
     return "#0e9384";
+  }
+  if (style === "pmi") {
+    return "#7c3aed";
   }
   return fallback;
 }
@@ -119,6 +122,9 @@ function shouldUseBars(frequency: string, pointCount: number, style: ChartStyle)
   if (style === "price") {
     return false;
   }
+  if (style === "pmi") {
+    return false;
+  }
   if (style === "trade") {
     return true;
   }
@@ -154,7 +160,7 @@ function buildSeries(
       type: "line",
       data: points.map((point) => point.displayValue),
       showSymbol: false,
-      smooth: style === "price",
+      smooth: style === "price" || style === "pmi",
       emphasis: { focus: "series" },
       lineStyle: { color: lineColor, width: style === "trade" ? 2.2 : 3 },
       areaStyle: useBars ? undefined : { color: `${lineColor}12` },
