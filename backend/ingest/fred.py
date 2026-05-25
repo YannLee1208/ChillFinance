@@ -119,21 +119,26 @@ def _fetch_fred_csv(
     timeout_seconds: int,
 ) -> str:
     request_url = f"{url}?{urlencode(params)}"
-    if shutil.which("curl.exe") is not None:
-        return _fetch_fred_csv_with_curl(request_url, timeout_seconds)
+    curl_bin = shutil.which("curl") or shutil.which("curl.exe")
+    if curl_bin is not None:
+        return _fetch_fred_csv_with_curl(curl_bin, request_url, timeout_seconds)
 
     request = Request(request_url, headers=headers)
     try:
         with urlopen(request, timeout=timeout_seconds) as response:  # noqa: S310
             return response.read().decode("utf-8")
     except (TimeoutError, URLError):
-        return _fetch_fred_csv_with_curl(request_url, timeout_seconds)
+        raise
 
 
-def _fetch_fred_csv_with_curl(request_url: str, timeout_seconds: int) -> str:
+def _fetch_fred_csv_with_curl(
+    curl_bin: str,
+    request_url: str,
+    timeout_seconds: int,
+) -> str:
     completed = subprocess.run(
         [
-            "curl.exe",
+            curl_bin,
             "-L",
             "--silent",
             "--show-error",
@@ -144,5 +149,6 @@ def _fetch_fred_csv_with_curl(request_url: str, timeout_seconds: int) -> str:
         check=True,
         capture_output=True,
         text=True,
+        timeout=timeout_seconds + 5,
     )
     return completed.stdout

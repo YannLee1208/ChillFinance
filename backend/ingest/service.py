@@ -5,7 +5,12 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from backend.domain.models import IndicatorDefinition, IngestionAttemptRecord, IngestionRunRecord
+from backend.domain.models import (
+    IndicatorDefinition,
+    IngestionAttemptRecord,
+    IngestionRunRecord,
+    Observation,
+)
 from backend.domain.providers import MacroDataProvider
 from backend.storage.duckdb_store import DuckDBMacroStore
 
@@ -68,6 +73,7 @@ class IngestionService:
                     )
                 )
                 continue
+            observations = _dedupe_observations(observations)
             if not observations:
                 reason = "数据源可访问，但本次没有返回可写入的观测值。"
                 failures[indicator.code] = reason
@@ -173,3 +179,13 @@ class IngestionService:
             if provider.supports(indicator):
                 return provider
         return None
+
+
+def _dedupe_observations(observations: list[Observation]) -> list[Observation]:
+    """按指标和日期去重，避免上游重复发布日期打断整批入库。"""
+
+    deduped = {
+        (observation.indicator_code, observation.period): observation
+        for observation in observations
+    }
+    return list(deduped.values())
